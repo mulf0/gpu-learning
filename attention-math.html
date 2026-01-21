@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attention Math — GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      /* Lesson page - no sidebar */
+      body {
+        display: block;
+      }
+
+      .lesson-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(10, 10, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+        z-index: 100;
+        padding: var(--space-md) var(--space-xl);
+      }
+
+      .lesson-nav__inner {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .lesson-nav__title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
+      }
+
+      .lesson-nav__progress {
+        display: flex;
+        gap: var(--space-sm);
+      }
+
+      .lesson-nav__dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+      }
+
+      .lesson-nav__dot--completed {
+        background: var(--accent-green);
+        border-color: var(--accent-green);
+      }
+
+      .lesson-nav__dot--active {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 12px var(--glow-blue);
+      }
+
+      .lesson-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 6rem var(--space-xl) var(--space-3xl);
+      }
+
+      .vector-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .vector-row__label {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        width: 80px;
+      }
+
+      .vector-row__inputs {
+        display: flex;
+        gap: var(--space-sm);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="lesson-nav">
+      <div class="lesson-nav__inner">
+        <a href="../index.html" class="lesson-nav__title"
+          >← ATTENTION MATH FOUNDATIONS</a
+        >
+        <div class="lesson-nav__progress">
+          <div
+            class="lesson-nav__dot lesson-nav__dot--active"
+            data-section="0"
+            title="Dot Product"
+          ></div>
+          <div class="lesson-nav__dot" data-section="1" title="Softmax"></div>
+          <div
+            class="lesson-nav__dot"
+            data-section="2"
+            title="Online Softmax"
+          ></div>
+          <div
+            class="lesson-nav__dot"
+            data-section="3"
+            title="FP Formats"
+          ></div>
+          <div
+            class="lesson-nav__dot"
+            data-section="4"
+            title="Full Attention"
+          ></div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="lesson-container">
+      <!-- Hero -->
+      <header class="hero hero--lesson">
+        <div class="hero__label">Decode Attention Kernel Prereqs</div>
+        <h1 class="hero__title">The Math Behind Attention</h1>
+        <p class="hero__desc">
+          Interactive foundations for writing your own CUDA attention kernel. No
+          handwaving—understand what every operation actually does.
+        </p>
+      </header>
+
+      <!-- Section 1: Dot Product -->
+      <section class="section" id="section-0">
+        <div class="section__number">01 — SIMILARITY</div>
+        <h2 class="section__title">The Dot Product: Measuring Relevance</h2>
+
+        <p>
+          Attention computes <strong>how relevant</strong> each cached token is
+          to your query. The dot product is the measuring stick—it tells you how
+          much two vectors "agree."
+        </p>
+        <p>
+          High dot product = vectors point in similar directions = high
+          relevance.<br />
+          Zero dot product = vectors are perpendicular = no relationship.
+        </p>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">⚡</div>
+            <span class="card__title">Interactive: Compute Q·K</span>
+          </div>
+
+          <div class="vector-row">
+            <span class="vector-row__label">Query (Q)</span>
+            <div class="vector-row__inputs">
+              <input
+                type="number"
+                class="input"
+                id="q0"
+                value="1"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q1"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q2"
+                value="0.5"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q3"
+                value="-0.5"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+            </div>
+          </div>
+          <div class="vector-row">
+            <span class="vector-row__label">Key (K)</span>
+            <div class="vector-row__inputs">
+              <input
+                type="number"
+                class="input"
+                id="k0"
+                value="0.5"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k1"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k2"
+                value="1"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k3"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+            </div>
+          </div>
+
+          <div class="result">
+            <div class="result__label">Dot Product (Q · K)</div>
+            <div class="result__value" id="dot-result">1.00</div>
+            <div class="result__formula" id="dot-formula">
+              (1×0.5) + (0×0) + (0.5×1) + (-0.5×0) = 1.00
+            </div>
+          </div>
+        </div>
+
+        <p>
+          In attention, you compute Q·K for <strong>every cached token</strong>.
+          With a 4096-token context, that's 4096 dot products just to process
+          one query. This is why attention is the bottleneck.
+        </p>
+
+        <div class="progress-check">
+          <div class="progress-check__box" data-section="0">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="progress-check__label">Mark as understood</span>
+        </div>
+      </section>
+
+      <!-- Section 2: Softmax -->
+      <section class="section" id="section-1">
+        <div class="section__number">02 — NORMALIZATION</div>
+        <h2 class="section__title">Softmax: From Scores to Probabilities</h2>
+
+        <p>
+          Raw dot products can be any value—positive, negative, huge, tiny.
+          <strong>Softmax</strong> converts them to a probability distribution:
+          all positive, sums to 1.
+        </p>
+
+        <div class="equation">
+          softmax(x<sub>i</sub>) =
+          <span class="equation__highlight">exp(x<sub>i</sub>)</span> / Σ
+          exp(x<sub>j</sub>)
+        </div>
+
+        <p>
+          The exponential amplifies differences. A score of 10 vs 5 becomes
+          e<sup>10</sup>/e<sup>5</sup> ≈ 150× more weight, not 2×. This makes
+          attention "sharp"—it focuses on the most relevant tokens.
+        </p>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--green">📊</div>
+            <span class="card__title">Interactive: Softmax Visualization</span>
+          </div>
+
+          <div
+            class="flex flex-wrap gap-md"
+            style="margin-bottom: var(--space-lg)"
+          >
+            <div style="text-align: center">
+              <span class="text-muted text-small">Score 1</span>
+              <input
+                type="number"
+                class="input"
+                id="s0"
+                value="2"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
+            </div>
+            <div style="text-align: center">
+              <span class="text-muted text-small">Score 2</span>
+              <input
+                type="number"
+                class="input"
+                id="s1"
+                value="1"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
+            </div>
+            <div style="text-align: center">
+              <span class="text-muted text-small">Score 3</span>
+              <input
+                type="number"
+                class="input"
+                id="s2"
+                value="0.5"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
+            </div>
+            <div style="text-align: center">
+              <span class="text-muted text-small">Score 4</span>
+              <input
+                type="number"
+                class="input"
+                id="s3"
+                value="-1"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
+            </div>
+            <div style="text-align: center">
+              <span class="text-muted text-small">Score 5</span>
+              <input
+                type="number"
+                class="input"
+                id="s4"
+                value="0"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
+            </div>
+          </div>
+
+          <div class="bar-chart">
+            <div class="bar-chart__item">
+              <div class="bar-chart__bar" id="bar0"></div>
+              <span class="bar-chart__value" id="prob0">0.50</span>
+            </div>
+            <div class="bar-chart__item">
+              <div class="bar-chart__bar" id="bar1"></div>
+              <span class="bar-chart__value" id="prob1">0.18</span>
+            </div>
+            <div class="bar-chart__item">
+              <div class="bar-chart__bar" id="bar2"></div>
+              <span class="bar-chart__value" id="prob2">0.11</span>
+            </div>
+            <div class="bar-chart__item">
+              <div class="bar-chart__bar" id="bar3"></div>
+              <span class="bar-chart__value" id="prob3">0.02</span>
+            </div>
+            <div class="bar-chart__item">
+              <div class="bar-chart__bar" id="bar4"></div>
+              <span class="bar-chart__value" id="prob4">0.07</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz" id="softmax-quiz">
+          <div class="quiz-q">
+            Try setting Score 1 to 100. What happens to the other probabilities?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>They decrease proportionally</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>They collapse to nearly zero</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>They stay the same</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <p>
+          <strong>The problem:</strong> exp(100) = 2.7 × 10<sup>43</sup>. That
+          overflows FP16 (max ≈ 65504). Your kernel crashes. This is why we need
+          the numerical stability trick.
+        </p>
+
+        <div class="progress-check">
+          <div class="progress-check__box" data-section="1">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="progress-check__label">Mark as understood</span>
+        </div>
+      </section>
+
+      <!-- Section 3: Online Softmax -->
+      <section class="section" id="section-2">
+        <div class="section__number">03 — THE TRICK</div>
+        <h2 class="section__title">
+          Online Softmax: Streaming Without Overflow
+        </h2>
+
+        <p>Two problems with naive softmax:</p>
+        <p>
+          <strong>1. Overflow:</strong> Large values explode exp().
+          <strong>Solution:</strong> Subtract max first.
+        </p>
+        <p>
+          <strong>2. Memory:</strong> You need to see ALL values to compute max.
+          But in attention, you're processing in blocks to stay in fast SRAM.
+          <strong>Solution:</strong> Online algorithm that updates
+          incrementally.
+        </p>
+
+        <div class="equation">
+          softmax(x<sub>i</sub>) = exp(x<sub>i</sub> -
+          <span class="equation__highlight">max(x)</span>) / Σ exp(x<sub>j</sub>
+          - <span class="equation__highlight">max(x)</span>)
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">🔄</div>
+            <span class="card__title"
+              >Simulation: Online Softmax Streaming</span
+            >
+          </div>
+
+          <p
+            class="text-secondary text-small"
+            style="margin-bottom: var(--space-lg)"
+          >
+            Watch how the algorithm maintains running statistics as new values
+            stream in. This is how FlashAttention processes attention in blocks.
+          </p>
+
+          <div class="flex gap-md" style="margin-bottom: var(--space-lg)">
+            <button class="btn btn--primary" id="add-block-btn">
+              Add Random Block
+            </button>
+            <button class="btn" id="reset-btn">Reset</button>
+          </div>
+
+          <div
+            class="stream"
+            id="stream-display"
+            style="margin-bottom: var(--space-lg)"
+          >
+            <span class="text-muted text-small"
+              >Values will appear here...</span
+            >
+          </div>
+
+          <div class="state-grid">
+            <div class="state-box">
+              <div class="state-box__label">Running Max (m)</div>
+              <div class="state-box__value" id="state-max">-∞</div>
+            </div>
+            <div class="state-box">
+              <div class="state-box__label">Sum of Exp (l)</div>
+              <div class="state-box__value" id="state-sum">0.00</div>
+            </div>
+            <div class="state-box">
+              <div class="state-box__label">Values Seen</div>
+              <div class="state-box__value" id="state-count">0</div>
+            </div>
+          </div>
+
+          <div class="result mt-lg">
+            <div class="result__label">Key Insight</div>
+            <p
+              class="text-secondary text-small"
+              id="online-insight"
+              style="margin: 0"
+            >
+              Click "Add Random Block" to start the simulation.
+            </p>
+          </div>
+        </div>
+
+        <pre><code><span style="color: var(--text-muted)"># The online softmax update rule</span>
+<span style="color: var(--accent-purple)">def</span> <span style="color: var(--accent-blue)">update</span>(m_old, l_old, new_block):
+    m_block = new_block.<span style="color: var(--accent-blue)">max</span>()
+    m_new = <span style="color: var(--accent-blue)">max</span>(m_old, m_block)
+    
+    <span style="color: var(--text-muted)"># Rescale old accumulator to new max</span>
+    l_new = l_old * <span style="color: var(--accent-blue)">exp</span>(m_old - m_new)
+    
+    <span style="color: var(--text-muted)"># Add new block contribution</span>
+    l_new += <span style="color: var(--accent-blue)">sum</span>(<span style="color: var(--accent-blue)">exp</span>(new_block - m_new))
+    
+    <span style="color: var(--accent-purple)">return</span> m_new, l_new</code></pre>
+
+        <div class="progress-check">
+          <div class="progress-check__box" data-section="2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="progress-check__label">Mark as understood</span>
+        </div>
+      </section>
+
+      <!-- Section 4: Floating Point Formats -->
+      <section class="section" id="section-3">
+        <div class="section__number">04 — PRECISION</div>
+        <h2 class="section__title">
+          Floating Point: What FP8 and NVFP4 Actually Are
+        </h2>
+
+        <p>
+          Your KV cache is quantized. Understanding the bit layout tells you
+          what precision you're trading for memory bandwidth.
+        </p>
+
+        <div class="diagram" id="fp-card">
+          <div class="diagram-title">Floating Point Formats</div>
+          <div class="fp-formats">
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP16 (Half Precision)</span
+                ><span class="fp-range">±65,504</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 5">Exp(5)</div>
+                <div class="fp-bit fp-m" style="flex: 10">Mantissa(10)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP8 E4M3 (KV cache)</span
+                ><span class="fp-range">±448</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 4">E(4)</div>
+                <div class="fp-bit fp-m" style="flex: 3">M(3)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">NVFP4 E2M1 (Blackwell)</span
+                ><span class="fp-range">±6</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 2">E</div>
+                <div class="fp-bit fp-m" style="flex: 1">M</div>
+              </div>
+            </div>
+          </div>
+          <p
+            class="text-muted text-small"
+            style="margin-top: var(--space-md); margin-bottom: 0"
+          >
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-red);
+                border-radius: 3px;
+                margin-right: 4px;
+              "
+            ></span>
+            Sign
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-blue);
+                border-radius: 3px;
+                margin: 0 4px 0 12px;
+              "
+            ></span>
+            Exponent
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-green);
+                border-radius: 3px;
+                margin: 0 4px 0 12px;
+              "
+            ></span>
+            Mantissa
+          </p>
+        </div>
+
+        <p>
+          <strong>Why NVFP4 works:</strong> Neural network values cluster
+          tightly. A per-block scaling factor (stored in FP8) shifts the
+          representable range to where your values actually are. You get 4×
+          memory reduction vs FP16 with ~1% accuracy loss.
+        </p>
+
+        <div class="quiz" id="fp-quiz">
+          <div class="quiz-q">
+            With only 1 mantissa bit (E2M1), how many distinct positive values
+            can NVFP4 represent (excluding zero and special values)?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>4</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>6</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>8</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>16</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="progress-check">
+          <div class="progress-check__box" data-section="3">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="progress-check__label">Mark as understood</span>
+        </div>
+      </section>
+
+      <!-- Section 5: Full Attention -->
+      <section class="section" id="section-4">
+        <div class="section__number">05 — SYNTHESIS</div>
+        <h2 class="section__title">Putting It Together: Full Attention</h2>
+
+        <p>
+          Now you have all the pieces. Here's the complete attention equation
+          and what each part does:
+        </p>
+
+        <div class="equation">
+          Attention(Q, K, V) = softmax(<span class="equation__highlight"
+            >QK<sup>T</sup></span
+          >
+          / √d) · V
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">🎯</div>
+            <span class="card__title"
+              >Visualization: Decode Attention Step-by-Step</span
+            >
+          </div>
+
+          <canvas
+            id="attention-canvas"
+            class="canvas"
+            width="700"
+            height="280"
+          ></canvas>
+
+          <div class="flex flex-wrap gap-sm mt-lg">
+            <button class="btn" id="step-qk">1. Compute QK<sup>T</sup></button>
+            <button class="btn" id="step-scale">2. Scale by √d</button>
+            <button class="btn" id="step-softmax">3. Softmax</button>
+            <button class="btn" id="step-output">4. Weighted Sum</button>
+            <button class="btn" id="step-reset">Reset</button>
+          </div>
+
+          <div class="result mt-lg">
+            <div class="result__label">Current Step</div>
+            <p
+              class="text-secondary text-small"
+              id="attention-step-desc"
+              style="margin: 0"
+            >
+              Click a step to see what happens at each stage of attention.
+            </p>
+          </div>
+        </div>
+
+        <p><strong>What your kernel must do efficiently:</strong></p>
+        <p>
+          1. Load Q (single vector for decode)<br />
+          2. Stream through KV cache in blocks (fits in SRAM)<br />
+          3. Compute dot products, track online softmax statistics<br />
+          4. Accumulate weighted V vectors<br />
+          5. Output final attention result
+        </p>
+        <p>
+          The bottleneck is <strong>memory bandwidth</strong>—loading all those
+          K and V vectors from HBM. FP8/NVFP4 quantization halves or quarters
+          that traffic.
+        </p>
+
+        <div class="progress-check">
+          <div class="progress-check__box" data-section="4">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="progress-check__label">Mark as understood</span>
+        </div>
+      </section>
+
+      <!-- Completion -->
+      <section
+        class="section"
+        style="text-align: center; padding: var(--space-2xl) 0"
+      >
+        <div class="section__number">NEXT STEPS</div>
+        <h2 class="section__title">Ready for Implementation</h2>
+        <p style="max-width: 500px; margin: 0 auto var(--space-xl)">
+          You now have the mathematical foundation. Next: profile TRT-LLM's
+          stock attention, read FlashAttention-2 Section 3, and start writing
+          your first Triton kernel.
+        </p>
+        <a href="../index.html" class="btn btn--primary">Back to Dashboard</a>
+        <a
+          href="../course.html"
+          class="btn"
+          style="margin-left: var(--space-sm)"
+          >View Full Course</a
+        >
+      </section>
+    </div>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Initialize progress tracking
+      const progress = new GPULearning.ProgressTracker("attention-math");
+
+      // Dot Product Interactive
+      new GPULearning.LiveComputation({
+        inputs: ["q0", "q1", "q2", "q3", "k0", "k1", "k2", "k3"],
+        compute: (values) => {
+          const q = values.slice(0, 4);
+          const k = values.slice(4, 8);
+          return q.reduce((sum, qi, i) => sum + qi * k[i], 0);
+        },
+        render: (result, values) => {
+          const q = values.slice(0, 4);
+          const k = values.slice(4, 8);
+          document.getElementById("dot-result").textContent = result.toFixed(2);
+          const terms = q.map((qi, i) => `(${qi}×${k[i]})`).join(" + ");
+          document.getElementById("dot-formula").textContent =
+            `${terms} = ${result.toFixed(2)}`;
+        },
+      });
+
+      // Softmax Visualization
+      new GPULearning.SoftmaxViz({
+        inputs: ["s0", "s1", "s2", "s3", "s4"],
+        bars: ["bar0", "bar1", "bar2", "bar3", "bar4"],
+        values: ["prob0", "prob1", "prob2", "prob3", "prob4"],
+      });
+
+      // Online Softmax Simulation
+      new GPULearning.OnlineSoftmaxSim({
+        display: "stream-display",
+        maxDisplay: "state-max",
+        sumDisplay: "state-sum",
+        countDisplay: "state-count",
+        insightDisplay: "online-insight",
+        addBtn: "add-block-btn",
+        resetBtn: "reset-btn",
+      });
+
+      // Attention Canvas Visualization
+      const canvas = document.getElementById("attention-canvas");
+      const ctx = canvas.getContext("2d");
+
+      const colors = {
+        bg: "#1a1a24",
+        text: "#e8e6e3",
+        textMuted: "#6a6a6a",
+        blue: "#4d9fff",
+        purple: "#a78bfa",
+        green: "#34d399",
+        orange: "#fb923c",
+      };
+
+      const vizData = {
+        Q: [0.8, 0.2, -0.5, 0.3],
+        K: [
+          [0.5, 0.3, -0.2, 0.1],
+          [0.9, 0.1, -0.4, 0.2],
+          [0.1, 0.8, 0.3, -0.1],
+          [0.4, 0.5, -0.3, 0.6],
+        ],
+        V: [
+          [1.0, 0.2],
+          [0.3, 0.8],
+          [0.5, 0.5],
+          [0.7, 0.1],
+        ],
+      };
+
+      let currentStep = 0;
+
+      function drawAttention(step) {
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const padding = 30;
+        const boxW = 55;
+        const boxH = 28;
+
+        ctx.fillStyle = colors.blue;
+        ctx.font = "11px IBM Plex Mono";
+        ctx.fillText("Q (query)", padding, 25);
+        ctx.strokeStyle = colors.blue;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(padding, 35, boxW * 2, boxH);
+        ctx.fillStyle = colors.textMuted;
+        ctx.font = "9px IBM Plex Mono";
+        ctx.fillText("[0.8, 0.2, ...]", padding + 5, 53);
+
+        ctx.fillStyle = colors.orange;
+        ctx.font = "11px IBM Plex Mono";
+        ctx.fillText("K cache", padding + 180, 25);
+        for (let i = 0; i < 4; i++) {
+          ctx.strokeStyle = step >= 1 ? colors.orange : colors.textMuted;
+          ctx.strokeRect(padding + 180, 35 + i * 32, boxW * 2, boxH);
+          ctx.fillStyle = colors.textMuted;
+          ctx.font = "9px IBM Plex Mono";
+          ctx.fillText(`k${i}`, padding + 185, 53 + i * 32);
+        }
+
+        ctx.fillStyle = colors.green;
+        ctx.font = "11px IBM Plex Mono";
+        ctx.fillText("V cache", padding + 330, 25);
+        for (let i = 0; i < 4; i++) {
+          ctx.strokeStyle = step >= 4 ? colors.green : colors.textMuted;
+          ctx.strokeRect(padding + 330, 35 + i * 32, boxW, boxH);
+          ctx.fillStyle = colors.textMuted;
+          ctx.font = "9px IBM Plex Mono";
+          ctx.fillText(`v${i}`, padding + 335, 53 + i * 32);
+        }
+
+        ctx.fillStyle = colors.purple;
+        ctx.font = "11px IBM Plex Mono";
+        ctx.fillText(step >= 3 ? "Weights" : "Scores", padding + 440, 25);
+
+        let scores = vizData.K.map((k) =>
+          vizData.Q.reduce((sum, q, i) => sum + q * k[i], 0),
+        );
+
+        if (step >= 2) {
+          const scale = Math.sqrt(vizData.Q.length);
+          scores = scores.map((s) => s / scale);
+        }
+
+        let weights = scores;
+        if (step >= 3) {
+          const maxScore = Math.max(...scores);
+          const exps = scores.map((s) => Math.exp(s - maxScore));
+          const sumExp = exps.reduce((a, b) => a + b, 0);
+          weights = exps.map((e) => e / sumExp);
+        }
+
+        for (let i = 0; i < 4; i++) {
+          ctx.strokeStyle = step >= 1 ? colors.purple : colors.textMuted;
+          ctx.strokeRect(padding + 440, 35 + i * 32, boxW, boxH);
+
+          if (step >= 1) {
+            ctx.fillStyle = colors.text;
+            ctx.font = "9px IBM Plex Mono";
+            const val =
+              step >= 3 ? weights[i].toFixed(3) : scores[i].toFixed(2);
+            ctx.fillText(val, padding + 450, 53 + i * 32);
+          }
+        }
+
+        if (step >= 4) {
+          ctx.fillStyle = colors.green;
+          ctx.font = "11px IBM Plex Mono";
+          ctx.fillText("Output", padding + 560, 25);
+          ctx.strokeStyle = colors.green;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(padding + 560, 60, boxW * 1.3, boxH * 1.5);
+
+          const output = [0, 0];
+          vizData.V.forEach((v, i) => {
+            output[0] += weights[i] * v[0];
+            output[1] += weights[i] * v[1];
+          });
+
+          ctx.fillStyle = colors.text;
+          ctx.font = "10px IBM Plex Mono";
+          ctx.fillText(`[${output[0].toFixed(2)},`, padding + 568, 78);
+          ctx.fillText(` ${output[1].toFixed(2)}]`, padding + 568, 92);
+        }
+      }
+
+      const stepDescs = [
+        "Click a step to see what happens at each stage of attention.",
+        "Step 1: Compute dot products QK^T. Each score measures how relevant that cached token is to our query.",
+        "Step 2: Scale by √d (here √4 = 2). This prevents dot products from getting too large and saturating softmax.",
+        "Step 3: Apply softmax. Scores become probabilities that sum to 1. Notice how the highest score dominates.",
+        "Step 4: Compute weighted sum of V vectors. Each V contributes proportionally to its attention weight.",
+      ];
+
+      document.getElementById("step-qk").onclick = () => {
+        currentStep = 1;
+        drawAttention(1);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[1];
+      };
+      document.getElementById("step-scale").onclick = () => {
+        currentStep = 2;
+        drawAttention(2);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[2];
+      };
+      document.getElementById("step-softmax").onclick = () => {
+        currentStep = 3;
+        drawAttention(3);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[3];
+      };
+      document.getElementById("step-output").onclick = () => {
+        currentStep = 4;
+        drawAttention(4);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[4];
+      };
+      document.getElementById("step-reset").onclick = () => {
+        currentStep = 0;
+        drawAttention(0);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[0];
+      };
+
+      drawAttention(0);
+    </script>
+  </body>
+</html>

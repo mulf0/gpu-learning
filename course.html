@@ -1,0 +1,1577 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPU → NVFP4 Kernels | Full Course</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="base.css" />
+  </head>
+  <body class="has-sidebar">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <button class="mobile-btn" aria-label="Menu">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M3 12h18M3 6h18M3 18h18" />
+      </svg>
+    </button>
+
+    <nav class="sidebar">
+      <div class="sidebar__header">
+        <div class="sidebar__logo">GPU → NVFP4</div>
+        <div class="sidebar__sub">4-Week Intensive</div>
+      </div>
+
+      <div class="nav-section open">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-blue">F</span>
+          Foundations
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#gpu-arch" class="nav-item">GPU Architecture</a>
+          <a href="#memory" class="nav-item">Memory Hierarchy</a>
+          <a href="#tensor-cores" class="nav-item">Tensor Cores</a>
+          <a href="#pipelining" class="nav-item">Software Pipelining</a>
+          <a href="#quantization" class="nav-item">Quantization</a>
+          <a href="#attention" class="nav-item">Attention & KV Cache</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-green">1</span>
+          Week 1: CuTe DSL
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#w1-overview" class="nav-item">Overview</a>
+          <a href="#day1" class="nav-item">Day 1: Layouts</a>
+          <a href="#day2" class="nav-item">Day 2: First Kernels</a>
+          <a href="#day3" class="nav-item">Day 3: Tensors & TMA</a>
+          <a href="#day4" class="nav-item">Day 4: MMA Ops</a>
+          <a href="#day5" class="nav-item">Day 5: Pipelined GEMM</a>
+          <a href="#day6" class="nav-item">Day 6: Quantization</a>
+          <a href="#day7" class="nav-item">Day 7: Integration</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-purple">2</span>
+          Week 2: Deep Dive
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#w2-cutlass" class="nav-item">CUTLASS Architecture</a>
+          <a href="#w2-cute" class="nav-item">CuTe Tutorials</a>
+          <a href="#w2-bench" class="nav-item">Microbenchmarking</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-orange">3</span>
+          Week 3: Quantization
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#w3-papers" class="nav-item">Key Papers</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-cyan">4</span>
+          Week 4: Systems
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#w4-trtllm" class="nav-item">TensorRT-LLM</a>
+          <a href="#w4-project" class="nav-item">Final Project</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-pink">R</span>
+          Resources
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="#reading" class="nav-item">Reading List</a>
+          <a href="#checklist" class="nav-item">Knowledge Check</a>
+        </div>
+      </div>
+    </nav>
+
+    <main id="main" class="main-content">
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     FOUNDATIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="gpu-arch">
+        <div class="section__head">
+          <div class="section__num bg-blue">01</div>
+          <div>
+            <h2>GPU Architecture</h2>
+            <p class="mb-0 text-muted">Understanding the hardware</p>
+          </div>
+        </div>
+
+        <p>
+          Modern NVIDIA GPUs are hierarchical parallel processors designed for
+          <strong>throughput over latency</strong>.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-title">Execution Hierarchy</div>
+          <div class="hierarchy">
+            <div class="hier-item" data-detail="d-gpu" tabindex="0">
+              <div class="hier-icon bg-blue">🎮</div>
+              <div class="hier-info">
+                <h5>GPU</h5>
+                <p>B200: 192 SMs, 192GB HBM3e, 8TB/s</p>
+              </div>
+            </div>
+            <div class="hier-detail" id="d-gpu">
+              Top-level device. What matters: <strong>SM count</strong> and
+              <strong>memory bandwidth</strong>.
+            </div>
+
+            <div class="hier-item" data-detail="d-sm" tabindex="0">
+              <div class="hier-icon bg-green">⚡</div>
+              <div class="hier-info">
+                <h5>Streaming Multiprocessor (SM)</h5>
+                <p>Fundamental execution unit</p>
+              </div>
+            </div>
+            <div class="hier-detail" id="d-sm">
+              Contains: warp schedulers, registers (~256KB), shared memory
+              (228KB), L1, CUDA cores, <strong>Tensor Cores</strong>.
+            </div>
+
+            <div class="hier-item" data-detail="d-warp" tabindex="0">
+              <div class="hier-icon bg-purple">🧵</div>
+              <div class="hier-info">
+                <h5>Warp</h5>
+                <p>32 threads in lockstep (SIMT)</p>
+              </div>
+            </div>
+            <div class="hier-detail" id="d-warp">
+              <strong>Atomic scheduling unit.</strong> All 32 threads execute
+              same instruction. Divergent branches serialize. Think in warps,
+              not threads.
+            </div>
+
+            <div class="hier-item" data-detail="d-wg" tabindex="0">
+              <div class="hier-icon bg-orange">🔗</div>
+              <div class="hier-info">
+                <h5>Warpgroup (Hopper+)</h5>
+                <p>4 warps (128 threads) for Tensor Core ops</p>
+              </div>
+            </div>
+            <div class="hier-detail" id="d-wg">
+              Modern Tensor Core ops work at warpgroup granularity. Enables
+              64×64+ tiles, async execution. What CuTe DSL uses for SM90+.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">⚠️ Warp Divergence</div>
+          <p class="mb-0">
+            If threads take different branches, execution serializes. 16 threads
+            per path = 50% throughput. Minimize divergence within warps.
+          </p>
+        </div>
+
+        <h3>Blocks & Grids</h3>
+        <p>
+          <strong>Block</strong> (CTA): warps sharing resources + sync.
+          <strong>Grid</strong>: your problem decomposition into blocks.
+        </p>
+
+        <div class="card">
+          <h4>💡 Block Size Selection</h4>
+          <p class="mb-0">
+            Common: 128, 256, 512 threads. For Tensor Core: 128 (1 warpgroup).
+            Affects: SMEM/thread, register pressure, occupancy.
+          </p>
+        </div>
+
+        <div class="quiz">
+          <div class="quiz-q">A warp contains how many threads?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>16 threads</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>32 threads</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>64 threads</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>128 threads (warpgroup)</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <section class="section" id="memory">
+        <div class="section__head">
+          <div class="section__num bg-green">02</div>
+          <div>
+            <h2>Memory Hierarchy</h2>
+            <p class="mb-0 text-muted">The key to performance</p>
+          </div>
+        </div>
+
+        <p>
+          GPU performance is often <strong>memory-bound</strong>. Understanding
+          the hierarchy is essential.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-title">Latency & Bandwidth (Blackwell B200)</div>
+          <div class="mem-bars">
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">Registers</span
+                ><span class="mem-bar-stats"
+                  >256KB/SM • 0 cycles • ~20 TB/s</span
+                >
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-green" style="--w: 100%">
+                  Fastest
+                </div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">Shared Memory</span
+                ><span class="mem-bar-stats"
+                  >228KB/SM • ~20 cycles • ~20 TB/s</span
+                >
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-blue" style="--w: 85%">
+                  Programmer-managed
+                </div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">L2 Cache</span
+                ><span class="mem-bar-stats"
+                  >~60MB • ~200 cycles • ~10 TB/s</span
+                >
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-purple" style="--w: 50%">
+                  Hardware-managed
+                </div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">HBM (Global)</span
+                ><span class="mem-bar-stats"
+                  >192GB • ~400 cycles • ~8 TB/s</span
+                >
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-orange" style="--w: 25%">
+                  High latency
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight">
+          <div class="insight-icon">💡</div>
+          <div>
+            <h4>The Fundamental Game</h4>
+            <p>
+              Every HBM trip = hundreds of cycles.
+              <strong>Maximize data reuse</strong> in registers/SMEM. Optimized
+              GEMM achieves >80% peak FLOPS.
+            </p>
+          </div>
+        </div>
+
+        <h3>Access Patterns</h3>
+        <div class="grid grid-2">
+          <div class="card" style="margin: 0">
+            <h4>🔄 Coalescing</h4>
+            <p>
+              Adjacent threads → adjacent addresses = single transaction.
+              Maximum bandwidth.
+            </p>
+            <pre><code>// Good: data[threadIdx.x]
+// Bad:  data[threadIdx.x * 32]</code></pre>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4>🏦 Bank Conflicts</h4>
+            <p>
+              SMEM has 32 banks. Multiple threads hitting same bank (different
+              addresses) serialize.
+            </p>
+            <pre><code>// Conflict: smem[tid * 4]
+// Fixed:    smem[tid * 4 + tid/8]</code></pre>
+          </div>
+        </div>
+
+        <h3>TMA: Tensor Memory Accelerator</h3>
+        <p>
+          Hopper+ dedicated hardware for bulk data movement. Offloads addressing
+          from SMs.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Aspect</th>
+              <th>Manual Loads</th>
+              <th>TMA</th>
+            </tr>
+            <tr>
+              <td>Address computation</td>
+              <td>SM cycles</td>
+              <td>TMA unit (free)</td>
+            </tr>
+            <tr>
+              <td>Tile dimensions</td>
+              <td>Manual loop</td>
+              <td>Descriptor-based</td>
+            </tr>
+            <tr>
+              <td>Multicast</td>
+              <td>Not available</td>
+              <td>Built-in</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="tensor-cores">
+        <div class="section__head">
+          <div class="section__num bg-purple">03</div>
+          <div>
+            <h2>Tensor Cores</h2>
+            <p class="mb-0 text-muted">Specialized MMA units</p>
+          </div>
+        </div>
+
+        <p>
+          Fixed-function hardware for <strong>D = A×B + C</strong> with
+          constrained shapes and types.
+        </p>
+
+        <div class="callout info">
+          <div class="callout-title">📐 Not Magic</div>
+          <p class="mb-0">
+            Tensor Cores perform small matrix ops in one cycle. You must match
+            supported dimensions and types.
+          </p>
+        </div>
+
+        <h3>Evolution</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Gen</th>
+              <th>Arch</th>
+              <th>Shape</th>
+              <th>Types Added</th>
+            </tr>
+            <tr>
+              <td>1st</td>
+              <td>Volta</td>
+              <td>4×4×4</td>
+              <td>FP16</td>
+            </tr>
+            <tr>
+              <td>2nd</td>
+              <td>Turing</td>
+              <td>8×8×4</td>
+              <td>INT8</td>
+            </tr>
+            <tr>
+              <td>3rd</td>
+              <td>Ampere</td>
+              <td>16×8×16</td>
+              <td>BF16, TF32</td>
+            </tr>
+            <tr>
+              <td>4th</td>
+              <td>Hopper</td>
+              <td>Warpgroup async</td>
+              <td class="text-green">FP8</td>
+            </tr>
+            <tr>
+              <td>5th</td>
+              <td>Blackwell</td>
+              <td>—</td>
+              <td class="text-blue">FP4, FP6</td>
+            </tr>
+          </table>
+        </div>
+
+        <h3>Warpgroup MMA (Hopper/Blackwell)</h3>
+        <p>128 threads cooperate on larger tiles (64×64+). Benefits:</p>
+        <div class="grid grid-3">
+          <div class="card" style="margin: 0">
+            <h4 class="text-green">Async Execution</h4>
+            <p class="mb-0">MMA while preparing next data</p>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4 class="text-blue">Better Utilization</h4>
+            <p class="mb-0">Larger tiles amortize overhead</p>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4 class="text-purple">Pipeline Overlap</h4>
+            <p class="mb-0">Natural TMA integration</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pipelining">
+        <div class="section__head">
+          <div class="section__num bg-orange">04</div>
+          <div>
+            <h2>Software Pipelining</h2>
+            <p class="mb-0 text-muted">Hiding memory latency</p>
+          </div>
+        </div>
+
+        <p>Without pipelining, Tensor Cores sit idle waiting for data.</p>
+
+        <div class="diagram">
+          <div class="diagram-title">Sequential vs Pipelined</div>
+          <p>
+            <strong>Sequential:</strong> LOAD → MMA → LOAD → MMA (~50%
+            utilization)
+          </p>
+          <p class="mb-0">
+            <strong>Pipelined:</strong> Loads overlap with compute. Near 100% in
+            steady state.
+          </p>
+        </div>
+
+        <div class="insight">
+          <div class="insight-icon">🔄</div>
+          <div>
+            <h4>Requirements</h4>
+            <p>
+              Multiple SMEM buffers (1 per stage), async copy (TMA/cp.async),
+              sync barriers between producer (load) and consumer (compute).
+            </p>
+          </div>
+        </div>
+
+        <h3>Depth Tradeoffs</h3>
+        <div class="slider-wrap">
+          <div class="slider-head">
+            <span>Pipeline Stages</span
+            ><span class="slider-val" id="pipe-val">2</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value="2"
+            data-target="pipe-val"
+            data-callback="updatePipeline"
+          />
+        </div>
+        <div id="pipe-info" class="card">
+          <h4>2 Stages</h4>
+          <p>
+            <strong class="text-green">Pros:</strong> Lower SMEM, simpler sync
+          </p>
+          <p class="mb-0">
+            <strong class="text-red">Cons:</strong> May not fully hide latency
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="quantization">
+        <div class="section__head">
+          <div class="section__num bg-yellow">05</div>
+          <div>
+            <h2>Quantization</h2>
+            <p class="mb-0 text-muted">
+              Compressing without losing intelligence
+            </p>
+          </div>
+        </div>
+
+        <h3>Floating Point Anatomy</h3>
+        <div class="diagram">
+          <div class="diagram-title">Format Comparison</div>
+          <div class="fp-formats">
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP32 (32 bits)</span
+                ><span class="fp-range">±3.4×10³⁸</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 8">Exp(8)</div>
+                <div class="fp-bit fp-m" style="flex: 23">Mantissa(23)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP16 (16 bits)</span
+                ><span class="fp-range">±65,504</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 5">E(5)</div>
+                <div class="fp-bit fp-m" style="flex: 10">M(10)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP8 E4M3 (8 bits)</span
+                ><span class="fp-range">±448</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 4">E(4)</div>
+                <div class="fp-bit fp-m" style="flex: 3">M(3)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name">FP4 E2M1 (4 bits)</span
+                ><span class="fp-range">±6</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 2">E</div>
+                <div class="fp-bit fp-m" style="flex: 1">M</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          <strong>Exponent</strong> = range. <strong>Mantissa</strong> =
+          precision. Quantization finds minimum bits without quality loss.
+        </p>
+
+        <h3>NVFP4 Deep Dive</h3>
+        <p>
+          NVIDIA's Blackwell-native 4-bit format with
+          <strong>two-level scaling</strong>:
+        </p>
+
+        <div class="card">
+          <h4>🔢 Two-Level Scaling</h4>
+          <div class="equation" style="margin: var(--space-md) 0">
+            value = <span class="text-blue">fp4</span> ×
+            <span class="text-green">block_scale<sub>E4M3</sub></span> ×
+            <span class="text-purple">tensor_scale<sub>FP32</sub></span>
+          </div>
+          <p>
+            <strong>Level 1:</strong> E4M3 scale per 16 elements (fractional,
+            not power-of-2)
+          </p>
+          <p class="mb-0">
+            <strong>Level 2:</strong> FP32 tensor scale normalizes into E4M3
+            range
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Aspect</th>
+              <th>MXFP4</th>
+              <th>NVFP4</th>
+            </tr>
+            <tr>
+              <td>Block size</td>
+              <td>32</td>
+              <td class="text-green">16</td>
+            </tr>
+            <tr>
+              <td>Scale format</td>
+              <td>E8M0 (power-of-2)</td>
+              <td class="text-green">E4M3 (fractional)</td>
+            </tr>
+            <tr>
+              <td>Second-level</td>
+              <td>None</td>
+              <td class="text-green">FP32 per-tensor</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="quiz">
+          <div class="quiz-q">
+            Why does NVFP4 use E4M3 scales instead of E8M0?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>E4M3 has more bits</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span
+                >E4M3 enables fractional scaling (not just powers of 2)</span
+              >
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>E4M3 is faster</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <section class="section" id="attention">
+        <div class="section__head">
+          <div class="section__num bg-cyan">06</div>
+          <div>
+            <h2>Attention & KV Cache</h2>
+            <p class="mb-0 text-muted">The memory bottleneck</p>
+          </div>
+        </div>
+
+        <h3>Attention Computation</h3>
+        <pre><code>scores = Q @ K.T / sqrt(d)  # [seq, seq] ← THE PROBLEM
+weights = softmax(scores)
+output = weights @ V</code></pre>
+
+        <div class="callout warn">
+          <div class="callout-title">⚠️ Quadratic Problem</div>
+          <p class="mb-0">
+            Attention matrix is [seq × seq]. At 128K context:
+            <strong>16 billion elements per head</strong>. Can't materialize →
+            FlashAttention.
+          </p>
+        </div>
+
+        <h3>KV Cache</h3>
+        <p>
+          Store K, V for previous tokens. New token: compute only its K, V. O(N)
+          vs O(N²).
+        </p>
+
+        <div class="insight">
+          <div class="insight-icon">💾</div>
+          <div>
+            <h4>The Bottleneck</h4>
+            <p>
+              KV cache grows linearly. 70B @ 128K = <strong>tens of GB</strong>.
+              Decode becomes memory-bandwidth bound.
+            </p>
+          </div>
+        </div>
+
+        <h3>Mixed Precision KV Cache</h3>
+        <p>Not all components equally sensitive:</p>
+
+        <div class="grid grid-2">
+          <div
+            class="card"
+            style="margin: 0; border-top: 4px solid var(--accent-red)"
+          >
+            <h4>K: High Sensitivity</h4>
+            <p>
+              Directly affects Q·K<sup>T</sup> scores. Softmax amplifies errors.
+            </p>
+            <p class="text-blue mb-0"><strong>→ Keep at FP8</strong></p>
+          </div>
+          <div
+            class="card"
+            style="margin: 0; border-top: 4px solid var(--accent-green)"
+          >
+            <h4>V: Lower Sensitivity</h4>
+            <p>
+              Gets averaged: output = Σ(a<sub>i</sub>·v<sub>i</sub>). Errors
+              partially cancel.
+            </p>
+            <p class="text-green mb-0"><strong>→ Can use NVFP4</strong></p>
+          </div>
+        </div>
+
+        <div class="table-wrap mt-lg">
+          <table>
+            <tr>
+              <th>Scheme</th>
+              <th>K</th>
+              <th>V</th>
+              <th>vs FP16</th>
+            </tr>
+            <tr>
+              <td>Baseline</td>
+              <td>FP16</td>
+              <td>FP16</td>
+              <td>1.0×</td>
+            </tr>
+            <tr>
+              <td>FP8 KV</td>
+              <td>FP8</td>
+              <td>FP8</td>
+              <td>2.0×</td>
+            </tr>
+            <tr style="background: var(--glow-green)">
+              <td><strong>Mixed (target)</strong></td>
+              <td>FP8</td>
+              <td>NVFP4</td>
+              <td class="text-green"><strong>~2.6×</strong></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="insight mt-lg">
+          <div class="insight-icon">🎯</div>
+          <div>
+            <h4>Your Kernel Target</h4>
+            <p>
+              FP8 K + NVFP4 V: <strong>2.6× memory reduction</strong> with
+              quality preserved. This is what you'll build.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     WEEK 1
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="w1-overview">
+        <div class="section__head">
+          <div class="section__num bg-green">W1</div>
+          <div>
+            <h2>Week 1: CuTe DSL Crash Course</h2>
+            <p class="mb-0 text-muted">From zero to NVFP4 kernel</p>
+          </div>
+        </div>
+
+        <p>
+          Seven days from basic CuTe concepts to a working NVFP4 quantization
+          kernel.
+        </p>
+
+        <div class="callout info">
+          <div class="callout-title">⏰ Daily Rhythm</div>
+          <p class="mb-0">
+            9-11: Reading • 11-12: Design • 13-17: Implementation • 17-18:
+            Profile • 18-18:30: Notes
+          </p>
+        </div>
+
+        <div id="day1" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">1</div>
+            <div>
+              <div class="sched-title">Layouts: The Core Abstraction</div>
+              <div class="sched-sub">Shape, stride, index math</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">Read CuTe Layout Docs</div>
+                <p>
+                  01_layout.html, 02_layout_algebra.html — Shape and Stride as
+                  first-class objects
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">Hands-on Manipulation</div>
+                <p>
+                  Create row/col major layouts, tile 1024×1024 matrix, verify
+                  index math
+                </p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                Script creating 5 layouts, printing shapes/strides, verifying
+                index math for test coordinates.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day2" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">2</div>
+            <div>
+              <div class="sched-title">First Kernels</div>
+              <div class="sched-sub">@jit, @kernel decorators</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">DSL Introduction</div>
+                <p>
+                  dsl_introduction.html, dsl_code_generation.html,
+                  dsl_control_flow.html
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">Implement Kernels</div>
+                <p>
+                  1) Vector add, 2) Naive transpose, 3) SMEM transpose with bank
+                  conflict handling
+                </p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                All three kernels working, verified vs NumPy. Profile with
+                Nsight Compute.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day3" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">3</div>
+            <div>
+              <div class="sched-title">Tensors & TMA</div>
+              <div class="sched-sub">make_tensor, partitioning, async</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">Tensor Abstraction</div>
+                <p>
+                  03_tensor.html, 0z_tma_tensors.html — gmem → smem → rmem flow
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">TMA Copy Kernel</div>
+                <p>2D tile copy using TMA. Compare bandwidth vs naive.</p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                TMA copy kernel showing significant bandwidth improvement.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day4" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">4</div>
+            <div>
+              <div class="sched-title">MMA Operations</div>
+              <div class="sched-sub">Tensor Core fundamentals, GEMM</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">MMA Atom Docs</div>
+                <p>
+                  0t_mma_atom.html, 0x_gemm_tutorial.html,
+                  blackwell_functionality.html
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">Simple GEMM</div>
+                <p>
+                  C = A @ B using warpgroup MMA. Single tile, no pipelining.
+                </p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                Working GEMM for 256×256×256. Verify vs torch.matmul.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day5" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">5</div>
+            <div>
+              <div class="sched-title">Pipelined GEMM</div>
+              <div class="sched-sub">Producer-consumer, async overlap</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">Pipeline Docs</div>
+                <p>pipeline.html, CUTLASS examples — stages and barriers</p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">Add Pipelining</div>
+                <p>Multi-stage: TMA loads while MMA computes.</p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                Pipelined GEMM with measurable speedup. Profile to verify
+                overlap.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day6" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">6</div>
+            <div>
+              <div class="sched-title">Quantization Primitives</div>
+              <div class="sched-sub">FP8, FP4, NVFP4</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">Numerics Deep Dive</div>
+                <p>
+                  Study E4M3, E2M1. Write Python reference for NVFP4
+                  quantize/dequantize.
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">Quantization Kernels</div>
+                <p>
+                  quantize_to_nvfp4 and dequantize_from_nvfp4 with block
+                  scaling.
+                </p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                Round-trip test (FP16→NVFP4→FP16). Plot error histogram.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="day7" class="sched-day">
+          <div class="sched-head">
+            <div class="sched-num bg-green">7</div>
+            <div>
+              <div class="sched-title">Integration: V Cache Kernel</div>
+              <div class="sched-sub">Putting it together</div>
+            </div>
+            <svg
+              class="sched-chev"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="sched-body">
+            <div class="sched-task">
+              <div class="sched-time">Morning</div>
+              <div>
+                <div class="sched-task-title">Architecture Design</div>
+                <p>
+                  Memory layout for K (FP8), V (NVFP4). Fusion opportunities.
+                  Block/grid dims.
+                </p>
+              </div>
+            </div>
+            <div class="sched-task">
+              <div class="sched-time">Afternoon</div>
+              <div>
+                <div class="sched-task-title">V Projection + NVFP4</div>
+                <p>Fused: hidden @ W_v → quantize → store to V_cache.</p>
+              </div>
+            </div>
+            <div class="card mt-lg">
+              <h4>📋 Deliverable</h4>
+              <p class="mb-0">
+                Working V projection + NVFP4 storage. Verify: V_reconstructed ≈
+                V_ref (atol=0.1).
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     WEEK 2
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="w2-cutlass">
+        <div class="section__head">
+          <div class="section__num bg-purple">W2</div>
+          <div>
+            <h2>Week 2: Tensor Cores & CuTe Deep Dive</h2>
+            <p class="mb-0 text-muted">Mastering the abstractions</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>📚 Reading Focus</h4>
+          <ul>
+            <li>
+              <strong>CUTLASS:</strong> "Efficient GEMM in CUDA" — the canonical
+              reference
+            </li>
+            <li>
+              <strong>CuTe tutorials:</strong> 01_layout through
+              0x_gemm_tutorial (all)
+            </li>
+            <li>
+              <strong>Paper:</strong> "Dissecting the NVIDIA Volta GPU
+              Architecture via Microbenchmarking" (Jia et al.)
+            </li>
+          </ul>
+        </div>
+
+        <h3 id="w2-cute">Key CuTe Tutorials</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Tutorial</th>
+              <th>Concepts</th>
+              <th>Why</th>
+            </tr>
+            <tr>
+              <td>01_layout</td>
+              <td>Shape, Stride, coalesce</td>
+              <td>Foundation for everything</td>
+            </tr>
+            <tr>
+              <td>02_layout_algebra</td>
+              <td>Composition, complement</td>
+              <td>Advanced tiling</td>
+            </tr>
+            <tr>
+              <td>03_tensor</td>
+              <td>make_tensor, partitioning</td>
+              <td>Data distribution</td>
+            </tr>
+            <tr>
+              <td>0t_mma_atom</td>
+              <td>Hardware MMA shapes</td>
+              <td>TC constraints</td>
+            </tr>
+            <tr>
+              <td>0x_gemm_tutorial</td>
+              <td>Full GEMM</td>
+              <td>Everything together</td>
+            </tr>
+          </table>
+        </div>
+
+        <h3 id="w2-bench">Microbenchmarking</h3>
+        <div class="card">
+          <h4>🔬 Experiments</h4>
+          <ol>
+            <li>Measure actual SMEM bandwidth vs theoretical</li>
+            <li>Quantify bank conflict penalty (1-way vs 32-way)</li>
+            <li>TMA latency vs manual loads for various tile sizes</li>
+            <li>Warpgroup MMA throughput at different occupancies</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     WEEK 3
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="w3-papers">
+        <div class="section__head">
+          <div class="section__num bg-orange">W3</div>
+          <div>
+            <h2>Week 3: Quantization & LLM Inference</h2>
+            <p class="mb-0 text-muted">State-of-the-art techniques</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>📄 Papers to Read</h4>
+          <ul>
+            <li>
+              <strong>LLM.int8():</strong> 8-bit Matrix Multiplication — outlier
+              handling
+            </li>
+            <li>
+              <strong>SmoothQuant:</strong> Migrate quantization difficulty from
+              activations to weights
+            </li>
+            <li>
+              <strong>AWQ:</strong> Activation-aware Weight Quantization —
+              sensitivity analysis
+            </li>
+            <li>
+              <strong>FlashAttention 1 & 2:</strong> IO-aware attention
+              algorithms
+            </li>
+          </ul>
+        </div>
+
+        <h3>Key Insights</h3>
+
+        <div class="grid grid-2">
+          <div class="card" style="margin: 0">
+            <h4 class="text-blue">LLM.int8()</h4>
+            <p class="mb-0">
+              Emergent outliers in activations break naive INT8. Solution:
+              mixed-precision decomposition, handle outliers in FP16.
+            </p>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4 class="text-green">SmoothQuant</h4>
+            <p class="mb-0">
+              Activations hard to quantize (outliers), weights easy.
+              Mathematically migrate difficulty: Y = (X/s) · (sW).
+            </p>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4 class="text-purple">AWQ</h4>
+            <p class="mb-0">
+              Not all weights equal. Protect salient weights (those that
+              multiply large activations) with per-channel scaling.
+            </p>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4 class="text-cyan">FlashAttention</h4>
+            <p class="mb-0">
+              Never materialize [seq×seq]. Tile computation, online softmax,
+              recompute on backward. IO-aware.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     WEEK 4
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="w4-trtllm">
+        <div class="section__head">
+          <div class="section__num bg-cyan">W4</div>
+          <div>
+            <h2>Week 4: Systems Integration</h2>
+            <p class="mb-0 text-muted">Production deployment</p>
+          </div>
+        </div>
+
+        <h3>TensorRT-LLM</h3>
+        <p>NVIDIA's optimized inference engine. Study:</p>
+        <ul>
+          <li>Plugin architecture for custom kernels</li>
+          <li>Existing FP8 KV cache implementation</li>
+          <li>How quantization configs flow through</li>
+        </ul>
+
+        <h3>vLLM Architecture</h3>
+        <p>PagedAttention pioneer. Study:</p>
+        <ul>
+          <li>Block-based KV cache management</li>
+          <li>Continuous batching scheduler</li>
+          <li>Early NVFP4 support integration points</li>
+        </ul>
+
+        <h3 id="w4-project">Final Project: Mixed Precision KV Cache</h3>
+
+        <div class="card">
+          <h4>🎯 Deliverable</h4>
+          <p>
+            Full attention kernel with mixed K(FP8)/V(NVFP4), benchmarked
+            against TensorRT-LLM FP8 baseline.
+          </p>
+          <ol>
+            <li>
+              <strong>Correctness:</strong> Output matches FP16 reference
+              (reasonable tolerance)
+            </li>
+            <li>
+              <strong>Performance:</strong> Memory reduction measured,
+              throughput compared
+            </li>
+            <li>
+              <strong>Quality:</strong> Perplexity/accuracy on standard
+              benchmarks
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
+     RESOURCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="reading">
+        <div class="section__head">
+          <div class="section__num bg-pink">R</div>
+          <div>
+            <h2>Reading List</h2>
+            <p class="mb-0 text-muted">Ordered by week</p>
+          </div>
+        </div>
+
+        <h3>Week 1: GPU Fundamentals</h3>
+        <div class="resources">
+          <a
+            href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/"
+            class="res-link"
+            target="_blank"
+            ><h4>CUDA Programming Guide →</h4>
+            <p>Chapters 1-5</p></a
+          >
+          <a
+            href="https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/overview.html"
+            class="res-link"
+            target="_blank"
+            ><h4>CuTe DSL Docs →</h4>
+            <p>Official documentation</p></a
+          >
+          <a
+            href="https://github.com/NVIDIA/cutlass"
+            class="res-link"
+            target="_blank"
+            ><h4>CUTLASS GitHub →</h4>
+            <p>Examples and source</p></a
+          >
+        </div>
+
+        <h3>Week 2: Tensor Cores & CuTe</h3>
+        <div class="resources">
+          <a
+            href="https://docs.nvidia.com/cutlass/latest/media/docs/cpp/cute/index.html"
+            class="res-link"
+            target="_blank"
+            ><h4>CuTe C++ Docs →</h4>
+            <p>Concepts apply to DSL</p></a
+          >
+          <a
+            href="https://arxiv.org/abs/1804.06826"
+            class="res-link"
+            target="_blank"
+            ><h4>Volta Microbenchmarking →</h4>
+            <p>Jia et al. paper</p></a
+          >
+        </div>
+
+        <h3>Week 3: Quantization</h3>
+        <div class="resources">
+          <a
+            href="https://arxiv.org/abs/2208.07339"
+            class="res-link"
+            target="_blank"
+            ><h4>LLM.int8() →</h4>
+            <p>Dettmers et al.</p></a
+          >
+          <a
+            href="https://arxiv.org/abs/2211.10438"
+            class="res-link"
+            target="_blank"
+            ><h4>SmoothQuant →</h4>
+            <p>Xiao et al.</p></a
+          >
+          <a
+            href="https://arxiv.org/abs/2306.00978"
+            class="res-link"
+            target="_blank"
+            ><h4>AWQ →</h4>
+            <p>Lin et al.</p></a
+          >
+          <a
+            href="https://arxiv.org/abs/2205.14135"
+            class="res-link"
+            target="_blank"
+            ><h4>FlashAttention →</h4>
+            <p>Dao et al.</p></a
+          >
+        </div>
+
+        <h3>Week 4: Systems</h3>
+        <div class="resources">
+          <a
+            href="https://github.com/NVIDIA/TensorRT-LLM"
+            class="res-link"
+            target="_blank"
+            ><h4>TensorRT-LLM →</h4>
+            <p>Source code</p></a
+          >
+          <a
+            href="https://github.com/vllm-project/vllm"
+            class="res-link"
+            target="_blank"
+            ><h4>vLLM →</h4>
+            <p>Architecture docs</p></a
+          >
+          <a
+            href="https://arxiv.org/abs/2211.05102"
+            class="res-link"
+            target="_blank"
+            ><h4>Scaling Inference →</h4>
+            <p>Pope et al.</p></a
+          >
+        </div>
+      </section>
+
+      <section class="section" id="checklist">
+        <div class="section__head">
+          <div class="section__num bg-red">✓</div>
+          <div>
+            <h2>Knowledge Check</h2>
+            <p class="mb-0 text-muted">Can you answer these confidently?</p>
+          </div>
+        </div>
+
+        <ul class="checklist">
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >Why does coalesced memory access matter?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >What determines Tensor Core throughput vs memory
+              throughput?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >Why does block scaling reduce quantization error?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >Why is decode memory-bound while prefill is compute-bound?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >What does TMA buy you over manual loads?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >Why can V tolerate more quantization error than K?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >How does software pipelining hide memory latency?</span
+            >
+          </li>
+          <li class="check-item">
+            <div class="check-box" tabindex="0"></div>
+            <span class="check-text"
+              >What's the NVFP4 two-level scaling mechanism?</span
+            >
+          </li>
+        </ul>
+
+        <div class="complete-msg callout ok" style="display: none">
+          <div class="callout-title">🎉 Ready!</div>
+          <p class="mb-0">
+            You've internalized the foundations. Time to build that kernel.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="scripts/components.js"></script>
+  </body>
+</html>
