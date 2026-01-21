@@ -138,26 +138,6 @@ li { margin-bottom: 0.5rem; }
 .mt-lg { margin-top: var(--space-lg); }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Progress Bar
-   ───────────────────────────────────────────────────────────────────────────── */
-.progress-wrap {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-width);
-  right: 0;
-  height: 3px;
-  background: var(--bg-tertiary);
-  z-index: 50;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-  width: 0%;
-  transition: width 0.1s;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
    Mobile Button
    ───────────────────────────────────────────────────────────────────────────── */
 .mobile-btn {
@@ -1065,49 +1045,6 @@ tr:hover td { background: var(--bg-tertiary); }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Progress Check
-   ───────────────────────────────────────────────────────────────────────────── */
-.progress-check {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-top: var(--space-xl);
-  padding-top: var(--space-xl);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.progress-check__box {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.progress-check__box.completed {
-  background: var(--accent-green);
-  border-color: var(--accent-green);
-}
-
-.progress-check__box svg {
-  width: 14px;
-  height: 14px;
-  opacity: 0;
-}
-
-.progress-check__box.completed svg { opacity: 1; }
-
-.progress-check__label {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
    Canvas
    ───────────────────────────────────────────────────────────────────────────── */
 .canvas {
@@ -1182,7 +1119,6 @@ input[type="range"]::-webkit-slider-thumb {
   .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
   .sidebar.open { transform: translateX(0); }
   .main-content { margin-left: 0; padding: 4rem 1.5rem 3rem; }
-  .progress-wrap { left: 0; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .state-grid { grid-template-columns: 1fr; }
   .container { padding: var(--space-md); }
@@ -1320,67 +1256,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Checklist
-   ───────────────────────────────────────────────────────────────────────────── */
-.checklist {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-lg) 0;
-}
-
-.check-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-sm);
-  transition: all var(--transition-fast);
-}
-
-.check-item.done {
-  background: var(--glow-green);
-  border-color: var(--accent-green);
-}
-
-.check-box {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--text-muted);
-  border-radius: 6px;
-  cursor: pointer;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.check-box:hover { border-color: var(--accent-green); }
-
-.check-box.done {
-  background: var(--accent-green);
-  border-color: var(--accent-green);
-}
-
-.check-box.done::after {
-  content: '✓';
-  color: var(--bg-primary);
-  font-weight: bold;
-  font-size: 0.85rem;
-}
-
-.check-text {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.check-item.done .check-text { color: var(--accent-green); }
-
-/* ─────────────────────────────────────────────────────────────────────────────
    Course Quiz Style
    ───────────────────────────────────────────────────────────────────────────── */
 .quiz-q {
@@ -1440,9 +1315,3 @@ input[type="range"]::-webkit-slider-thumb {
 .quiz-fb.ok { background: var(--glow-green); color: var(--accent-green); }
 .quiz-fb.no { background: rgba(248,113,113,0.1); color: var(--accent-red); }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Completion Message
-   ───────────────────────────────────────────────────────────────────────────── */
-.complete-msg {
-  margin-top: var(--space-lg);
-}

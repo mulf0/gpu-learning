@@ -5,13 +5,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
-  initProgress();
   initSections();
   initHierarchy();
   initQuiz();
   initSliders();
   initSchedule();
-  initChecklist();
   initMemBars();
 });
 
@@ -47,22 +45,6 @@ function initNav() {
     
     sections.forEach(s => observer.observe(s));
   }
-}
-
-// ============================================
-// Progress Bar
-// ============================================
-function initProgress() {
-  const bar = document.getElementById('progress-bar');
-  if (!bar) return;
-  
-  const update = () => {
-    const h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-  };
-  
-  window.addEventListener('scroll', update, { passive: true });
-  update();
 }
 
 // ============================================
@@ -160,7 +142,7 @@ window.updatePipeline = (n) => {
   };
   const d = data[n] || data[2];
   const el = document.getElementById('pipe-info');
-  if (el) el.innerHTML = `<h4>${d.t}</h4><p><strong class="text-green">Pros:</strong> ${d.p}</p><p class="mb-0"><strong class="text-red">Cons:</strong> ${d.c}</p>`;
+  if (el) el.innerHTML = '<h4>' + d.t + '</h4><p><strong class="text-green">Pros:</strong> ' + d.p + '</p><p class="mb-0"><strong class="text-red">Cons:</strong> ' + d.c + '</p>';
 };
 
 // ============================================
@@ -170,29 +152,6 @@ function initSchedule() {
   document.querySelectorAll('.sched-head').forEach(head => {
     head.addEventListener('click', () => {
       head.closest('.sched-day').classList.toggle('open');
-    });
-  });
-}
-
-// ============================================
-// Checklist
-// ============================================
-function initChecklist() {
-  document.querySelectorAll('.check-box').forEach(box => {
-    box.addEventListener('click', () => {
-      box.classList.toggle('done');
-      box.closest('.check-item').classList.toggle('done');
-      
-      // Check completion
-      const list = box.closest('.checklist');
-      if (list) {
-        const all = list.querySelectorAll('.check-box');
-        const done = list.querySelectorAll('.check-box.done');
-        if (all.length === done.length) {
-          const msg = list.parentElement.querySelector('.complete-msg');
-          if (msg) msg.style.display = 'block';
-        }
-      }
     });
   });
 }
@@ -210,98 +169,6 @@ function initMemBars() {
   }, { threshold: 0.5 });
   
   document.querySelectorAll('.mem-bars').forEach(m => observer.observe(m));
-}
-
-// ============================================
-// Storage Utilities
-// ============================================
-const Storage = {
-  get(key, defaultValue = null) {
-    try {
-      const item = localStorage.getItem(`gpu-learning-${key}`);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  },
-  
-  set(key, value) {
-    try {
-      localStorage.setItem(`gpu-learning-${key}`, JSON.stringify(value));
-    } catch {
-      console.warn('localStorage unavailable');
-    }
-  }
-};
-
-// ============================================
-// Progress Tracking for Lessons
-// ============================================
-class ProgressTracker {
-  constructor(lessonId) {
-    this.lessonId = lessonId;
-    this.completed = new Set(Storage.get(`progress-${lessonId}`, []));
-    this.init();
-  }
-  
-  init() {
-    this.updateUI();
-    
-    document.querySelectorAll('.progress__check, .progress-check__box').forEach(check => {
-      check.addEventListener('click', () => this.toggle(check.dataset.section));
-    });
-    
-    document.querySelectorAll('.nav__dot').forEach(dot => {
-      dot.addEventListener('click', () => {
-        const section = dot.dataset.section;
-        document.getElementById(`section-${section}`)?.scrollIntoView({ behavior: 'smooth' });
-      });
-    });
-  }
-  
-  toggle(sectionId) {
-    if (this.completed.has(sectionId)) {
-      this.completed.delete(sectionId);
-    } else {
-      this.completed.add(sectionId);
-    }
-    this.save();
-    this.updateUI();
-  }
-  
-  save() {
-    Storage.set(`progress-${this.lessonId}`, [...this.completed]);
-  }
-  
-  updateUI() {
-    document.querySelectorAll('.progress__check, .progress-check__box').forEach(check => {
-      const section = check.dataset.section;
-      const isCompleted = this.completed.has(section);
-      check.classList.toggle('progress__check--completed', isCompleted);
-      check.classList.toggle('completed', isCompleted);
-    });
-    
-    document.querySelectorAll('.nav__dot').forEach(dot => {
-      const section = dot.dataset.section;
-      dot.classList.toggle('nav__dot--completed', this.completed.has(section));
-    });
-  }
-  
-  observeSections() {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id.replace('section-', '');
-          document.querySelectorAll('.nav__dot').forEach(d => d.classList.remove('nav__dot--active'));
-          document.querySelector(`.nav__dot[data-section="${sectionId}"]`)?.classList.add('nav__dot--active');
-        }
-      });
-    }, { threshold: 0.3 });
-
-    document.querySelectorAll('.section[id^="section-"]').forEach(section => {
-      observer.observe(section);
-    });
-  }
 }
 
 // ============================================
@@ -371,7 +238,7 @@ class SoftmaxViz {
     probs.forEach((p, i) => {
       const bar = document.getElementById(this.barIds[i]);
       const value = document.getElementById(this.valueIds[i]);
-      if (bar) bar.style.height = `${p * 130}px`;
+      if (bar) bar.style.height = (p * 130) + 'px';
       if (value) value.textContent = p.toFixed(3);
     });
     
@@ -477,13 +344,13 @@ class OnlineSoftmaxSim {
     
     if (oldMax !== -Infinity && m_block > oldMax) {
       this.insightEl.textContent = 
-        `New max found (${m_block.toFixed(1)} > ${oldMax.toFixed(1)})! Old accumulator rescaled by exp(${oldMax.toFixed(1)} - ${m_new.toFixed(1)}) = ${Math.exp(oldMax - m_new).toFixed(4)}`;
+        'New max found (' + m_block.toFixed(1) + ' > ' + oldMax.toFixed(1) + ')! Old accumulator rescaled by exp(' + oldMax.toFixed(1) + ' - ' + m_new.toFixed(1) + ') = ' + Math.exp(oldMax - m_new).toFixed(4);
     } else if (oldMax === -Infinity) {
       this.insightEl.textContent = 
-        `First block processed. Max = ${m_new.toFixed(2)}, Sum of exp = ${l_new.toFixed(2)}`;
+        'First block processed. Max = ' + m_new.toFixed(2) + ', Sum of exp = ' + l_new.toFixed(2);
     } else {
       this.insightEl.textContent = 
-        `Block max (${m_block.toFixed(1)}) ≤ current max (${m_new.toFixed(1)}). No rescaling needed, just accumulate.`;
+        'Block max (' + m_block.toFixed(1) + ') ≤ current max (' + m_new.toFixed(1) + '). No rescaling needed, just accumulate.';
     }
   }
 }
@@ -512,8 +379,6 @@ class FPBitToggle {
 // Export for use
 // ============================================
 window.GPULearning = {
-  Storage,
-  ProgressTracker,
   LiveComputation,
   SoftmaxViz,
   OnlineSoftmaxSim,

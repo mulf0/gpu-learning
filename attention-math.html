@@ -44,31 +44,6 @@
         letter-spacing: 0.05em;
       }
 
-      .lesson-nav__progress {
-        display: flex;
-        gap: var(--space-sm);
-      }
-
-      .lesson-nav__dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border-subtle);
-        cursor: pointer;
-        transition: all var(--transition-normal);
-      }
-
-      .lesson-nav__dot--completed {
-        background: var(--accent-green);
-        border-color: var(--accent-green);
-      }
-
-      .lesson-nav__dot--active {
-        border-color: var(--accent-blue);
-        box-shadow: 0 0 12px var(--glow-blue);
-      }
-
       .lesson-container {
         max-width: 800px;
         margin: 0 auto;
@@ -99,32 +74,9 @@
     <!-- Navigation -->
     <nav class="lesson-nav">
       <div class="lesson-nav__inner">
-        <a href="../index.html" class="lesson-nav__title"
-          >← ATTENTION MATH FOUNDATIONS</a
+        <a href="index.html" class="lesson-nav__title"
+          >← COURSE INDEX</a
         >
-        <div class="lesson-nav__progress">
-          <div
-            class="lesson-nav__dot lesson-nav__dot--active"
-            data-section="0"
-            title="Dot Product"
-          ></div>
-          <div class="lesson-nav__dot" data-section="1" title="Softmax"></div>
-          <div
-            class="lesson-nav__dot"
-            data-section="2"
-            title="Online Softmax"
-          ></div>
-          <div
-            class="lesson-nav__dot"
-            data-section="3"
-            title="FP Formats"
-          ></div>
-          <div
-            class="lesson-nav__dot"
-            data-section="4"
-            title="Full Attention"
-          ></div>
-        </div>
       </div>
     </nav>
 
@@ -248,22 +200,9 @@
         <p>
           In attention, you compute Q·K for <strong>every cached token</strong>.
           With a 4096-token context, that's 4096 dot products just to process
-          one query. This is why attention is the bottleneck.
+          one query. This is why <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">attention is the bottleneck</a>.
         </p>
 
-        <div class="progress-check">
-          <div class="progress-check__box" data-section="0">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="3"
-            >
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <span class="progress-check__label">Mark as understood</span>
-        </div>
       </section>
 
       <!-- Section 2: Softmax -->
@@ -403,23 +342,10 @@
 
         <p>
           <strong>The problem:</strong> exp(100) = 2.7 × 10<sup>43</sup>. That
-          overflows FP16 (max ≈ 65504). Your kernel crashes. This is why we need
+          overflows <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener">FP16 (max ≈ 65504)</a>. Your kernel crashes. This is why we need
           the numerical stability trick.
         </p>
 
-        <div class="progress-check">
-          <div class="progress-check__box" data-section="1">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="3"
-            >
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <span class="progress-check__label">Mark as understood</span>
-        </div>
       </section>
 
       <!-- Section 3: Online Softmax -->
@@ -460,7 +386,7 @@
             style="margin-bottom: var(--space-lg)"
           >
             Watch how the algorithm maintains running statistics as new values
-            stream in. This is how FlashAttention processes attention in blocks.
+            stream in. This is how <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a> processes attention in blocks.
           </p>
 
           <div class="flex gap-md" style="margin-bottom: var(--space-lg)">
@@ -520,19 +446,6 @@
     
     <span style="color: var(--accent-purple)">return</span> m_new, l_new</code></pre>
 
-        <div class="progress-check">
-          <div class="progress-check__box" data-section="2">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="3"
-            >
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <span class="progress-check__label">Mark as understood</span>
-        </div>
       </section>
 
       <!-- Section 4: Floating Point Formats -->
@@ -552,7 +465,7 @@
           <div class="fp-formats">
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP16 (Half Precision)</span
+                <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener" class="fp-name">FP16 (Half Precision)</a
                 ><span class="fp-range">±65,504</span>
               </div>
               <div class="fp-bits">
@@ -563,7 +476,7 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP8 E4M3 (KV cache)</span
+                <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener" class="fp-name">FP8 E4M3 (KV cache)</a
                 ><span class="fp-range">±448</span>
               </div>
               <div class="fp-bits">
@@ -574,7 +487,7 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">NVFP4 E2M1 (Blackwell)</span
+                <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener" class="fp-name">NVFP4 E2M1 (Blackwell)</a
                 ><span class="fp-range">±6</span>
               </div>
               <div class="fp-bits">
@@ -627,8 +540,7 @@
         <p>
           <strong>Why NVFP4 works:</strong> Neural network values cluster
           tightly. A per-block scaling factor (stored in FP8) shifts the
-          representable range to where your values actually are. You get 4×
-          memory reduction vs FP16 with ~1% accuracy loss.
+          representable range to where your values actually are. You get <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">4× memory reduction vs FP16 with ~1% accuracy loss</a>.
         </p>
 
         <div class="quiz" id="fp-quiz">
@@ -657,19 +569,6 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="progress-check">
-          <div class="progress-check__box" data-section="3">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="3"
-            >
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <span class="progress-check__label">Mark as understood</span>
-        </div>
       </section>
 
       <!-- Section 5: Full Attention -->
@@ -683,10 +582,10 @@
         </p>
 
         <div class="equation">
-          Attention(Q, K, V) = softmax(<span class="equation__highlight"
+          <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener" style="text-decoration: none; color: inherit;">Attention(Q, K, V) = softmax(<span class="equation__highlight"
             >QK<sup>T</sup></span
           >
-          / √d) · V
+          / √d) · V</a>
         </div>
 
         <div class="card">
@@ -733,24 +632,11 @@
           5. Output final attention result
         </p>
         <p>
-          The bottleneck is <strong>memory bandwidth</strong>—loading all those
+          The bottleneck is <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener"><strong>memory bandwidth</strong></a>—loading all those
           K and V vectors from HBM. FP8/NVFP4 quantization halves or quarters
           that traffic.
         </p>
 
-        <div class="progress-check">
-          <div class="progress-check__box" data-section="4">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="3"
-            >
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <span class="progress-check__label">Mark as understood</span>
-        </div>
       </section>
 
       <!-- Completion -->
@@ -762,24 +648,153 @@
         <h2 class="section__title">Ready for Implementation</h2>
         <p style="max-width: 500px; margin: 0 auto var(--space-xl)">
           You now have the mathematical foundation. Next: profile TRT-LLM's
-          stock attention, read FlashAttention-2 Section 3, and start writing
+          stock attention, read <a href="https://arxiv.org/abs/2307.08691" target="_blank" rel="noopener">FlashAttention-2 Section 3</a>, and start writing
           your first Triton kernel.
         </p>
-        <a href="../index.html" class="btn btn--primary">Back to Dashboard</a>
+        <a href="index.html" class="btn btn--primary">Back to Course Index</a>
         <a
-          href="../course.html"
+          href="kernel-course.html"
           class="btn"
           style="margin-left: var(--space-sm)"
           >View Full Course</a
         >
       </section>
+
+      <!-- References -->
+      <section class="section" id="references">
+        <div class="section__number">REFERENCES</div>
+        <h2 class="section__title">Citations & Further Reading</h2>
+
+        <!-- Video Resources -->
+        <div class="card">
+          <h4>Video Resources</h4>
+          <p class="text-secondary text-small" style="margin-bottom: var(--space-md);">
+            Visual explanations of attention mechanisms and transformers.
+          </p>
+          
+          <div style="margin-bottom: var(--space-lg);">
+            <strong>Attention in Transformers (3Blue1Brown)</strong>
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
+              Outstanding visual explanation of attention, QKV, and the transformer architecture.
+            </p>
+            <a href="https://www.youtube.com/watch?v=eMlx5fFNoYc" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+              Watch on YouTube
+            </a>
+          </div>
+
+          <div style="margin-bottom: var(--space-lg);">
+            <strong>Let's Build GPT: From Scratch (Andrej Karpathy)</strong>
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
+              Build a transformer from scratch with detailed attention implementation.
+            </p>
+            <a href="https://www.youtube.com/watch?v=kCc8FmEb1nY" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+              Watch on YouTube
+            </a>
+          </div>
+
+          <div style="margin-bottom: var(--space-md);">
+            <strong>FlashAttention Explained (Yannic Kilcher)</strong>
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
+              Technical paper walkthrough of FlashAttention algorithm and IO-awareness.
+            </p>
+            <a href="https://www.youtube.com/watch?v=gMOAud7hZg4" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+              Watch on YouTube
+            </a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Foundational Papers</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Attention Is All You Need</strong> - Vaswani et al., NeurIPS 2017<br>
+              The original transformer architecture paper. Defines scaled dot-product attention: Attention(Q,K,V) = softmax(QK^T / sqrt(d)) V<br>
+              <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1706.03762</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</strong> - Dao et al., NeurIPS 2022<br>
+              Introduces tiled attention with online softmax, reducing memory from O(N^2) to O(N)<br>
+              <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2205.14135</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning</strong> - Dao, 2023<br>
+              Improved parallelization achieving 2x speedup over FlashAttention-1<br>
+              <a href="https://arxiv.org/abs/2307.08691" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2307.08691</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>FlashAttention-3: Fast and Accurate Attention with Asynchrony and Low-precision</strong> - Shah et al., 2024<br>
+              Hopper-optimized attention with TMA and FP8 support<br>
+              <a href="https://arxiv.org/abs/2407.08608" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2407.08608</a>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Floating Point Standards & Specifications</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>IEEE 754-2019</strong> - Standard for Floating-Point Arithmetic<br>
+              Defines FP32 (binary32) and FP16 (binary16) formats. FP16 max value: 65504<br>
+              <a href="https://ieeexplore.ieee.org/document/8766229" target="_blank" rel="noopener" style="color: var(--accent-blue);">IEEE 754-2019</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>FP8 Formats for Deep Learning</strong> - Micikevicius et al., 2022<br>
+              Defines E4M3 (max: 448) and E5M2 (max: 57344) formats. Joint NVIDIA/ARM/Intel specification.<br>
+              <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2209.05433</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>OCP Microscaling (MX) Formats Specification v1.0</strong> - Open Compute Project, 2023<br>
+              Defines MXFP4, MXFP6, MXFP8 with block scaling (32 elements per block)<br>
+              <a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank" rel="noopener" style="color: var(--accent-blue);">OCP MX Specification (PDF)</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>NVIDIA Blackwell Architecture - NVFP4</strong><br>
+              NVIDIA's FP4 format with 16-element blocks and E4M3 scaling factors<br>
+              <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener" style="color: var(--accent-blue);">nvidia.com/blackwell-architecture</a>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Key Facts with Sources</h4>
+          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="text-align: left; padding: var(--space-sm);">Fact</th>
+              <th style="text-align: left; padding: var(--space-sm);">Value</th>
+              <th style="text-align: left; padding: var(--space-sm);">Source</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">Attention formula</td>
+              <td style="padding: var(--space-sm);">softmax(QK^T/sqrt(d))V</td>
+              <td style="padding: var(--space-sm);"><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Vaswani et al., 2017, Eq. 1</a></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP16 max value</td>
+              <td style="padding: var(--space-sm);">65504</td>
+              <td style="padding: var(--space-sm);"><a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener">IEEE 754-2019</a></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP8 E4M3 max value</td>
+              <td style="padding: var(--space-sm);">448</td>
+              <td style="padding: var(--space-sm);"><a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">Micikevicius et al., 2022</a></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FlashAttention memory</td>
+              <td style="padding: var(--space-sm);">O(N) not O(N^2)</td>
+              <td style="padding: var(--space-sm);"><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">Dao et al., 2022, Theorem 2</a></td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);">Online softmax</td>
+              <td style="padding: var(--space-sm);">Incremental max tracking</td>
+              <td style="padding: var(--space-sm);"><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">Dao et al., 2022, Section 3.1</a></td>
+            </tr>
+          </table>
+        </div>
+      </section>
     </div>
 
-    <script src="../scripts/components.js"></script>
+    <script src="scripts/components.js"></script>
     <script>
-      // Initialize progress tracking
-      const progress = new GPULearning.ProgressTracker("attention-math");
-
       // Dot Product Interactive
       new GPULearning.LiveComputation({
         inputs: ["q0", "q1", "q2", "q3", "k0", "k1", "k2", "k3"],

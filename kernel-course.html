@@ -14,9 +14,6 @@
   </head>
   <body class="has-sidebar">
     <a href="#main" class="skip-link">Skip to content</a>
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
 
     <button class="mobile-btn" aria-label="Menu">
       <svg
@@ -54,7 +51,7 @@
           </svg>
         </button>
         <div class="nav-items">
-          <a href="#gpu-arch" class="nav-item">GPU Architecture</a>
+          <a href="lessons/gpu-architecture.html" class="nav-item">GPU Architecture</a>
           <a href="#memory" class="nav-item">Memory Hierarchy</a>
           <a href="#tensor-cores" class="nav-item">Tensor Cores</a>
           <a href="#pipelining" class="nav-item">Software Pipelining</a>
@@ -196,106 +193,27 @@
 
         <p>
           Modern NVIDIA GPUs are hierarchical parallel processors designed for
-          <strong>throughput over latency</strong>.
+          <strong>throughput over latency</strong>. Understanding the execution
+          model is essential for writing efficient kernels.
         </p>
 
-        <div class="diagram">
-          <div class="diagram-title">Execution Hierarchy</div>
-          <div class="hierarchy">
-            <div class="hier-item" data-detail="d-gpu" tabindex="0">
-              <div class="hier-icon bg-blue">🎮</div>
-              <div class="hier-info">
-                <h5>GPU</h5>
-                <p>B200: 192 SMs, 192GB HBM3e, 8TB/s</p>
-              </div>
-            </div>
-            <div class="hier-detail" id="d-gpu">
-              Top-level device. What matters: <strong>SM count</strong> and
-              <strong>memory bandwidth</strong>.
-            </div>
-
-            <div class="hier-item" data-detail="d-sm" tabindex="0">
-              <div class="hier-icon bg-green">⚡</div>
-              <div class="hier-info">
-                <h5>Streaming Multiprocessor (SM)</h5>
-                <p>Fundamental execution unit</p>
-              </div>
-            </div>
-            <div class="hier-detail" id="d-sm">
-              Contains: warp schedulers, registers (~256KB), shared memory
-              (228KB), L1, CUDA cores, <strong>Tensor Cores</strong>.
-            </div>
-
-            <div class="hier-item" data-detail="d-warp" tabindex="0">
-              <div class="hier-icon bg-purple">🧵</div>
-              <div class="hier-info">
-                <h5>Warp</h5>
-                <p>32 threads in lockstep (SIMT)</p>
-              </div>
-            </div>
-            <div class="hier-detail" id="d-warp">
-              <strong>Atomic scheduling unit.</strong> All 32 threads execute
-              same instruction. Divergent branches serialize. Think in warps,
-              not threads.
-            </div>
-
-            <div class="hier-item" data-detail="d-wg" tabindex="0">
-              <div class="hier-icon bg-orange">🔗</div>
-              <div class="hier-info">
-                <h5>Warpgroup (Hopper+)</h5>
-                <p>4 warps (128 threads) for Tensor Core ops</p>
-              </div>
-            </div>
-            <div class="hier-detail" id="d-wg">
-              Modern Tensor Core ops work at warpgroup granularity. Enables
-              64×64+ tiles, async execution. What CuTe DSL uses for SM90+.
-            </div>
-          </div>
-        </div>
-
-        <div class="callout warn">
-          <div class="callout-title">⚠️ Warp Divergence</div>
-          <p class="mb-0">
-            If threads take different branches, execution serializes. 16 threads
-            per path = 50% throughput. Minimize divergence within warps.
+        <a href="lessons/gpu-architecture.html" class="card" style="display: block; text-decoration: none;">
+          <h4>GPU Architecture Interactive Lesson</h4>
+          <p>
+            Complete coverage of GPU execution hierarchy: SMs, warps, warpgroups, blocks, and grids.
+            Includes interactive visualizations for warp execution and an occupancy calculator.
           </p>
-        </div>
+          <p class="mb-0 text-blue"><strong>Start Lesson →</strong></p>
+        </a>
 
-        <h3>Blocks & Grids</h3>
-        <p>
-          <strong>Block</strong> (CTA): warps sharing resources + sync.
-          <strong>Grid</strong>: your problem decomposition into blocks.
-        </p>
-
-        <div class="card">
-          <h4>💡 Block Size Selection</h4>
+        <div class="callout info mt-lg">
+          <div class="callout-title">Key Concepts</div>
           <p class="mb-0">
-            Common: 128, 256, 512 threads. For Tensor Core: 128 (1 warpgroup).
-            Affects: SMEM/thread, register pressure, occupancy.
+            <strong>Warp:</strong> 32 threads in lockstep (SIMT) •
+            <strong>Warpgroup:</strong> 4 warps for Tensor Core ops •
+            <strong>Block:</strong> Warps sharing SMEM + sync •
+            <strong>Grid:</strong> Problem decomposition
           </p>
-        </div>
-
-        <div class="quiz">
-          <div class="quiz-q">A warp contains how many threads?</div>
-          <div class="quiz-opts">
-            <div class="quiz-opt" data-correct="false" tabindex="0">
-              <div class="quiz-mark"></div>
-              <span>16 threads</span>
-            </div>
-            <div class="quiz-opt" data-correct="true" tabindex="0">
-              <div class="quiz-mark"></div>
-              <span>32 threads</span>
-            </div>
-            <div class="quiz-opt" data-correct="false" tabindex="0">
-              <div class="quiz-mark"></div>
-              <span>64 threads</span>
-            </div>
-            <div class="quiz-opt" data-correct="false" tabindex="0">
-              <div class="quiz-mark"></div>
-              <span>128 threads (warpgroup)</span>
-            </div>
-          </div>
-          <div class="quiz-fb"></div>
         </div>
       </section>
 
@@ -314,7 +232,7 @@
         </p>
 
         <div class="diagram">
-          <div class="diagram-title">Latency & Bandwidth (Blackwell B200)</div>
+          <div class="diagram-title">Latency & Bandwidth (<a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell B200</a>)*</div>
           <div class="mem-bars">
             <div class="mem-bar">
               <div class="mem-bar-head">
@@ -333,7 +251,7 @@
               <div class="mem-bar-head">
                 <span class="mem-bar-label">Shared Memory</span
                 ><span class="mem-bar-stats"
-                  >228KB/SM • ~20 cycles • ~20 TB/s</span
+                  >228KB/SM • approx. 20 cycles • approx. 20 TB/s</span
                 >
               </div>
               <div class="mem-bar-track">
@@ -346,7 +264,7 @@
               <div class="mem-bar-head">
                 <span class="mem-bar-label">L2 Cache</span
                 ><span class="mem-bar-stats"
-                  >~60MB • ~200 cycles • ~10 TB/s</span
+                  >approx. 60MB • approx. 200 cycles • approx. 10 TB/s</span
                 >
               </div>
               <div class="mem-bar-track">
@@ -359,7 +277,7 @@
               <div class="mem-bar-head">
                 <span class="mem-bar-label">HBM (Global)</span
                 ><span class="mem-bar-stats"
-                  >192GB • ~400 cycles • ~8 TB/s</span
+                  >192GB • approx. 400 cycles • approx. 8 TB/s</span
                 >
               </div>
               <div class="mem-bar-track">
@@ -377,8 +295,8 @@
             <h4>The Fundamental Game</h4>
             <p>
               Every HBM trip = hundreds of cycles.
-              <strong>Maximize data reuse</strong> in registers/SMEM. Optimized
-              GEMM achieves >80% peak FLOPS.
+              <strong>Maximize data reuse</strong> in registers/SMEM. <a href="https://github.com/NVIDIA/cutlass" target="_blank" rel="noopener">Optimized
+              GEMM achieves >80% peak FLOPS</a>.
             </p>
           </div>
         </div>
@@ -397,7 +315,7 @@
           <div class="card" style="margin: 0">
             <h4>🏦 Bank Conflicts</h4>
             <p>
-              SMEM has 32 banks. Multiple threads hitting same bank (different
+              SMEM has <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener">32 banks</a>. Multiple threads hitting same bank (different
               addresses) serialize.
             </p>
             <pre><code>// Conflict: smem[tid * 4]
@@ -407,7 +325,7 @@
 
         <h3>TMA: Tensor Memory Accelerator</h3>
         <p>
-          Hopper+ dedicated hardware for bulk data movement. Offloads addressing
+          <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Hopper+ dedicated hardware</a> for bulk data movement. Offloads addressing
           from SMs.
         </p>
 
@@ -454,7 +372,7 @@
         <div class="callout info">
           <div class="callout-title">📐 Not Magic</div>
           <p class="mb-0">
-            Tensor Cores perform small matrix ops in one cycle. You must match
+            <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#wmma" target="_blank" rel="noopener">Tensor Cores</a> perform small matrix ops in one cycle. You must match
             supported dimensions and types.
           </p>
         </div>
@@ -465,43 +383,46 @@
             <tr>
               <th>Gen</th>
               <th>Arch</th>
-              <th>Shape</th>
+              <th>WMMA Shape (m×n×k)</th>
               <th>Types Added</th>
             </tr>
             <tr>
               <td>1st</td>
-              <td>Volta</td>
-              <td>4×4×4</td>
+              <td><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#wmma" target="_blank" rel="noopener">Volta</a></td>
+              <td>16×16×16</td>
               <td>FP16</td>
             </tr>
             <tr>
               <td>2nd</td>
-              <td>Turing</td>
-              <td>8×8×4</td>
+              <td><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#wmma" target="_blank" rel="noopener">Turing</a></td>
+              <td>16×16×16, 8×8×16</td>
               <td>INT8</td>
             </tr>
             <tr>
               <td>3rd</td>
-              <td>Ampere</td>
+              <td><a href="https://docs.nvidia.com/cuda/ampere-tuning-guide/index.html" target="_blank" rel="noopener">Ampere</a></td>
               <td>16×8×16</td>
               <td>BF16, TF32</td>
             </tr>
             <tr>
               <td>4th</td>
-              <td>Hopper</td>
-              <td>Warpgroup async</td>
+              <td><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Hopper</a></td>
+              <td>Warpgroup MMA (64×)</td>
               <td class="text-green">FP8</td>
             </tr>
             <tr>
               <td>5th</td>
-              <td>Blackwell</td>
+              <td><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell</a></td>
               <td>—</td>
               <td class="text-blue">FP4, FP6</td>
             </tr>
           </table>
         </div>
+        <p class="text-muted text-small">
+          Shapes shown are programmer-facing WMMA/MMA API dimensions. Hardware may use smaller internal tiles.
+        </p>
 
-        <h3>Warpgroup MMA (Hopper/Blackwell)</h3>
+        <h3><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Warpgroup MMA</a> (Hopper/Blackwell)</h3>
         <p>128 threads cooperate on larger tiles (64×64+). Benefits:</p>
         <div class="grid grid-3">
           <div class="card" style="margin: 0">
@@ -596,7 +517,7 @@
           <div class="fp-formats">
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP32 (32 bits)</span
+                <a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format" target="_blank" rel="noopener" class="fp-name">FP32 (32 bits)</a
                 ><span class="fp-range">±3.4×10³⁸</span>
               </div>
               <div class="fp-bits">
@@ -607,7 +528,7 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP16 (16 bits)</span
+                <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener" class="fp-name">FP16 (16 bits)</a
                 ><span class="fp-range">±65,504</span>
               </div>
               <div class="fp-bits">
@@ -618,7 +539,7 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP8 E4M3 (8 bits)</span
+                <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener" class="fp-name">FP8 E4M3 (8 bits)</a
                 ><span class="fp-range">±448</span>
               </div>
               <div class="fp-bits">
@@ -629,7 +550,7 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <span class="fp-name">FP4 E2M1 (4 bits)</span
+                <a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank" rel="noopener" class="fp-name">FP4 E2M1 (4 bits)</a
                 ><span class="fp-range">±6</span>
               </div>
               <div class="fp-bits">
@@ -648,7 +569,7 @@
 
         <h3>NVFP4 Deep Dive</h3>
         <p>
-          NVIDIA's Blackwell-native 4-bit format with
+          <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">NVIDIA's Blackwell-native 4-bit format</a> with
           <strong>two-level scaling</strong>:
         </p>
 
@@ -737,7 +658,7 @@ output = weights @ V</code></pre>
           <p class="mb-0">
             Attention matrix is [seq × seq]. At 128K context:
             <strong>16 billion elements per head</strong>. Can't materialize →
-            FlashAttention.
+            <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a>.
           </p>
         </div>
 
@@ -752,7 +673,7 @@ output = weights @ V</code></pre>
           <div>
             <h4>The Bottleneck</h4>
             <p>
-              KV cache grows linearly. 70B @ 128K = <strong>tens of GB</strong>.
+              <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">KV cache grows linearly</a>. 70B @ 128K = <strong>tens of GB</strong>.
               Decode becomes memory-bandwidth bound.
             </p>
           </div>
@@ -819,7 +740,7 @@ output = weights @ V</code></pre>
           <div>
             <h4>Your Kernel Target</h4>
             <p>
-              FP8 K + NVFP4 V: <strong>2.6× memory reduction</strong> with
+              FP8 K + NVFP4 V: <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener"><strong>2.6× memory reduction</strong></a> with
               quality preserved. This is what you'll build.
             </p>
           </div>
@@ -1211,8 +1132,8 @@ output = weights @ V</code></pre>
               0x_gemm_tutorial (all)
             </li>
             <li>
-              <strong>Paper:</strong> "Dissecting the NVIDIA Volta GPU
-              Architecture via Microbenchmarking" (Jia et al.)
+              <strong>Paper:</strong> <a href="https://arxiv.org/abs/1804.06826" target="_blank" rel="noopener">"Dissecting the NVIDIA Volta GPU
+              Architecture via Microbenchmarking"</a> (Jia et al.)
             </li>
           </ul>
         </div>
@@ -1282,19 +1203,19 @@ output = weights @ V</code></pre>
           <h4>📄 Papers to Read</h4>
           <ul>
             <li>
-              <strong>LLM.int8():</strong> 8-bit Matrix Multiplication — outlier
+              <a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener"><strong>LLM.int8():</strong></a> 8-bit Matrix Multiplication — outlier
               handling
             </li>
             <li>
-              <strong>SmoothQuant:</strong> Migrate quantization difficulty from
+              <a href="https://arxiv.org/abs/2211.10438" target="_blank" rel="noopener"><strong>SmoothQuant:</strong></a> Migrate quantization difficulty from
               activations to weights
             </li>
             <li>
-              <strong>AWQ:</strong> Activation-aware Weight Quantization —
+              <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener"><strong>AWQ:</strong></a> Activation-aware Weight Quantization —
               sensitivity analysis
             </li>
             <li>
-              <strong>FlashAttention 1 & 2:</strong> IO-aware attention
+              <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener"><strong>FlashAttention 1</strong></a> & <a href="https://arxiv.org/abs/2307.08691" target="_blank" rel="noopener"><strong>2:</strong></a> IO-aware attention
               algorithms
             </li>
           </ul>
@@ -1304,28 +1225,28 @@ output = weights @ V</code></pre>
 
         <div class="grid grid-2">
           <div class="card" style="margin: 0">
-            <h4 class="text-blue">LLM.int8()</h4>
+            <h4 class="text-blue"><a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">LLM.int8()</a></h4>
             <p class="mb-0">
               Emergent outliers in activations break naive INT8. Solution:
               mixed-precision decomposition, handle outliers in FP16.
             </p>
           </div>
           <div class="card" style="margin: 0">
-            <h4 class="text-green">SmoothQuant</h4>
+            <h4 class="text-green"><a href="https://arxiv.org/abs/2211.10438" target="_blank" rel="noopener">SmoothQuant</a></h4>
             <p class="mb-0">
               Activations hard to quantize (outliers), weights easy.
               Mathematically migrate difficulty: Y = (X/s) · (sW).
             </p>
           </div>
           <div class="card" style="margin: 0">
-            <h4 class="text-purple">AWQ</h4>
+            <h4 class="text-purple"><a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">AWQ</a></h4>
             <p class="mb-0">
               Not all weights equal. Protect salient weights (those that
               multiply large activations) with per-channel scaling.
             </p>
           </div>
           <div class="card" style="margin: 0">
-            <h4 class="text-cyan">FlashAttention</h4>
+            <h4 class="text-cyan"><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a></h4>
             <p class="mb-0">
               Never materialize [seq×seq]. Tile computation, online softmax,
               recompute on backward. IO-aware.
@@ -1407,6 +1328,7 @@ output = weights @ V</code></pre>
             href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>CUDA Programming Guide →</h4>
             <p>Chapters 1-5</p></a
           >
@@ -1414,6 +1336,7 @@ output = weights @ V</code></pre>
             href="https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/overview.html"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>CuTe DSL Docs →</h4>
             <p>Official documentation</p></a
           >
@@ -1421,6 +1344,7 @@ output = weights @ V</code></pre>
             href="https://github.com/NVIDIA/cutlass"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>CUTLASS GitHub →</h4>
             <p>Examples and source</p></a
           >
@@ -1432,6 +1356,7 @@ output = weights @ V</code></pre>
             href="https://docs.nvidia.com/cutlass/latest/media/docs/cpp/cute/index.html"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>CuTe C++ Docs →</h4>
             <p>Concepts apply to DSL</p></a
           >
@@ -1439,6 +1364,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/1804.06826"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>Volta Microbenchmarking →</h4>
             <p>Jia et al. paper</p></a
           >
@@ -1450,6 +1376,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/2208.07339"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>LLM.int8() →</h4>
             <p>Dettmers et al.</p></a
           >
@@ -1457,6 +1384,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/2211.10438"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>SmoothQuant →</h4>
             <p>Xiao et al.</p></a
           >
@@ -1464,6 +1392,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/2306.00978"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>AWQ →</h4>
             <p>Lin et al.</p></a
           >
@@ -1471,6 +1400,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/2205.14135"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>FlashAttention →</h4>
             <p>Dao et al.</p></a
           >
@@ -1482,6 +1412,7 @@ output = weights @ V</code></pre>
             href="https://github.com/NVIDIA/TensorRT-LLM"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>TensorRT-LLM →</h4>
             <p>Source code</p></a
           >
@@ -1489,6 +1420,7 @@ output = weights @ V</code></pre>
             href="https://github.com/vllm-project/vllm"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>vLLM →</h4>
             <p>Architecture docs</p></a
           >
@@ -1496,6 +1428,7 @@ output = weights @ V</code></pre>
             href="https://arxiv.org/abs/2211.05102"
             class="res-link"
             target="_blank"
+            rel="noopener"
             ><h4>Scaling Inference →</h4>
             <p>Pope et al.</p></a
           >
@@ -1504,69 +1437,281 @@ output = weights @ V</code></pre>
 
       <section class="section" id="checklist">
         <div class="section__head">
-          <div class="section__num bg-red">✓</div>
+          <div class="section__num bg-red">?</div>
           <div>
             <h2>Knowledge Check</h2>
             <p class="mb-0 text-muted">Can you answer these confidently?</p>
           </div>
         </div>
 
-        <ul class="checklist">
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >Why does coalesced memory access matter?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >What determines Tensor Core throughput vs memory
-              throughput?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >Why does block scaling reduce quantization error?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >Why is decode memory-bound while prefill is compute-bound?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >What does TMA buy you over manual loads?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >Why can V tolerate more quantization error than K?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >How does software pipelining hide memory latency?</span
-            >
-          </li>
-          <li class="check-item">
-            <div class="check-box" tabindex="0"></div>
-            <span class="check-text"
-              >What's the NVFP4 two-level scaling mechanism?</span
-            >
-          </li>
+        <ul>
+          <li>Why does coalesced memory access matter?</li>
+          <li>What determines Tensor Core throughput vs memory throughput?</li>
+          <li>Why does block scaling reduce quantization error?</li>
+          <li>Why is decode memory-bound while prefill is compute-bound?</li>
+          <li>What does TMA buy you over manual loads?</li>
+          <li>Why can V tolerate more quantization error than K?</li>
+          <li>How does software pipelining hide memory latency?</li>
+          <li>What's the NVFP4 two-level scaling mechanism?</li>
         </ul>
+      </section>
 
-        <div class="complete-msg callout ok" style="display: none">
-          <div class="callout-title">🎉 Ready!</div>
+      <!-- Technical References -->
+      <section class="section" id="technical-references">
+        <div class="section__head">
+          <div class="section__num bg-blue">R</div>
+          <div>
+            <h2>Technical References</h2>
+            <p class="mb-0 text-muted">Sources for specifications and claims</p>
+          </div>
+        </div>
+
+        <h3>Video Resources</h3>
+        <p>These videos provide excellent visual explanations of the concepts covered in this course:</p>
+
+        <div class="grid grid-2">
+          <div class="card" style="margin: 0">
+            <h4>CUDA Programming Course</h4>
+            <p>Comprehensive CUDA programming course covering GPU architecture and kernel development.</p>
+            <a href="https://www.youtube.com/watch?v=86FAWCzIe_4" target="_blank" rel="noopener" class="text-blue"><strong>Watch on YouTube (freeCodeCamp)</strong></a>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4>How to Profile CUDA Kernels in PyTorch</h4>
+            <p>Practical guide to profiling and optimizing CUDA kernels with Nsight tools.</p>
+            <a href="https://www.youtube.com/watch?v=LuhJEEJQgUM" target="_blank" rel="noopener" class="text-blue"><strong>Watch on YouTube</strong></a>
+          </div>
+        </div>
+
+        <div class="grid grid-2 mt-lg">
+          <div class="card" style="margin: 0">
+            <h4>How GPU Computing Works</h4>
+            <p>Excellent visual explanation of GPU architecture fundamentals and parallelism.</p>
+            <a href="https://www.youtube.com/watch?v=h9Z4oGN89MU" target="_blank" rel="noopener" class="text-blue"><strong>Watch on YouTube (Branch Education)</strong></a>
+          </div>
+          <div class="card" style="margin: 0">
+            <h4>FlashAttention Explained</h4>
+            <p>Tri Dao explains FlashAttention's IO-aware algorithm and tiling strategy.</p>
+            <a href="https://www.youtube.com/watch?v=gMOAud7hZg4" target="_blank" rel="noopener" class="text-blue"><strong>Watch on YouTube (Stanford MLSys)</strong></a>
+          </div>
+        </div>
+
+        <h3 class="mt-lg">NVIDIA Architecture Documentation</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Topic</th>
+              <th>Source</th>
+              <th>Link</th>
+            </tr>
+            <tr>
+              <td>CUDA execution model, warps</td>
+              <td>CUDA C++ Programming Guide</td>
+              <td><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/" target="_blank" rel="noopener">docs.nvidia.com</a></td>
+            </tr>
+            <tr>
+              <td>Hopper SM specs, warpgroups</td>
+              <td>Hopper Architecture Whitepaper</td>
+              <td><a href="https://resources.nvidia.com/en-us-hopper-architecture" target="_blank" rel="noopener">resources.nvidia.com</a></td>
+            </tr>
+            <tr>
+              <td>H100 specifications</td>
+              <td>H100 Tensor Core GPU Datasheet</td>
+              <td><a href="https://resources.nvidia.com/en-us-hopper-architecture/nvidia-tensor-core-gpu-datasheet" target="_blank" rel="noopener">H100 Datasheet</a></td>
+            </tr>
+            <tr>
+              <td>Blackwell, NVFP4, FP4/FP6</td>
+              <td>Blackwell Architecture Overview</td>
+              <td><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">nvidia.com</a></td>
+            </tr>
+            <tr>
+              <td>CuTe DSL, CUTLASS</td>
+              <td>CUTLASS Documentation</td>
+              <td><a href="https://github.com/NVIDIA/cutlass" target="_blank" rel="noopener">github.com/NVIDIA/cutlass</a></td>
+            </tr>
+          </table>
+        </div>
+
+        <h3>Floating Point & Quantization Standards</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Format</th>
+              <th>Specification</th>
+              <th>Link</th>
+            </tr>
+            <tr>
+              <td>FP32, FP16</td>
+              <td>IEEE 754-2019</td>
+              <td><a href="https://ieeexplore.ieee.org/document/8766229" target="_blank" rel="noopener">IEEE Xplore</a></td>
+            </tr>
+            <tr>
+              <td>FP8 (E4M3, E5M2)</td>
+              <td>FP8 Formats for Deep Learning</td>
+              <td><a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">arXiv:2209.05433</a></td>
+            </tr>
+            <tr>
+              <td>MXFP4, MXFP6, MXFP8</td>
+              <td>OCP Microscaling (MX) Spec v1.0</td>
+              <td><a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank" rel="noopener">opencompute.org</a></td>
+            </tr>
+          </table>
+        </div>
+
+        <h3>Key Research Papers</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Paper</th>
+              <th>Authors</th>
+              <th>Link</th>
+            </tr>
+            <tr>
+              <td>Attention Is All You Need</td>
+              <td>Vaswani et al., 2017</td>
+              <td><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arXiv:1706.03762</a></td>
+            </tr>
+            <tr>
+              <td>FlashAttention</td>
+              <td>Dao et al., 2022</td>
+              <td><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">arXiv:2205.14135</a></td>
+            </tr>
+            <tr>
+              <td>FlashAttention-2</td>
+              <td>Dao, 2023</td>
+              <td><a href="https://arxiv.org/abs/2307.08691" target="_blank" rel="noopener">arXiv:2307.08691</a></td>
+            </tr>
+            <tr>
+              <td>LLM.int8()</td>
+              <td>Dettmers et al., 2022</td>
+              <td><a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">arXiv:2208.07339</a></td>
+            </tr>
+            <tr>
+              <td>SmoothQuant</td>
+              <td>Xiao et al., 2022</td>
+              <td><a href="https://arxiv.org/abs/2211.10438" target="_blank" rel="noopener">arXiv:2211.10438</a></td>
+            </tr>
+            <tr>
+              <td>AWQ</td>
+              <td>Lin et al., 2023</td>
+              <td><a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">arXiv:2306.00978</a></td>
+            </tr>
+            <tr>
+              <td>Volta Microbenchmarking</td>
+              <td>Jia et al., 2018</td>
+              <td><a href="https://arxiv.org/abs/1804.06826" target="_blank" rel="noopener">arXiv:1804.06826</a></td>
+            </tr>
+          </table>
+        </div>
+
+        <h3>Specifications Cited in This Course</h3>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Claim</th>
+              <th>Value</th>
+              <th>Source</th>
+            </tr>
+            <tr>
+              <td>Warp size</td>
+              <td>32 threads</td>
+              <td>CUDA Programming Guide, Ch. 4</td>
+            </tr>
+            <tr>
+              <td>Warpgroup size (Hopper+)</td>
+              <td>128 threads (4 warps)</td>
+              <td>Hopper Architecture Whitepaper</td>
+            </tr>
+            <tr>
+              <td>Blackwell B200 SMEM</td>
+              <td>228 KB/SM</td>
+              <td>Blackwell Architecture Overview</td>
+            </tr>
+            <tr>
+              <td>Blackwell B200 HBM</td>
+              <td>192 GB</td>
+              <td>GB200 NVL72 Specifications</td>
+            </tr>
+            <tr>
+              <td>Blackwell B200 HBM bandwidth</td>
+              <td>~8 TB/s</td>
+              <td>GB200 NVL72 Specifications</td>
+            </tr>
+            <tr>
+              <td>SMEM bank count</td>
+              <td>32 banks</td>
+              <td>CUDA Programming Guide, Ch. 5.3.2</td>
+            </tr>
+            <tr>
+              <td>Volta WMMA shape</td>
+              <td>16x16x16 (FP16)</td>
+              <td>CUDA WMMA API Documentation</td>
+            </tr>
+            <tr>
+              <td>FP8 E4M3 range</td>
+              <td>±448</td>
+              <td>arXiv:2209.05433, Table 1</td>
+            </tr>
+            <tr>
+              <td>FP4 E2M1 range</td>
+              <td>±6</td>
+              <td>OCP MX Spec v1.0, Section 5</td>
+            </tr>
+            <tr>
+              <td>NVFP4 block size</td>
+              <td>16 elements</td>
+              <td>NVIDIA Blackwell Documentation</td>
+            </tr>
+            <tr>
+              <td>MXFP4 block size</td>
+              <td>32 elements</td>
+              <td>OCP MX Spec v1.0, Section 4</td>
+            </tr>
+            <tr>
+              <td>NVFP4 scale format</td>
+              <td>E4M3 (fractional)</td>
+              <td>NVIDIA Blackwell Documentation</td>
+            </tr>
+            <tr>
+              <td>MXFP4 scale format</td>
+              <td>E8M0 (power-of-2)</td>
+              <td>OCP MX Spec v1.0, Section 4</td>
+            </tr>
+            <tr>
+              <td>128K attention matrix size</td>
+              <td>~16 billion elements/head</td>
+              <td>128K × 128K = 16.4B (calculation)</td>
+            </tr>
+            <tr>
+              <td>FP8 KV cache compression</td>
+              <td>2.0x vs FP16</td>
+              <td>16-bit → 8-bit (calculation)</td>
+            </tr>
+            <tr>
+              <td>Mixed K(FP8)/V(NVFP4) compression</td>
+              <td>~2.6x vs FP16</td>
+              <td>Average of 2x (K) and 4x (V), weighted</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="callout warn mt-lg">
+          <div class="callout-title">Note on Latency Values</div>
           <p class="mb-0">
-            You've internalized the foundations. Time to build that kernel.
+            Memory latency figures (cycles) are approximate and vary significantly based on access pattern,
+            cache hit rate, memory contention, and specific workload characteristics. The values shown
+            represent typical measured ranges from microbenchmarks, not guaranteed specifications.
+            Bandwidth numbers represent theoretical peak values. Always profile your specific kernel
+            to understand actual performance characteristics.
+          </p>
+        </div>
+
+        <div class="callout info mt-lg">
+          <div class="callout-title">Additional Resources</div>
+          <p class="mb-0">
+            For the latest specifications, consult the official
+            <a href="https://docs.nvidia.com/cuda/" target="_blank" rel="noopener">NVIDIA CUDA Documentation</a> and
+            <a href="https://developer.nvidia.com/cuda-gpus" target="_blank" rel="noopener">GPU Compute Capability tables</a>.
+            Architecture-specific details are available in the respective whitepapers linked above.
           </p>
         </div>
       </section>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPU → NVFP4 Kernels | 4-Week Course</title>
+    <title>GPU Learning | From Fundamentals to NVFP4 Kernels</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -11,378 +11,382 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="base.css" />
+    <style>
+      /* Landing page - no sidebar */
+      body {
+        display: block;
+      }
+
+      .landing-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: var(--space-2xl) var(--space-xl);
+      }
+
+      .landing-hero {
+        text-align: center;
+        padding: var(--space-3xl) 0;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: var(--space-2xl);
+      }
+
+      .landing-hero__label {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent-blue);
+        margin-bottom: var(--space-md);
+      }
+
+      .landing-hero__title {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 300;
+        line-height: 1.1;
+        margin-bottom: var(--space-lg);
+        background: linear-gradient(
+          135deg,
+          var(--text-primary) 0%,
+          var(--accent-blue) 50%,
+          var(--accent-purple) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .landing-hero__desc {
+        font-size: 1.15rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.7;
+      }
+
+      .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--space-xl);
+        margin-bottom: var(--space-2xl);
+      }
+
+      .course-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        transition: all var(--transition-normal);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .course-card:hover {
+        border-color: var(--accent-blue);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .course-card__icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: var(--space-lg);
+      }
+
+      .course-card__icon--blue {
+        background: rgba(77, 159, 255, 0.15);
+        color: var(--accent-blue);
+      }
+
+      .course-card__icon--green {
+        background: rgba(52, 211, 153, 0.15);
+        color: var(--accent-green);
+      }
+
+      .course-card__icon--purple {
+        background: rgba(167, 139, 250, 0.15);
+        color: var(--accent-purple);
+      }
+
+      .course-card__icon--orange {
+        background: rgba(251, 146, 60, 0.15);
+        color: var(--accent-orange);
+      }
+
+      .course-card__label {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: var(--space-sm);
+      }
+
+      .course-card__title {
+        font-size: 1.5rem;
+        font-weight: 400;
+        margin-bottom: var(--space-md);
+        color: var(--text-primary);
+      }
+
+      .course-card__desc {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        flex-grow: 1;
+        margin-bottom: var(--space-lg);
+      }
+
+      .course-card__meta {
+        display: flex;
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+      }
+
+      .course-card__tag {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        padding: var(--space-xs) var(--space-sm);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+      }
+
+      .course-card__tag--available {
+        background: rgba(52, 211, 153, 0.15);
+        color: var(--accent-green);
+      }
+
+      .course-card__tag--coming {
+        background: rgba(251, 146, 60, 0.15);
+        color: var(--accent-orange);
+      }
+
+      .section-header {
+        margin-bottom: var(--space-xl);
+      }
+
+      .section-header__label {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent-purple);
+        margin-bottom: var(--space-sm);
+      }
+
+      .section-header__title {
+        font-size: 1.75rem;
+        font-weight: 400;
+        color: var(--text-primary);
+      }
+
+      .quick-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-md);
+        padding: var(--space-xl);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-2xl);
+      }
+
+      .quick-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+        background: var(--bg-primary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition: all var(--transition-fast);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
+
+      .quick-link:hover {
+        border-color: var(--accent-blue);
+        color: var(--text-primary);
+      }
+
+      .quick-link__icon {
+        font-size: 1.1rem;
+      }
+
+      .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-2xl);
+        padding: var(--space-xl) 0;
+        margin-bottom: var(--space-2xl);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat__value {
+        font-family: var(--font-mono);
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--accent-blue);
+      }
+
+      .stat__label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: var(--space-xs);
+      }
+
+      @media (max-width: 600px) {
+        .stats-row {
+          flex-wrap: wrap;
+          gap: var(--space-lg);
+        }
+
+        .stat {
+          flex: 1 1 40%;
+        }
+      }
+    </style>
   </head>
-  <body class="has-sidebar">
-    <!-- Progress Bar -->
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
-
-    <!-- Mobile Menu Button -->
-    <button class="mobile-btn" aria-label="Menu">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M3 12h18M3 6h18M3 18h18" />
-      </svg>
-    </button>
-
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-      <div class="sidebar__header">
-        <div class="sidebar__logo">GPU → NVFP4</div>
-        <div class="sidebar__sub">4-Week Intensive</div>
-      </div>
-
-      <div class="nav-section open">
-        <button class="nav-section__btn">
-          <span class="nav-icon bg-blue">F</span>
-          Foundations
-          <svg
-            class="nav-chevron"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-        <div class="nav-items">
-          <a href="lessons/01-gpu-architecture.html" class="nav-item"
-            >GPU Architecture</a
-          >
-          <a href="lessons/02-memory-hierarchy.html" class="nav-item"
-            >Memory Hierarchy</a
-          >
-          <a href="lessons/03-tensor-cores.html" class="nav-item"
-            >Tensor Cores</a
-          >
-          <a href="lessons/05-quantization.html" class="nav-item"
-            >Quantization</a
-          >
-          <a href="lessons/attention-math.html" class="nav-item"
-            >Attention Math</a
-          >
-          <a href="course.html" class="nav-item">📖 Full Course</a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <button class="nav-section__btn">
-          <span class="nav-icon bg-green">1</span>
-          Week 1: CuTe DSL
-          <svg
-            class="nav-chevron"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-        <div class="nav-items">
-          <a href="#" class="nav-item disabled">Day 1: Layouts</a>
-          <a href="#" class="nav-item disabled">Day 2: First Kernels</a>
-          <a href="#" class="nav-item disabled">Day 3: Tensors & TMA</a>
-          <a href="#" class="nav-item disabled">Day 4: MMA Ops</a>
-          <a href="#" class="nav-item disabled">Day 5: Pipelined GEMM</a>
-          <a href="#" class="nav-item disabled">Day 6-7: Integration</a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <button class="nav-section__btn">
-          <span class="nav-icon bg-purple">2</span>
-          Week 2: Deep Dive
-          <svg
-            class="nav-chevron"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-        <div class="nav-items">
-          <a href="#" class="nav-item disabled">CUTLASS Architecture</a>
-          <a href="#" class="nav-item disabled">CuTe Tutorials</a>
-          <a href="#" class="nav-item disabled">Microbenchmarking</a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <button class="nav-section__btn">
-          <span class="nav-icon bg-orange">3</span>
-          Week 3: Quantization
-          <svg
-            class="nav-chevron"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-        <div class="nav-items">
-          <a href="#" class="nav-item disabled">LLM.int8()</a>
-          <a href="#" class="nav-item disabled">SmoothQuant</a>
-          <a href="#" class="nav-item disabled">AWQ</a>
-          <a href="#" class="nav-item disabled">FlashAttention</a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <button class="nav-section__btn">
-          <span class="nav-icon bg-cyan">4</span>
-          Week 4: Systems
-          <svg
-            class="nav-chevron"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-        <div class="nav-items">
-          <a href="#" class="nav-item disabled">TensorRT-LLM</a>
-          <a href="#" class="nav-item disabled">vLLM Architecture</a>
-          <a href="#" class="nav-item disabled">Final Project</a>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content">
+  <body>
+    <div class="landing-container">
       <!-- Hero -->
-      <header class="hero">
-        <span class="hero__tag">Active Project</span>
-        <h1 class="hero__title">GPU → NVFP4 Kernel Development</h1>
-        <p class="hero__desc">
-          From GPU fundamentals to production NVFP4 kernels. Build a
-          mixed-precision KV cache achieving 2.6× memory reduction on Blackwell.
-        </p>
+      <header class="landing-hero">
+        <div class="landing-hero__label">Interactive Learning</div>
+        <h1 class="landing-hero__title">
+          GPU Programming & Kernel Development
+        </h1>
       </header>
 
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-card__value">4</div>
-          <div class="stat-card__label">Weeks</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">GB110</div>
-          <div class="stat-card__label">Target GPU</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">2.6×</div>
-          <div class="stat-card__label">Memory Target</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">FP8+FP4</div>
-          <div class="stat-card__label">Mixed Precision</div>
-        </div>
-      </div>
-
-      <!-- Foundations -->
-      <section class="phase">
-        <div class="phase__header">
-          <span class="phase__tag bg-blue">FOUNDATIONS</span>
-          <h2 class="phase__title">GPU & Quantization Fundamentals</h2>
-          <span class="phase__duration">Prerequisites</span>
+      <!-- Course Modules -->
+      <section>
+        <div class="section-header">
+          <div class="section-header__label">Course Modules</div>
+          <h2 class="section-header__title">Choose Your Learning Path</h2>
         </div>
 
-        <div class="lesson-grid">
-          <a href="lessons/01-gpu-architecture.html" class="lesson-card">
-            <div class="lesson-card__num">LESSON 01</div>
-            <h3 class="lesson-card__title">GPU Architecture</h3>
-            <p class="lesson-card__desc">
-              SMs, warps, warpgroups. The execution hierarchy from GPU to
-              thread.
+        <div class="course-grid">
+          <!-- Attention Math Foundations -->
+          <a href="attention-math.html" class="course-card">
+            <div class="course-card__icon course-card__icon--blue">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <div class="course-card__label">Prerequisite</div>
+            <h3 class="course-card__title">Attention Math Foundations</h3>
+            <p class="course-card__desc">
+              Interactive foundations for writing your own CUDA attention
+              kernel. Dot products, softmax, online softmax algorithm, and
+              floating point formats. No handwaving—understand what every
+              operation actually does.
             </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Interactive</span>
-              <span class="lesson-card__tag">~30 min</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot available"></span>
-              <span class="lesson-card__status-text">Available</span>
-            </div>
           </a>
 
-          <a href="lessons/02-memory-hierarchy.html" class="lesson-card">
-            <div class="lesson-card__num">LESSON 02</div>
-            <h3 class="lesson-card__title">Memory Hierarchy</h3>
-            <p class="lesson-card__desc">
-              Registers → SMEM → L2 → HBM. Latency, bandwidth, and access
-              patterns.
+          <!-- Kernel Development Course -->
+          <a href="kernel-course.html" class="course-card">
+            <div class="course-card__icon course-card__icon--green">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M9 9h6" />
+                <path d="M9 13h6" />
+                <path d="M9 17h4" />
+              </svg>
+            </div>
+            <div class="course-card__label">4-Week Intensive</div>
+            <h3 class="course-card__title">GPU to NVFP4 Kernels</h3>
+            <p class="course-card__desc">
+              Complete curriculum from GPU fundamentals to production NVFP4
+              kernels. Build a mixed-precision KV cache achieving 2.6x memory
+              reduction on Blackwell. CuTe DSL, Tensor Cores, quantization, and
+              systems integration.
             </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Interactive</span>
-              <span class="lesson-card__tag">~30 min</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot available"></span>
-              <span class="lesson-card__status-text">Available</span>
-            </div>
           </a>
 
-          <a href="lessons/03-tensor-cores.html" class="lesson-card">
-            <div class="lesson-card__num">LESSON 03</div>
-            <h3 class="lesson-card__title">Tensor Cores</h3>
-            <p class="lesson-card__desc">
-              MMA operations, supported shapes, warpgroup execution.
+          <!-- GPU Architecture Lesson -->
+          <a href="lessons/gpu-architecture.html" class="course-card">
+            <div class="course-card__icon course-card__icon--purple">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M6 10h4" />
+                <path d="M14 10h4" />
+                <path d="M6 14h4" />
+                <path d="M14 14h4" />
+              </svg>
+            </div>
+            <div class="course-card__label">Foundation</div>
+            <h3 class="course-card__title">GPU Architecture</h3>
+            <p class="course-card__desc">
+              SMs, warps, warpgroups, and the execution hierarchy from GPU to
+              thread. Interactive diagrams, warp visualization, and occupancy
+              calculator.
             </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Interactive</span>
-              <span class="lesson-card__tag">~25 min</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot available"></span>
-              <span class="lesson-card__status-text">Available</span>
-            </div>
           </a>
 
-          <a href="lessons/05-quantization.html" class="lesson-card">
-            <div class="lesson-card__num">LESSON 05</div>
-            <h3 class="lesson-card__title">Quantization & NVFP4</h3>
-            <p class="lesson-card__desc">
-              FP formats, two-level scaling, why NVFP4 beats MXFP4.
+          <!-- Memory Hierarchy -->
+          <a href="lessons/memory-hierarchy.html" class="course-card">
+            <div class="course-card__icon course-card__icon--orange">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <div class="course-card__label">Foundation</div>
+            <h3 class="course-card__title">Memory Hierarchy</h3>
+            <p class="course-card__desc">
+              Registers, SMEM, L2, HBM. Latency, bandwidth, and access patterns.
+              The key to GPU performance optimization.
             </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Interactive</span>
-              <span class="lesson-card__tag">~35 min</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot available"></span>
-              <span class="lesson-card__status-text">Available</span>
-            </div>
-          </a>
-
-          <a href="lessons/attention-math.html" class="lesson-card">
-            <div class="lesson-card__num">LESSON 06</div>
-            <h3 class="lesson-card__title">Attention Math</h3>
-            <p class="lesson-card__desc">
-              Dot products, softmax, online softmax algorithm. Interactive
-              exercises.
-            </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Interactive</span>
-              <span class="lesson-card__tag">~45 min</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot available"></span>
-              <span class="lesson-card__status-text">Available</span>
-            </div>
           </a>
         </div>
       </section>
 
-      <!-- Week 1 -->
-      <section class="phase">
-        <div class="phase__header">
-          <span class="phase__tag bg-green">WEEK 1</span>
-          <h2 class="phase__title">CuTe DSL Crash Course</h2>
-          <span class="phase__duration">7 Days</span>
-        </div>
+      <!-- Course Overview Card -->
+    </div>
 
-        <div class="lesson-grid">
-          <div class="lesson-card disabled">
-            <div class="lesson-card__num">DAY 1</div>
-            <h3 class="lesson-card__title">Layouts: The Core Abstraction</h3>
-            <p class="lesson-card__desc">
-              Shape, stride, index math. The foundation for everything in CuTe.
-            </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Hands-on</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot coming"></span>
-              <span class="lesson-card__status-text">Coming Soon</span>
-            </div>
-          </div>
-
-          <div class="lesson-card disabled">
-            <div class="lesson-card__num">DAY 2-5</div>
-            <h3 class="lesson-card__title">Kernels, TMA, MMA & Pipelines</h3>
-            <p class="lesson-card__desc">
-              First kernels through pipelined GEMM with Tensor Cores.
-            </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Code</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot coming"></span>
-              <span class="lesson-card__status-text">Coming Soon</span>
-            </div>
-          </div>
-
-          <div class="lesson-card disabled">
-            <div class="lesson-card__num">DAY 6-7</div>
-            <h3 class="lesson-card__title">NVFP4 V Cache Kernel</h3>
-            <p class="lesson-card__desc">
-              Implement quantization kernel with block scaling. V cache
-              integration.
-            </p>
-            <div class="lesson-card__meta">
-              <span class="lesson-card__tag">Code</span>
-            </div>
-            <div class="lesson-card__status">
-              <span class="lesson-card__dot coming"></span>
-              <span class="lesson-card__status-text">Coming Soon</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Summary -->
-      <section class="phase">
-        <div class="phase__header">
-          <span class="phase__tag bg-purple">WEEKS 2-4</span>
-          <h2 class="phase__title">Deep Dive → Systems Integration</h2>
-        </div>
-
-        <div class="card">
-          <h4>📚 Coming Up</h4>
-          <ul>
-            <li>
-              <strong>Week 2:</strong> CUTLASS architecture, CuTe tutorials,
-              microbenchmarking
-            </li>
-            <li>
-              <strong>Week 3:</strong> Quantization papers (LLM.int8,
-              SmoothQuant, AWQ), FlashAttention
-            </li>
-            <li><strong>Week 4:</strong> TensorRT-LLM, vLLM, final project</li>
-          </ul>
-          <p class="mb-0 text-muted">
-            <strong>Final Deliverable:</strong> Mixed K(FP8)/V(NVFP4) attention
-            kernel benchmarked against TRT-LLM.
-          </p>
-        </div>
-      </section>
-    </main>
-
-    <script src="scripts/components.js"></script>
+    <script type="module" src="scripts/components.js"></script>
   </body>
 </html>
