@@ -246,6 +246,12 @@
         border-color: var(--accent-blue);
       }
 
+      .notebooks__part:focus-visible {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px var(--glow-blue);
+      }
+
       .notebooks__part-num {
         font-family: var(--font-mono);
         font-size: 0.7rem;
@@ -285,9 +291,10 @@
     </style>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="book-container">
       <!-- Hero -->
-      <header class="book-hero">
+      <header class="book-hero" id="main-content">
         <div class="book-hero__label">Interactive Course</div>
         <h1 class="book-hero__title">GPU Programming &<br>Kernel Development</h1>
         <p class="book-hero__desc">
