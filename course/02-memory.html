@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Memory Hierarchy — GPU Learning</title>
+    <title>Chapter 2: Memory Hierarchy - GPU Learning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,39 +14,6 @@
     <style>
       body {
         display: block;
-      }
-
-      .lesson-nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: rgba(10, 10, 15, 0.9);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--border-subtle);
-        z-index: 100;
-        padding: var(--space-md) var(--space-xl);
-      }
-
-      .lesson-nav__inner {
-        max-width: 800px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .lesson-nav__title {
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        letter-spacing: 0.05em;
-      }
-
-      .lesson-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 6rem var(--space-xl) var(--space-3xl);
       }
 
       /* Memory tier visualization */
@@ -333,20 +300,44 @@
         background: var(--accent-blue);
         color: white;
       }
+
+      /* Callout overrides */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-secondary { color: var(--text-secondary); }
+      .text-small { font-size: 0.85rem; }
     </style>
   </head>
   <body>
-    <nav class="lesson-nav">
-      <div class="lesson-nav__inner">
-        <a href="../index.html" class="lesson-nav__title">← COURSE INDEX</a>
+    <!-- Chapter Navigation -->
+    <nav class="chapter-nav">
+      <div class="chapter-nav__inner">
+        <a href="../index.html" class="chapter-nav__home">GPU Learning</a>
+        <div class="chapter-nav__progress">Chapter <span>2</span> of 7</div>
       </div>
     </nav>
 
-    <div class="lesson-container">
-      <header class="hero hero--lesson">
-        <div class="hero__label">GPU Fundamentals</div>
-        <h1 class="hero__title">Memory Hierarchy</h1>
-        <p class="hero__desc">
+    <div class="chapter-container">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 2</div>
+        <h1 class="chapter-header__title">Memory Hierarchy</h1>
+        <p class="chapter-header__desc">
           GPU performance lives or dies by memory access patterns. Master the hierarchy
           from registers to HBM and learn the techniques that separate 10% from 80% hardware utilization.
         </p>
@@ -354,7 +345,7 @@
 
       <!-- Section 1: Why Memory Matters -->
       <section class="section" id="section-0">
-        <div class="section__number">01 — THE BOTTLENECK</div>
+        <div class="section__number">01 - THE BOTTLENECK</div>
         <h2 class="section__title">Memory-Bound Reality</h2>
 
         <p>
@@ -396,7 +387,7 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
 
       <!-- Section 2: The Hierarchy -->
       <section class="section" id="section-1">
-        <div class="section__number">02 — THE HIERARCHY</div>
+        <div class="section__number">02 - THE HIERARCHY</div>
         <h2 class="section__title">Four Levels of Memory</h2>
 
         <p>
@@ -518,7 +509,7 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
 
       <!-- Section 3: Coalescing -->
       <section class="section" id="section-2">
-        <div class="section__number">03 — COALESCING</div>
+        <div class="section__number">03 - COALESCING</div>
         <h2 class="section__title">Memory Access Patterns</h2>
 
         <p>
@@ -526,6 +517,18 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           their requests into as few transactions as possible. Proper coalescing is the
           single most important optimization for memory-bound kernels.
         </p>
+
+        <!-- Prereq callout for index arithmetic -->
+        <div class="prereq-callout">
+          <div class="prereq-callout__icon">&#128218;</div>
+          <div class="prereq-callout__content">
+            <div class="prereq-callout__title">Prerequisite Check</div>
+            <p class="prereq-callout__text">
+              Understanding thread indexing is key. Need a refresher?
+              <a href="../math-prerequisites.html#index-arithmetic">See Prerequisites: Index Arithmetic</a>
+            </p>
+          </div>
+        </div>
 
         <div class="card">
           <div class="card__header">
@@ -600,7 +603,7 @@ data[threadIdx.x * 32]
 
       <!-- Section 4: Bank Conflicts -->
       <section class="section" id="section-3">
-        <div class="section__number">04 — BANK CONFLICTS</div>
+        <div class="section__number">04 - BANK CONFLICTS</div>
         <h2 class="section__title">Shared Memory Banks</h2>
 
         <p>
@@ -685,7 +688,7 @@ smem[threadIdx.x * 32]
 
       <!-- Section 5: TMA -->
       <section class="section" id="section-4">
-        <div class="section__number">05 — TMA</div>
+        <div class="section__number">05 - TMA</div>
         <h2 class="section__title">Tensor Memory Accelerator</h2>
 
         <p>
@@ -770,7 +773,7 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
 
       <!-- Section 6: Optimization -->
       <section class="section" id="section-5">
-        <div class="section__number">06 — OPTIMIZATION</div>
+        <div class="section__number">06 - OPTIMIZATION</div>
         <h2 class="section__title">Putting It Together</h2>
 
         <p>
@@ -855,17 +858,17 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
 
       </section>
 
-      <!-- Completion -->
-      <section class="section" style="text-align: center; padding: var(--space-2xl) 0;">
-        <div class="section__number">NEXT STEPS</div>
-        <h2 class="section__title">Memory Mastery Achieved</h2>
-        <p style="max-width: 500px; margin: 0 auto var(--space-xl);">
-          You understand the GPU memory hierarchy and key optimization techniques.
-          Next: learn how Tensor Cores accelerate matrix operations.
-        </p>
-        <a href="../index.html" class="btn btn--primary">Back to Course Index</a>
-        <a href="gpu-architecture.html" class="btn" style="margin-left: var(--space-sm);">
-          Previous: GPU Architecture
+      <!-- Practice Notebooks -->
+      <section class="section" id="practice">
+        <div class="section__number">PRACTICE</div>
+        <h2 class="section__title">Hands-On Labs</h2>
+
+        <a href="../notebooks/part2/" class="notebook-link">
+          <div class="notebook-link__icon">&#128211;</div>
+          <div class="notebook-link__content">
+            <div class="notebook-link__title">Part 2 Notebooks</div>
+            <div class="notebook-link__desc">7 labs: Profiling, coalescing, bank conflicts, tensor cores</div>
+          </div>
         </a>
       </section>
 
@@ -983,6 +986,27 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
           </p>
         </div>
       </section>
+
+      <!-- Chapter Footer: Navigation -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You understand the GPU memory hierarchy and key optimization techniques.
+            Next, we'll write our first Triton kernels and apply these concepts in practice.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="01-gpu-fundamentals.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">GPU Fundamentals</div>
+          </a>
+          <a href="03-kernels.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">First Kernels</div>
+          </a>
+        </div>
+      </footer>
     </div>
 
     <script src="../scripts/components.js"></script>

@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Prerequisites — GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      /* Lesson page - no sidebar */
+      body {
+        display: block;
+      }
+
+      .lesson-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(10, 10, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+        z-index: 100;
+        padding: var(--space-md) var(--space-xl);
+      }
+
+      .lesson-nav__inner {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .lesson-nav__title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
+      }
+
+      .lesson-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 6rem var(--space-xl) var(--space-3xl);
+      }
+
+      /* Reassurance banner */
+      .reassurance {
+        background: var(--glow-green);
+        border: 1px solid var(--accent-green);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-2xl);
+      }
+
+      .reassurance__title {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--accent-green);
+        margin-bottom: var(--space-sm);
+      }
+
+      .reassurance p {
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.7;
+      }
+
+      /* Quiz score display */
+      .quiz-score {
+        display: none;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        margin-top: var(--space-xl);
+        text-align: center;
+      }
+
+      .quiz-score.show {
+        display: block;
+      }
+
+      .quiz-score__value {
+        font-family: var(--font-mono);
+        font-size: 3rem;
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+      }
+
+      .quiz-score__value--excellent {
+        color: var(--accent-green);
+      }
+
+      .quiz-score__value--good {
+        color: var(--accent-blue);
+      }
+
+      .quiz-score__value--needs-work {
+        color: var(--accent-orange);
+      }
+
+      .quiz-score__message {
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        margin-bottom: var(--space-sm);
+      }
+
+      .quiz-score__recommendation {
+        color: var(--text-secondary);
+        margin-bottom: var(--space-lg);
+      }
+
+      /* Resource cards */
+      .resource-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-md);
+        transition: all var(--transition-fast);
+      }
+
+      .resource-card:hover {
+        border-color: var(--border-active);
+        transform: translateY(-2px);
+      }
+
+      .resource-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-sm);
+        gap: var(--space-md);
+      }
+
+      .resource-card__title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+
+      .resource-card__title a {
+        color: var(--accent-blue);
+      }
+
+      .resource-card__meta {
+        display: flex;
+        gap: var(--space-sm);
+        flex-shrink: 0;
+      }
+
+      .resource-card__tag {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .resource-card__tag--time {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+      }
+
+      .resource-card__tag--beginner {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+
+      .resource-card__tag--intermediate {
+        background: var(--glow-blue);
+        color: var(--accent-blue);
+      }
+
+      .resource-card__desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      /* Learning path cards */
+      .path-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xl);
+        padding: var(--space-xl);
+        margin-bottom: var(--space-lg);
+      }
+
+      .path-card__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .path-card__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+
+      .path-card__icon--orange {
+        background: var(--glow-orange);
+      }
+
+      .path-card__icon--blue {
+        background: var(--glow-blue);
+      }
+
+      .path-card__icon--purple {
+        background: var(--glow-purple);
+      }
+
+      .path-card__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+
+      .path-card__time {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--accent-blue);
+        margin-top: var(--space-xs);
+      }
+
+      .path-card__desc {
+        color: var(--text-secondary);
+        margin-bottom: var(--space-md);
+      }
+
+      .path-card__steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .path-card__steps li {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-sm) 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .path-card__steps li::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        margin-top: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      /* Tips list */
+      .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .tips-list li {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-md) 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .tips-list li:last-child {
+        border-bottom: none;
+      }
+
+      .tips-list__icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+      }
+
+      .tips-list__content h4 {
+        font-size: 1rem;
+        margin-bottom: var(--space-xs);
+      }
+
+      .tips-list__content p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      /* Topic navigation */
+      .topic-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xl);
+      }
+
+      .topic-nav__link {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        padding: var(--space-sm) var(--space-md);
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        transition: all var(--transition-fast);
+      }
+
+      .topic-nav__link:hover {
+        border-color: var(--accent-blue);
+        color: var(--text-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="lesson-nav">
+      <div class="lesson-nav__inner">
+        <a href="index.html" class="lesson-nav__title">← COURSE INDEX</a>
+      </div>
+    </nav>
+
+    <div class="lesson-container">
+      <!-- Hero -->
+      <header class="hero hero--lesson">
+        <div class="hero__label">Before You Begin</div>
+        <h1 class="hero__title">Math Prerequisites & Resources</h1>
+        <p class="hero__desc">
+          Not confident in your math background? This page helps you assess your
+          readiness and find the best free resources to fill any gaps.
+        </p>
+      </header>
+
+      <!-- Reassurance -->
+      <div class="reassurance">
+        <div class="reassurance__title">You can do this</div>
+        <p>
+          The math required for GPU programming is more accessible than it
+          looks. If you can follow recipes and understand that 3 rows of 4 items
+          equals 12 items, you already have the intuition. These resources will
+          help you formalize that intuition into the precise language GPUs
+          speak.
+        </p>
+      </div>
+
+      <!-- Diagnostic Quiz -->
+      <section class="section" id="diagnostic">
+        <div class="section__number">01 — SELF-ASSESSMENT</div>
+        <h2 class="section__title">Diagnostic Quiz</h2>
+        <p>
+          Take this 5-question quiz to assess your current readiness. Be honest
+          with yourself—the goal is to identify what you need to learn, not to
+          pass a test.
+        </p>
+
+        <!-- Question 1 -->
+        <div class="quiz" id="quiz-1">
+          <div class="quiz-q">
+            1. Matrix multiplication: If matrix A is 3x4 and matrix B is 4x2,
+            what are the dimensions of the result C = A x B?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>3x4</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>3x2</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>4x4</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>4x2</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="quiz" id="quiz-2">
+          <div class="quiz-q">
+            2. Index arithmetic: In row-major order, what linear index
+            corresponds to element [2][3] in a 5x6 matrix? (0-indexed)
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>11</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>13</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>15</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>17</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="quiz" id="quiz-3">
+          <div class="quiz-q">
+            3. Floating point: Approximately how many decimal digits of
+            precision does float32 (single precision) provide?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>3-4 digits</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>6-7 digits</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>10-11 digits</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>15-16 digits</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="quiz" id="quiz-4">
+          <div class="quiz-q">
+            4. Exponentials: Which function grows faster as x increases toward
+            infinity?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>x^10 (polynomial)</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>e^x (exponential)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>They grow at the same rate</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Depends on the value of x</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="quiz" id="quiz-5">
+          <div class="quiz-q">
+            5. Normalization: If you divide each element of [2, 4, 6] by their
+            sum (12), what do the resulting values sum to?
+          </div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>0</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>12</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>3</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Score Display -->
+        <div class="quiz-score" id="quiz-score">
+          <div class="quiz-score__value" id="score-value">0/5</div>
+          <div class="quiz-score__message" id="score-message"></div>
+          <p class="quiz-score__recommendation" id="score-recommendation"></p>
+          <button class="btn" id="reset-quiz">Retake Quiz</button>
+        </div>
+      </section>
+
+      <!-- Jump to Topics -->
+      <section class="section" id="topics">
+        <div class="section__number">02 — TOPICS</div>
+        <h2 class="section__title">Jump to a Topic</h2>
+        <div class="topic-nav">
+          <a href="#linear-algebra" class="topic-nav__link">Linear Algebra</a>
+          <a href="#matrix-ops" class="topic-nav__link">Matrix Operations</a>
+          <a href="#floating-point" class="topic-nav__link">Floating Point</a>
+          <a href="#exponentials" class="topic-nav__link"
+            >Exponentials & Logs</a
+          >
+          <a href="#index-arithmetic" class="topic-nav__link"
+            >Index Arithmetic</a
+          >
+        </div>
+      </section>
+
+      <!-- Linear Algebra Basics -->
+      <section class="section" id="linear-algebra">
+        <div class="section__number">03 — LINEAR ALGEBRA</div>
+        <h2 class="section__title">Linear Algebra Basics</h2>
+        <p>
+          Understanding vectors and matrices is fundamental. You don't need
+          proof-heavy linear algebra—focus on building visual and computational
+          intuition.
+        </p>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+                target="_blank"
+                rel="noopener"
+                >3Blue1Brown: Essence of Linear Algebra</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~3 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            The gold standard for visual intuition. Covers vectors, linear
+            transformations, matrix multiplication, and eigenvalues with
+            stunning animations. Watch chapters 1-7 for GPU programming
+            prerequisites.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.khanacademy.org/math/linear-algebra"
+                target="_blank"
+                rel="noopener"
+                >Khan Academy: Linear Algebra</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~15 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Structured course with practice problems. Great for reinforcing
+            concepts after watching 3Blue1Brown. Focus on "Vectors and spaces"
+            and "Matrix transformations" units.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/"
+                target="_blank"
+                rel="noopener"
+                >MIT 18.06: Linear Algebra (Gilbert Strang)</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~35 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--intermediate"
+                >Intermediate</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Full university course. More rigorous and complete coverage. Watch
+            lectures 1-10 for core concepts. Professor Strang is legendary for
+            making linear algebra accessible.
+          </p>
+        </div>
+      </section>
+
+      <!-- Matrix Operations -->
+      <section class="section" id="matrix-ops">
+        <div class="section__number">04 — MATRIX OPERATIONS</div>
+        <h2 class="section__title">Matrix Operations</h2>
+        <p>
+          Matrix multiplication is the core operation in GPU computing. You need
+          to understand both the mechanics (how to compute it) and the geometry
+          (what it means).
+        </p>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.youtube.com/watch?v=XkY2DOUCWMU"
+                target="_blank"
+                rel="noopener"
+                >3Blue1Brown: Matrix multiplication as composition</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >10 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Explains why matrix multiplication works the way it does.
+            Understanding this transforms matmul from "mysterious formula" to
+            "obvious composition of transformations."
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.mathsisfun.com/algebra/matrix-multiplying.html"
+                target="_blank"
+                rel="noopener"
+                >Matrix Multiplication Guide</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >Interactive</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Clear explanation of matrix multiplication with step-by-step examples.
+            Shows how each output element is computed from rows and columns. Essential
+            for understanding tiled matrix multiplication in CUDA.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/v/matrix-multiplication-intro"
+                target="_blank"
+                rel="noopener"
+                >Khan Academy: Matrix multiplication</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~2 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Step-by-step walkthrough with practice exercises. Covers dimension
+            rules, the mechanics of computation, and common properties. Complete
+            the exercises until matmul feels automatic.
+          </p>
+        </div>
+      </section>
+
+      <!-- Floating Point Numbers -->
+      <section class="section" id="floating-point">
+        <div class="section__number">05 — FLOATING POINT</div>
+        <h2 class="section__title">Floating Point Numbers</h2>
+        <p>
+          GPUs use various floating point formats (FP32, FP16, FP8, FP4).
+          Understanding the bit layout helps you reason about precision,
+          overflow, and quantization.
+        </p>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a href="https://float.exposed/" target="_blank" rel="noopener"
+                >float.exposed</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >Interactive</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Toggle individual bits and see how the value changes. Best way to
+            build intuition for sign, exponent, and mantissa. Try entering
+            values like 0.1 to see why it can't be exactly represented.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.youtube.com/watch?v=PZRI1IfStY0"
+                target="_blank"
+                rel="noopener"
+                >Computerphile: Floating Point Numbers</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >9 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Clear explanation of IEEE 754 format with hand-drawn diagrams.
+            Covers why floats exist, how they work, and common pitfalls like
+            precision loss.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html"
+                target="_blank"
+                rel="noopener"
+                >What Every Computer Scientist Should Know About Floating-Point
+                Arithmetic</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~2 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--intermediate"
+                >Intermediate</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            The canonical reference by David Goldberg. Dense but comprehensive.
+            Read sections 1-2 for fundamentals. Return to later sections when
+            you encounter specific precision issues.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.youtube.com/watch?v=dQhj5RGtag0"
+                target="_blank"
+                rel="noopener"
+                >Computerphile: Floating Point Numbers (Part 2) - Problems</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >12 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Real-world examples of floating point disasters: the Patriot missile
+            bug, Ariane 5 explosion. Understanding these failures helps you
+            write robust numerical code.
+          </p>
+        </div>
+      </section>
+
+      <!-- Exponentials and Logarithms -->
+      <section class="section" id="exponentials">
+        <div class="section__number">06 — EXPONENTIALS</div>
+        <h2 class="section__title">Exponentials and Logarithms</h2>
+        <p>
+          Softmax uses exp(), log-sum-exp tricks prevent overflow, and
+          understanding growth rates helps you reason about numerical stability.
+        </p>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.youtube.com/watch?v=m2MIpDrF7Es"
+                target="_blank"
+                rel="noopener"
+                >3Blue1Brown: What's so special about Euler's number e?</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >15 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Beautiful explanation of why e appears everywhere. Understanding
+            e^x's unique property (its derivative equals itself) explains why
+            it's used in softmax and probability.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://betterexplained.com/articles/an-intuitive-guide-to-exponential-functions-e/"
+                target="_blank"
+                rel="noopener"
+                >Better Explained: An Intuitive Guide To Exponential Functions &
+                e</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >20 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Text-based explanation with interactive examples. Great complement
+            to the 3Blue1Brown video. Focuses on building intuition rather than
+            formal proofs.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://www.khanacademy.org/math/algebra2/x2ec2f6f830c9fb89:logs"
+                target="_blank"
+                rel="noopener"
+                >Khan Academy: Logarithms</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >~4 hours</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Complete coverage of logarithms with practice problems. Focus on
+            "Introduction to logarithms" and "Properties of logarithms." The
+            log-sum-exp trick uses these properties directly.
+          </p>
+        </div>
+      </section>
+
+      <!-- Programming Math -->
+      <section class="section" id="index-arithmetic">
+        <div class="section__number">07 — INDEX ARITHMETIC</div>
+        <h2 class="section__title">Programming Math (Index Arithmetic)</h2>
+        <p>
+          GPU kernels constantly convert between multi-dimensional indices and
+          linear memory addresses. This is mechanical but crucial to get right.
+        </p>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://numpy.org/doc/stable/reference/arrays.ndarray.html#internal-memory-layout-of-an-ndarray"
+                target="_blank"
+                rel="noopener"
+                >NumPy: Internal memory layout of an ndarray</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >15 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--intermediate"
+                >Intermediate</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Official NumPy documentation explaining strides and memory layout.
+            Understanding this directly translates to CUDA memory access
+            patterns.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays"
+                target="_blank"
+                rel="noopener"
+                >Memory layout of multi-dimensional arrays</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >20 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Clear explanation with diagrams comparing row-major (C) vs
+            column-major (Fortran) ordering. Essential for understanding why
+            memory access patterns matter for performance.
+          </p>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-card__header">
+            <h4 class="resource-card__title">
+              <a
+                href="https://en.wikipedia.org/wiki/Row-_and_column-major_order"
+                target="_blank"
+                rel="noopener"
+                >Wikipedia: Row- and column-major order</a
+              >
+            </h4>
+            <div class="resource-card__meta">
+              <span class="resource-card__tag resource-card__tag--time"
+                >10 min</span
+              >
+              <span class="resource-card__tag resource-card__tag--beginner"
+                >Beginner</span
+              >
+            </div>
+          </div>
+          <p class="resource-card__desc">
+            Quick reference with formulas for index conversion. Bookmark this
+            for when you're writing CUDA kernels and need to convert between 2D
+            and linear indices.
+          </p>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__title">Key Formula</div>
+          <p style="margin: 0">
+            For a matrix with dimensions [rows][cols] in row-major order:<br />
+            <code>linear_index = row * cols + col</code><br />
+            For element [2][3] in a 5x6 matrix: 2 * 6 + 3 = 15
+          </p>
+        </div>
+      </section>
+
+      <!-- Learning Paths -->
+      <section class="section" id="paths">
+        <div class="section__number">08 — LEARNING PATHS</div>
+        <h2 class="section__title">Recommended Learning Paths</h2>
+        <p>
+          Choose the path that matches your current level. Time estimates assume
+          focused study.
+        </p>
+
+        <div class="path-card">
+          <div class="path-card__header">
+            <div class="path-card__icon path-card__icon--orange">1</div>
+            <div>
+              <h3 class="path-card__title">Complete Beginner</h3>
+              <div class="path-card__time">~20 hours over 2-3 weeks</div>
+            </div>
+          </div>
+          <p class="path-card__desc">
+            New to the math or haven't used it in years. Start here if the
+            diagnostic quiz felt unfamiliar.
+          </p>
+          <ul class="path-card__steps">
+            <li>
+              Watch 3Blue1Brown "Essence of Linear Algebra" chapters 1-7 (3 hrs)
+            </li>
+            <li>
+              Complete Khan Academy "Vectors and spaces" unit with exercises (5
+              hrs)
+            </li>
+            <li>Play with float.exposed until bit layout clicks (1 hr)</li>
+            <li>Watch Computerphile floating point videos (30 min)</li>
+            <li>Watch 3Blue1Brown video on e (15 min)</li>
+            <li>Read Better Explained article on exponentials (30 min)</li>
+            <li>Complete Khan Academy logarithms introduction (2 hrs)</li>
+            <li>Read memory layout articles and practice index math (2 hrs)</li>
+            <li>Work through Khan Academy matrix multiplication (3 hrs)</li>
+            <li>Retake diagnostic quiz and review weak areas (2 hrs)</li>
+          </ul>
+        </div>
+
+        <div class="path-card">
+          <div class="path-card__header">
+            <div class="path-card__icon path-card__icon--blue">2</div>
+            <div>
+              <h3 class="path-card__title">Refresher Needed</h3>
+              <div class="path-card__time">~5 hours over 1 week</div>
+            </div>
+          </div>
+          <p class="path-card__desc">
+            You've learned this before but it's rusty. Scored 2-3 on the
+            diagnostic.
+          </p>
+          <ul class="path-card__steps">
+            <li>
+              Watch 3Blue1Brown matrix multiplication video for intuition (10
+              min)
+            </li>
+            <li>Use matrix visualizer to refresh mechanics (30 min)</li>
+            <li>Play with float.exposed, try edge cases (30 min)</li>
+            <li>Review Better Explained exponentials article (20 min)</li>
+            <li>Read memory layout article on row-major indexing (20 min)</li>
+            <li>
+              Practice: manually compute 5 matrix multiplications (1 hr)
+            </li>
+            <li>Practice: convert 10 2D indices to linear indices (30 min)</li>
+            <li>Retake diagnostic quiz (15 min)</li>
+          </ul>
+        </div>
+
+        <div class="path-card">
+          <div class="path-card__header">
+            <div class="path-card__icon path-card__icon--purple">3</div>
+            <div>
+              <h3 class="path-card__title">Just Need Specific Topics</h3>
+              <div class="path-card__time">Variable</div>
+            </div>
+          </div>
+          <p class="path-card__desc">
+            You scored 4-5 but missed specific questions. Focus only on what you
+            need.
+          </p>
+          <ul class="path-card__steps">
+            <li>Identify which questions you missed on the diagnostic</li>
+            <li>Jump directly to that topic section above</li>
+            <li>Complete the "Beginner" tagged resources for that topic</li>
+            <li>Verify understanding by re-attempting that quiz question</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Self-Study Tips -->
+      <section class="section" id="tips">
+        <div class="section__number">09 — STUDY TIPS</div>
+        <h2 class="section__title">Self-Study Tips</h2>
+        <p>How to get the most out of these resources.</p>
+
+        <div class="card">
+          <ul class="tips-list">
+            <li>
+              <span class="tips-list__icon">1</span>
+              <div class="tips-list__content">
+                <h4>Watch actively, not passively</h4>
+                <p>
+                  Pause videos frequently. Before watching how a matrix
+                  multiplication is computed, try to do it yourself. Predict
+                  what will happen next.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-list__icon">2</span>
+              <div class="tips-list__content">
+                <h4>Do the exercises</h4>
+                <p>
+                  Practice problems cement understanding. If a resource has
+                  exercises, do them. You should be able to compute a 2x3 times
+                  3x2 matrix multiplication by hand without looking anything up.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-list__icon">3</span>
+              <div class="tips-list__content">
+                <h4>Use interactive tools</h4>
+                <p>
+                  float.exposed and matrix visualizers let you experiment.
+                  "What happens if I flip this bit?" builds deeper understanding
+                  than reading about it.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-list__icon">4</span>
+              <div class="tips-list__content">
+                <h4>Spaced repetition beats cramming</h4>
+                <p>
+                  20 hours over 2 weeks sticks better than 20 hours in 2 days.
+                  Review previous material briefly before starting new topics.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-list__icon">5</span>
+              <div class="tips-list__content">
+                <h4>You're ready when it feels obvious</h4>
+                <p>
+                  The goal isn't memorization—it's internalization. When someone
+                  says "3x4 times 4x2" and you instantly know the result is 3x2,
+                  you're ready.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Next Steps -->
+      <section
+        class="section"
+        style="text-align: center; padding: var(--space-2xl) 0"
+      >
+        <div class="section__number">NEXT STEPS</div>
+        <h2 class="section__title">Ready to Start the Course?</h2>
+        <p style="max-width: 500px; margin: 0 auto var(--space-xl)">
+          Once you can score 5/5 on the diagnostic quiz, you have the math
+          foundation needed for GPU kernel development.
+        </p>
+        <a href="attention-math.html" class="btn btn--primary"
+          >Start: Attention Math Foundations</a
+        >
+        <a href="index.html" class="btn" style="margin-left: var(--space-sm)"
+          >Back to Course Index</a
+        >
+      </section>
+    </div>
+
+    <script src="scripts/components.js"></script>
+    <script>
+      // Quiz state
+      const quizState = {
+        answered: new Set(),
+        correct: 0,
+      };
+
+      // Quiz feedback messages
+      const feedbackMessages = {
+        1: {
+          correct:
+            "Correct! The result takes the rows from A (3) and columns from B (2).",
+          wrong: "Remember: result dimensions are (rows of A) x (columns of B). The inner dimensions (4) must match and cancel out.",
+        },
+        2: {
+          correct:
+            "Correct! linear_index = row * num_cols + col = 2 * 6 + 3 = 15",
+          wrong: "In row-major: linear_index = row * num_cols + col. Here: 2 * 6 + 3 = 15",
+        },
+        3: {
+          correct:
+            "Correct! FP32 has 23 mantissa bits, giving about 7 decimal digits of precision.",
+          wrong: "FP32 has 23 mantissa bits. log10(2^23) ≈ 6.9, so about 6-7 decimal digits.",
+        },
+        4: {
+          correct:
+            "Correct! Exponential functions eventually dominate any polynomial, no matter the degree.",
+          wrong: "Exponential growth (e^x) always eventually overtakes polynomial growth (x^n) for any n.",
+        },
+        5: {
+          correct:
+            "Correct! Dividing by the sum creates a probability distribution that sums to 1. This is the basis of softmax.",
+          wrong: "When you divide each element by the total sum, the results must sum to 1. (2/12 + 4/12 + 6/12 = 12/12 = 1)",
+        },
+      };
+
+      // Score recommendations
+      const scoreRecommendations = {
+        5: {
+          message: "Excellent! You're ready for the course.",
+          recommendation:
+            "Your math foundations are solid. Proceed directly to Attention Math Foundations or the full kernel course.",
+          class: "quiz-score__value--excellent",
+        },
+        4: {
+          message: "Almost there! Review one topic.",
+          recommendation:
+            "Review the topic you missed using the resources below, then proceed to the course.",
+          class: "quiz-score__value--good",
+        },
+        3: {
+          message: "Good start! Review the gaps.",
+          recommendation:
+            "Spend a few hours on the topics you missed. The 'Refresher Needed' path below is designed for you.",
+          class: "quiz-score__value--good",
+        },
+        2: {
+          message: "Some review needed.",
+          recommendation:
+            "Work through the 'Complete Beginner' or 'Refresher Needed' path below before starting the course.",
+          class: "quiz-score__value--needs-work",
+        },
+        1: {
+          message: "Let's build your foundation.",
+          recommendation:
+            "No worries—everyone starts somewhere. The 'Complete Beginner' path will get you ready in about 20 hours.",
+          class: "quiz-score__value--needs-work",
+        },
+        0: {
+          message: "Time to learn the fundamentals.",
+          recommendation:
+            "Work through the 'Complete Beginner' path below. These concepts will become second nature with practice.",
+          class: "quiz-score__value--needs-work",
+        },
+      };
+
+      // Initialize quizzes
+      document.querySelectorAll(".quiz").forEach((quiz, index) => {
+        const quizNum = index + 1;
+        const options = quiz.querySelectorAll(".quiz-opt");
+        const feedback = quiz.querySelector(".quiz-fb");
+
+        options.forEach((opt) => {
+          opt.addEventListener("click", () => {
+            if (quizState.answered.has(quizNum)) return;
+
+            quizState.answered.add(quizNum);
+            const isCorrect = opt.dataset.correct === "true";
+
+            if (isCorrect) {
+              quizState.correct++;
+              opt.classList.add("correct", "picked");
+              feedback.textContent = feedbackMessages[quizNum].correct;
+              feedback.className = "quiz-fb show ok";
+            } else {
+              opt.classList.add("wrong", "picked");
+              feedback.textContent = feedbackMessages[quizNum].wrong;
+              feedback.className = "quiz-fb show no";
+              // Show correct answer
+              options.forEach((o) => {
+                if (o.dataset.correct === "true") {
+                  o.classList.add("correct");
+                }
+              });
+            }
+
+            // Check if all questions answered
+            if (quizState.answered.size === 5) {
+              showScore();
+            }
+          });
+
+          // Keyboard support
+          opt.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              opt.click();
+            }
+          });
+        });
+      });
+
+      function showScore() {
+        const scoreDisplay = document.getElementById("quiz-score");
+        const scoreValue = document.getElementById("score-value");
+        const scoreMessage = document.getElementById("score-message");
+        const scoreRec = document.getElementById("score-recommendation");
+
+        const score = quizState.correct;
+        const rec = scoreRecommendations[score];
+
+        scoreValue.textContent = `${score}/5`;
+        scoreValue.className = `quiz-score__value ${rec.class}`;
+        scoreMessage.textContent = rec.message;
+        scoreRec.textContent = rec.recommendation;
+
+        scoreDisplay.classList.add("show");
+        scoreDisplay.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      // Reset quiz
+      document.getElementById("reset-quiz").addEventListener("click", () => {
+        quizState.answered.clear();
+        quizState.correct = 0;
+
+        document.querySelectorAll(".quiz").forEach((quiz) => {
+          quiz.querySelectorAll(".quiz-opt").forEach((opt) => {
+            opt.classList.remove("correct", "wrong", "picked");
+          });
+          const fb = quiz.querySelector(".quiz-fb");
+          fb.className = "quiz-fb";
+          fb.textContent = "";
+        });
+
+        document.getElementById("quiz-score").classList.remove("show");
+        document
+          .getElementById("quiz-1")
+          .scrollIntoView({ behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>

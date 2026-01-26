@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 6: Quantization - GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* Floating point bit visualization */
+      .fp-interactive {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .fp-interactive__bits {
+        display: flex;
+        gap: 2px;
+        margin-bottom: var(--space-md);
+        flex-wrap: wrap;
+      }
+
+      .fp-interactive__bit {
+        width: 28px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        user-select: none;
+      }
+
+      .fp-interactive__bit:hover {
+        transform: scale(1.1);
+      }
+
+      .fp-interactive__bit--sign { background: var(--accent-red); color: white; }
+      .fp-interactive__bit--exp { background: var(--accent-blue); color: white; }
+      .fp-interactive__bit--mant { background: var(--accent-green); color: var(--bg-primary); }
+
+      .fp-interactive__value {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-md);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        margin-top: var(--space-md);
+        flex-wrap: wrap;
+        gap: var(--space-md);
+      }
+
+      .fp-interactive__format-select {
+        display: flex;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+        flex-wrap: wrap;
+      }
+
+      /* FP format comparison */
+      .fp-formats {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+
+      .fp-row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+      }
+
+      .fp-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+
+      .fp-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .fp-name a {
+        color: var(--text-primary);
+        text-decoration: none;
+      }
+
+      .fp-name a:hover {
+        color: var(--accent-blue);
+      }
+
+      .fp-range {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .fp-bits {
+        display: flex;
+        gap: 2px;
+      }
+
+      .fp-bit {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      .fp-s { flex: 1; background: var(--accent-red); color: white; }
+      .fp-e { background: var(--accent-blue); color: white; }
+      .fp-m { background: var(--accent-green); color: var(--bg-primary); }
+
+      /* Stability demo */
+      .stability-demo {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      .stability-demo__panel {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+      }
+
+      .stability-demo__panel h4 {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        margin: 0 0 var(--space-md);
+        font-size: 0.95rem;
+      }
+
+      .stability-demo__status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .stability-demo__status--error { background: var(--accent-red); }
+      .stability-demo__status--ok { background: var(--accent-green); }
+
+      /* Quantization visualization */
+      .quant-viz {
+        margin: var(--space-lg) 0;
+      }
+
+      .quant-viz__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .quant-viz__label {
+        width: 80px;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .quant-viz__bar {
+        flex: 1;
+        height: 24px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .quant-viz__bar-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: var(--radius-sm);
+        transition: width var(--transition-normal);
+      }
+
+      .quant-viz__bar-fill--original { background: var(--accent-blue); }
+      .quant-viz__bar-fill--quantized { background: var(--accent-orange); }
+      .quant-viz__bar-fill--error { background: var(--accent-red); }
+
+      .quant-viz__value {
+        width: 80px;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        text-align: right;
+      }
+
+      /* Input groups */
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+      }
+
+      .input-group label {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        width: 120px;
+      }
+
+      /* Equation display */
+      .equation {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-lg);
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        text-align: center;
+        margin: var(--space-md) 0;
+        color: var(--text-primary);
+      }
+
+      .text-red { color: var(--accent-red); }
+      .text-green { color: var(--accent-green); }
+      .text-blue { color: var(--accent-blue); }
+      .text-orange { color: var(--accent-orange); }
+      .text-muted { color: var(--text-muted); }
+      .text-small { font-size: 0.85rem; }
+      .mb-0 { margin-bottom: 0; }
+    </style>
+  </head>
+  <body>
+    <!-- Chapter Navigation -->
+    <nav class="chapter-nav">
+      <div class="chapter-nav__inner">
+        <a href="../index.html" class="chapter-nav__home">GPU Learning</a>
+        <div class="chapter-nav__progress">Chapter <span>6</span> of 7</div>
+      </div>
+    </nav>
+
+    <div class="chapter-container">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 6</div>
+        <h1 class="chapter-header__title">Quantization</h1>
+        <p class="chapter-header__desc">
+          Floating point formats, numerical stability, and the math behind INT8, INT4, and FP8 quantization.
+          Essential for deploying efficient inference at scale.
+        </p>
+      </header>
+
+      <!-- Prereq callout -->
+      <div class="prereq-callout">
+        <div class="prereq-callout__icon">&#128218;</div>
+        <div class="prereq-callout__content">
+          <div class="prereq-callout__title">Prerequisites</div>
+          <p class="prereq-callout__text">
+            This chapter covers floating point representation and numerical concepts.
+            <a href="../math-prerequisites.html#floating-point">Floating Point Basics</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Notebook link -->
+      <div class="notebook-link">
+        <div class="notebook-link__icon">&#128221;</div>
+        <div class="notebook-link__content">
+          <div class="notebook-link__title">Practice Notebooks</div>
+          <p class="notebook-link__text">
+            <a href="../notebooks/part4/">Part 4: Quantization Labs</a> - FP8 conversion, INT8/INT4, NVFP4
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 1: Floating Point Representation -->
+      <section class="section" id="floating-point">
+        <div class="section__number">01 — FLOATING POINT</div>
+        <h2 class="section__title">Floating Point Representation</h2>
+
+        <p>
+          Understanding floating point formats is crucial for quantization and numerical
+          stability. Every float has three parts:
+          <strong style="color: var(--accent-red)">Sign</strong> (1 bit),
+          <strong style="color: var(--accent-blue)">Exponent</strong> (range),
+          <strong style="color: var(--accent-green)">Mantissa</strong> (precision).
+        </p>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">Interactive: Floating Point Bits</div>
+          </div>
+
+          <div class="fp-interactive">
+            <div class="fp-interactive__format-select">
+              <button class="btn btn--primary" id="fp-select-fp32">FP32</button>
+              <button class="btn" id="fp-select-fp16">FP16</button>
+              <button class="btn" id="fp-select-fp8">FP8 E4M3</button>
+            </div>
+
+            <p class="text-muted text-small" id="fp-format-info">
+              FP32: 1 sign + 8 exponent + 23 mantissa bits. Range: ±3.4×10<sup>38</sup>
+            </p>
+
+            <div class="fp-interactive__bits" id="fp-bits">
+              <!-- Filled by JavaScript -->
+            </div>
+
+            <div class="fp-interactive__value">
+              <div>
+                <span class="text-muted text-small">Decimal Value:</span>
+                <span class="text-primary" style="font-family: var(--font-mono); font-size: 1.25rem; margin-left: var(--space-sm);" id="fp-decimal">1.0</span>
+              </div>
+              <div>
+                <span class="text-muted text-small">Hex:</span>
+                <span class="text-blue" style="font-family: var(--font-mono);" id="fp-hex">0x3F800000</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-muted text-small">Click bits to toggle. The value updates automatically.</p>
+        </div>
+
+        <div class="diagram">
+          <div class="diagram-title">Format Comparison</div>
+          <div class="fp-formats">
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name"><a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format" target="_blank" rel="noopener">FP32 (float)</a></span>
+                <span class="fp-range">±3.4×10<sup>38</sup></span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 8">Exp(8)</div>
+                <div class="fp-bit fp-m" style="flex: 23">Mantissa(23)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name"><a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener">FP16 (half)</a></span>
+                <span class="fp-range">±65,504</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 5">Exp(5)</div>
+                <div class="fp-bit fp-m" style="flex: 10">Mant(10)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name"><a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">FP8 E4M3</a></span>
+                <span class="fp-range">±448</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 4">E(4)</div>
+                <div class="fp-bit fp-m" style="flex: 3">M(3)</div>
+              </div>
+            </div>
+            <div class="fp-row">
+              <div class="fp-head">
+                <span class="fp-name"><a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">FP8 E5M2</a></span>
+                <span class="fp-range">±57,344</span>
+              </div>
+              <div class="fp-bits">
+                <div class="fp-bit fp-s">S</div>
+                <div class="fp-bit fp-e" style="flex: 5">E(5)</div>
+                <div class="fp-bit fp-m" style="flex: 2">M(2)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Machine Epsilon</h3>
+
+        <p>
+          <strong>Machine epsilon</strong> is the smallest value ε such that 1.0 + ε ≠ 1.0
+          in floating point arithmetic. It defines the precision limit.
+        </p>
+
+        <div class="card">
+          <h4>Epsilon by Format</h4>
+          <table style="width: 100%; font-size: 0.9rem;">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="padding: var(--space-sm);">Format</th>
+              <th style="padding: var(--space-sm);">Mantissa Bits</th>
+              <th style="padding: var(--space-sm);">Epsilon (ε)</th>
+              <th style="padding: var(--space-sm);">Decimal</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP32</td>
+              <td style="padding: var(--space-sm);">23</td>
+              <td style="padding: var(--space-sm);">2<sup>-23</sup></td>
+              <td style="padding: var(--space-sm);">~1.19×10<sup>-7</sup></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP16</td>
+              <td style="padding: var(--space-sm);">10</td>
+              <td style="padding: var(--space-sm);">2<sup>-10</sup></td>
+              <td style="padding: var(--space-sm);">~9.77×10<sup>-4</sup></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP8 E4M3</td>
+              <td style="padding: var(--space-sm);">3</td>
+              <td style="padding: var(--space-sm);">2<sup>-3</sup></td>
+              <td style="padding: var(--space-sm);">0.125</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);">FP8 E5M2</td>
+              <td style="padding: var(--space-sm);">2</td>
+              <td style="padding: var(--space-sm);">2<sup>-2</sup></td>
+              <td style="padding: var(--space-sm);">0.25</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="quiz" id="fp-quiz">
+          <div class="quiz-q">In FP16, what is the next representable number after 1.0?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1.0001 (too small to represent)</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1.0009765625 (1 + 2<sup>-10</sup>)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1.001</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1.5</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__title">Special Values</div>
+          <p class="mb-0">
+            IEEE 754 reserves bit patterns for special values:
+            <strong>±Infinity</strong> (exponent all 1s, mantissa 0),
+            <strong>NaN</strong> (exponent all 1s, mantissa non-zero),
+            <strong>Denormals</strong> (exponent all 0s, gradual underflow).
+            Always check for these in numerical code.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: Numerical Stability -->
+      <section class="section" id="numerical-stability">
+        <div class="section__number">02 — NUMERICAL STABILITY</div>
+        <h2 class="section__title">Avoiding Numerical Disasters</h2>
+
+        <p>
+          Floating point has limited range and precision. Large intermediate values
+          cause <strong>overflow</strong>; small differences between large numbers
+          cause <strong>catastrophic cancellation</strong>.
+        </p>
+
+        <h3>The exp() Overflow Problem</h3>
+
+        <p>
+          In softmax, we compute exp(x). But exp(100) ≈ 2.7×10<sup>43</sup>, which
+          overflows FP16 (max ~65504) and even FP32 at exp(89).
+        </p>
+
+        <div class="stability-demo">
+          <div class="stability-demo__panel">
+            <h4>
+              <span class="stability-demo__status stability-demo__status--error"></span>
+              Naive Softmax
+            </h4>
+            <pre style="font-size: 0.8rem; margin: 0;"><code>exp(x) / Σexp(x)
+
+x = [100, 101, 102]
+exp(100) = <span class="text-red">OVERFLOW</span>
+exp(101) = <span class="text-red">OVERFLOW</span>
+exp(102) = <span class="text-red">OVERFLOW</span>
+Result: <span class="text-red">NaN</span></code></pre>
+          </div>
+
+          <div class="stability-demo__panel">
+            <h4>
+              <span class="stability-demo__status stability-demo__status--ok"></span>
+              Stable Softmax
+            </h4>
+            <pre style="font-size: 0.8rem; margin: 0;"><code>exp(x - max) / Σexp(x - max)
+
+x = [100, 101, 102]
+max = 102
+exp(-2) = 0.135
+exp(-1) = 0.368
+exp(0) = 1.0
+Result: <span class="text-green">[0.09, 0.24, 0.67]</span></code></pre>
+          </div>
+        </div>
+
+        <div class="callout callout--ok">
+          <div class="callout__title">The Max-Subtraction Trick</div>
+          <p class="mb-0">
+            Mathematically: exp(x-m)/Σexp(y-m) = exp(x)/Σexp(y) for any constant m.
+            Choosing m = max(x) ensures all exponents are ≤ 0, preventing overflow.
+            This is used in <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a> and all production softmax implementations.
+          </p>
+        </div>
+
+        <h3>Catastrophic Cancellation</h3>
+
+        <p>
+          When subtracting two nearly equal numbers, significant digits cancel and
+          relative error explodes.
+        </p>
+
+        <div class="card">
+          <h4>Example: Loss of Precision</h4>
+          <pre><code><span style="color: var(--text-muted)">// In FP32 with ~7 significant digits</span>
+a = 1.0000001
+b = 1.0000000
+c = a - b  <span style="color: var(--text-muted)">// Expected: 0.0000001</span>
+
+<span style="color: var(--text-muted)">// Actual result may have only 1 significant digit!</span>
+<span style="color: var(--text-muted)">// Relative error: potentially 100%</span></code></pre>
+
+          <p class="text-muted text-small mb-0">
+            This matters in numerical derivatives, residual computations, and
+            anywhere you compute differences of large similar values.
+          </p>
+        </div>
+
+        <h3>Error Accumulation in Summation</h3>
+
+        <p>
+          Adding many small values to a large accumulator loses precision.
+          Each addition rounds, and errors accumulate.
+        </p>
+
+        <div class="card">
+          <h4>Kahan Summation</h4>
+          <p>
+            Track the running error and compensate in subsequent additions:
+          </p>
+          <pre><code><span style="color: var(--accent-purple)">float</span> sum = 0.0f;
+<span style="color: var(--accent-purple)">float</span> c = 0.0f;  <span style="color: var(--text-muted)">// Running compensation</span>
+
+<span style="color: var(--accent-purple)">for</span> (<span style="color: var(--accent-purple)">int</span> i = 0; i < n; i++) {
+    <span style="color: var(--accent-purple)">float</span> y = x[i] - c;       <span style="color: var(--text-muted)">// Compensated input</span>
+    <span style="color: var(--accent-purple)">float</span> t = sum + y;        <span style="color: var(--text-muted)">// Tentative sum</span>
+    c = (t - sum) - y;        <span style="color: var(--text-muted)">// Recover lost low bits</span>
+    sum = t;
+}</code></pre>
+          <p class="text-muted text-small mb-0">
+            Kahan summation reduces error from O(n·ε) to O(ε). In practice, sorting values
+            by magnitude before summing or using tree reduction also helps.
+          </p>
+        </div>
+
+        <div class="quiz" id="stability-quiz">
+          <div class="quiz-q">Why does subtracting max(x) before exp() in softmax not change the result?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It does change the result, but the error is acceptable</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>exp(a-c)/exp(b-c) = exp(a)/exp(b) — the constant cancels</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The subtraction is only applied to the numerator</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>max(x) is always 1.0</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <!-- Section 3: Quantization Math -->
+      <section class="section" id="quantization-math">
+        <div class="section__number">03 — QUANTIZATION</div>
+        <h2 class="section__title">Quantization Math</h2>
+
+        <p>
+          Quantization maps floating point values to lower-precision integers (or
+          low-bit floats like FP8). This reduces memory bandwidth requirements but
+          introduces quantization error.
+        </p>
+
+        <h3>Scale Factor Computation</h3>
+
+        <div class="equation">
+          scale = max(|x|) / max_representable
+        </div>
+
+        <div class="equation">
+          quantized = round(x / scale)
+        </div>
+
+        <div class="equation">
+          dequantized = quantized × scale
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--orange">Interactive: Quantization Round-Trip</div>
+          </div>
+
+          <div style="margin-bottom: var(--space-lg);">
+            <div class="input-group">
+              <label>Original value:</label>
+              <input type="number" class="input" id="quant-input" value="3.7" step="0.1" style="width: 80px;">
+              <span class="text-muted text-small" style="margin-left: var(--space-sm);">(-8 to 8 range)</span>
+            </div>
+            <div class="input-group">
+              <label>Target bits:</label>
+              <select class="input" id="quant-bits" style="width: 80px;">
+                <option value="8">INT8</option>
+                <option value="4" selected>INT4</option>
+                <option value="2">INT2</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="quant-viz">
+            <div class="quant-viz__row">
+              <span class="quant-viz__label">Original</span>
+              <div class="quant-viz__bar">
+                <div class="quant-viz__bar-fill quant-viz__bar-fill--original" id="quant-bar-orig" style="width: 70%;"></div>
+              </div>
+              <span class="quant-viz__value text-blue" id="quant-val-orig">3.70</span>
+            </div>
+            <div class="quant-viz__row">
+              <span class="quant-viz__label">Quantized</span>
+              <div class="quant-viz__bar">
+                <div class="quant-viz__bar-fill quant-viz__bar-fill--quantized" id="quant-bar-quant" style="width: 66%;"></div>
+              </div>
+              <span class="quant-viz__value text-orange" id="quant-val-quant">3.43</span>
+            </div>
+            <div class="quant-viz__row">
+              <span class="quant-viz__label">Error</span>
+              <div class="quant-viz__bar">
+                <div class="quant-viz__bar-fill quant-viz__bar-fill--error" id="quant-bar-error" style="width: 5%;"></div>
+              </div>
+              <span class="quant-viz__value text-red" id="quant-val-error">0.27</span>
+            </div>
+          </div>
+
+          <div class="result" style="text-align: left;">
+            <div class="result__label">Computation</div>
+            <p style="margin: var(--space-xs) 0; font-family: var(--font-mono); font-size: 0.85rem;" id="quant-formula">
+              scale = 8.0 / 7 = 1.143, quantized_int = round(3.7 / 1.143) = 3, dequantized = 3 × 1.143 = 3.43
+            </p>
+          </div>
+        </div>
+
+        <h3>Block Scaling</h3>
+
+        <p>
+          Computing one scale per tensor wastes precision. <strong>Block scaling</strong>
+          computes a separate scale factor for each block of values (typically 16-128 elements).
+        </p>
+
+        <div class="card">
+          <h4>Why Groups of 16 or 32?</h4>
+          <ul style="margin: var(--space-md) 0;">
+            <li>Matches GPU warp size (32 threads) for efficient computation</li>
+            <li>Tensor Core MMA shapes (16×16, 8×8) align naturally</li>
+            <li>Amortizes scale factor storage overhead</li>
+            <li>Balance between precision and metadata cost</li>
+          </ul>
+
+          <p class="text-muted text-small mb-0">
+            <a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank" rel="noopener">OCP Microscaling (MX) formats</a>
+            use 32-element blocks.
+            <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">NVIDIA's NVFP4</a>
+            uses 16-element blocks with FP8 scale factors.
+          </p>
+        </div>
+
+        <h3>Quantization Error Bounds</h3>
+
+        <table style="width: 100%; font-size: 0.9rem; margin: var(--space-lg) 0;">
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <th style="padding: var(--space-sm);">Format</th>
+            <th style="padding: var(--space-sm);">Levels</th>
+            <th style="padding: var(--space-sm);">Max Relative Error</th>
+            <th style="padding: var(--space-sm);">Use Case</th>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: var(--space-sm);">INT8</td>
+            <td style="padding: var(--space-sm);">256</td>
+            <td style="padding: var(--space-sm);">~0.4%</td>
+            <td style="padding: var(--space-sm);">Weights, KV cache</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: var(--space-sm);">INT4</td>
+            <td style="padding: var(--space-sm);">16</td>
+            <td style="padding: var(--space-sm);">~7%</td>
+            <td style="padding: var(--space-sm);">Weights (with fine-tuning)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: var(--space-sm);">FP8 E4M3</td>
+            <td style="padding: var(--space-sm);">256*</td>
+            <td style="padding: var(--space-sm);">~6.25%</td>
+            <td style="padding: var(--space-sm);">Activations, general</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--space-sm);">FP4 E2M1</td>
+            <td style="padding: var(--space-sm);">16*</td>
+            <td style="padding: var(--space-sm);">~25%</td>
+            <td style="padding: var(--space-sm);">With block scaling</td>
+          </tr>
+        </table>
+        <p class="text-muted text-small">* FP formats have non-uniform spacing; error varies by magnitude.</p>
+
+        <div class="quiz" id="quant-quiz">
+          <div class="quiz-q">A tensor has values in [-2.4, 3.1]. What scale factor maps this to INT8 symmetric range [-127, 127]?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>3.1 / 127 = 0.0244</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>max(2.4, 3.1) / 127 = 3.1 / 127 = 0.0244</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>2.4 / 127 = 0.0189</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>(3.1 + 2.4) / 255 = 0.0216</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <!-- Section 4: Production Quantization -->
+      <section class="section" id="production">
+        <div class="section__number">04 — IN PRACTICE</div>
+        <h2 class="section__title">Production Quantization</h2>
+
+        <p>
+          Modern inference systems combine multiple quantization strategies. Here's how
+          the pieces fit together.
+        </p>
+
+        <div class="card">
+          <h4>Common Patterns</h4>
+
+          <div style="margin: var(--space-lg) 0;">
+            <h5 style="color: var(--accent-blue); margin-bottom: var(--space-sm);">Weight Quantization (W8A16, W4A16)</h5>
+            <p class="text-small mb-0">
+              Weights stored in INT8 or INT4, dequantized to FP16 for computation.
+              Memory-bound workloads benefit most. Used by GPTQ, AWQ, bitsandbytes.
+            </p>
+          </div>
+
+          <div style="margin: var(--space-lg) 0;">
+            <h5 style="color: var(--accent-green); margin-bottom: var(--space-sm);">Full INT8 (W8A8)</h5>
+            <p class="text-small mb-0">
+              Both weights and activations in INT8. Requires calibration data to determine
+              activation scales. Used by TensorRT-LLM, ONNX Runtime.
+            </p>
+          </div>
+
+          <div style="margin: var(--space-lg) 0;">
+            <h5 style="color: var(--accent-orange); margin-bottom: var(--space-sm);">FP8 (E4M3/E5M2)</h5>
+            <p class="text-small mb-0">
+              Native hardware support on H100/B100+. E4M3 for forward pass (precision),
+              E5M2 for gradients (range). Near-FP16 quality with 2× throughput.
+            </p>
+          </div>
+
+          <div style="margin: var(--space-lg) 0;">
+            <h5 style="color: var(--accent-purple); margin-bottom: var(--space-sm);">NVFP4 (Blackwell)</h5>
+            <p class="text-small mb-0">
+              4-bit floating point with per-block FP8 scales. 16-element blocks.
+              2× throughput vs FP8 with acceptable quality for inference.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__title">Key Insight: Memory vs Compute</div>
+          <p class="mb-0">
+            Weight-only quantization helps memory-bound inference (batch size 1, long sequences).
+            Full quantization (W8A8, FP8) helps compute-bound workloads (large batches, short sequences).
+            Profile your workload to choose the right strategy.
+          </p>
+        </div>
+
+        <h3>Citations</h3>
+
+        <div class="card">
+          <ul style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary); font-size: 0.9rem;">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener" style="color: var(--accent-blue);">FP8 Formats for Deep Learning</a> - Micikevicius et al., 2022
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener" style="color: var(--accent-blue);">GPTQ: Accurate Post-Training Quantization</a> - Frantar et al., 2022
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener" style="color: var(--accent-blue);">AWQ: Activation-aware Weight Quantization</a> - Lin et al., 2023
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://ieeexplore.ieee.org/document/8766229" target="_blank" rel="noopener" style="color: var(--accent-blue);">IEEE 754-2019</a> - Floating-Point Arithmetic Standard
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf" target="_blank" rel="noopener" style="color: var(--accent-blue);">OCP Microscaling Formats</a> - MX format specification
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You now understand how floating point works and how to quantize models for efficient inference.
+            Next, we'll see how these techniques come together in production systems.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="05-attention.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">Attention</div>
+          </a>
+          <a href="07-production.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Production</div>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Floating point visualization
+      const fpFormats = {
+        fp32: { sign: 1, exp: 8, mant: 23, bias: 127, name: 'FP32', info: 'FP32: 1 sign + 8 exponent + 23 mantissa bits. Range: ±3.4×10<sup>38</sup>' },
+        fp16: { sign: 1, exp: 5, mant: 10, bias: 15, name: 'FP16', info: 'FP16: 1 sign + 5 exponent + 10 mantissa bits. Range: ±65,504' },
+        fp8: { sign: 1, exp: 4, mant: 3, bias: 7, name: 'FP8 E4M3', info: 'FP8 E4M3: 1 sign + 4 exponent + 3 mantissa bits. Range: ±448' }
+      };
+
+      let currentFormat = 'fp32';
+      let fpBits = [];
+
+      function initFPBits() {
+        const container = document.getElementById('fp-bits');
+        container.innerHTML = '';
+        fpBits = [];
+        const format = fpFormats[currentFormat];
+
+        // Sign bit
+        const signBit = document.createElement('div');
+        signBit.className = 'fp-interactive__bit fp-interactive__bit--sign';
+        signBit.textContent = '0';
+        signBit.addEventListener('click', () => toggleBit(signBit));
+        container.appendChild(signBit);
+        fpBits.push({ el: signBit, type: 'sign' });
+
+        // Exponent bits
+        for (let i = 0; i < format.exp; i++) {
+          const bit = document.createElement('div');
+          bit.className = 'fp-interactive__bit fp-interactive__bit--exp';
+          bit.textContent = '0';
+          bit.addEventListener('click', () => toggleBit(bit));
+          container.appendChild(bit);
+          fpBits.push({ el: bit, type: 'exp' });
+        }
+
+        // Initialize to show 1.0: sign=0, exp=bias, mant=0
+        for (let i = 1; i <= format.exp; i++) {
+          const biasedExp = format.bias;
+          fpBits[i].el.textContent = (biasedExp >> (format.exp - i)) & 1;
+        }
+
+        // Mantissa bits
+        for (let i = 0; i < format.mant; i++) {
+          const bit = document.createElement('div');
+          bit.className = 'fp-interactive__bit fp-interactive__bit--mant';
+          bit.textContent = '0';
+          bit.addEventListener('click', () => toggleBit(bit));
+          container.appendChild(bit);
+          fpBits.push({ el: bit, type: 'mant' });
+        }
+
+        document.getElementById('fp-format-info').innerHTML = format.info;
+        updateFPValue();
+      }
+
+      function toggleBit(el) {
+        el.textContent = el.textContent === '0' ? '1' : '0';
+        updateFPValue();
+      }
+
+      function updateFPValue() {
+        const format = fpFormats[currentFormat];
+        const sign = parseInt(fpBits[0].el.textContent);
+
+        let exp = 0;
+        for (let i = 1; i <= format.exp; i++) {
+          exp = (exp << 1) | parseInt(fpBits[i].el.textContent);
+        }
+
+        let mant = 0;
+        for (let i = format.exp + 1; i < fpBits.length; i++) {
+          mant = (mant << 1) | parseInt(fpBits[i].el.textContent);
+        }
+
+        // Compute value
+        let value;
+        if (exp === 0) {
+          // Denormal
+          value = Math.pow(2, 1 - format.bias) * (mant / Math.pow(2, format.mant));
+        } else if (exp === (1 << format.exp) - 1) {
+          // Inf or NaN
+          value = mant === 0 ? Infinity : NaN;
+        } else {
+          // Normal
+          value = Math.pow(2, exp - format.bias) * (1 + mant / Math.pow(2, format.mant));
+        }
+
+        if (sign === 1) value = -value;
+
+        document.getElementById('fp-decimal').textContent = 
+          isNaN(value) ? 'NaN' : 
+          !isFinite(value) ? (value > 0 ? '+Inf' : '-Inf') : 
+          value.toPrecision(6);
+
+        // Compute hex
+        let allBits = fpBits.map(b => b.el.textContent).join('');
+        let hexVal = parseInt(allBits, 2).toString(16).toUpperCase();
+        const totalBits = 1 + format.exp + format.mant;
+        const hexDigits = Math.ceil(totalBits / 4);
+        hexVal = hexVal.padStart(hexDigits, '0');
+        document.getElementById('fp-hex').textContent = '0x' + hexVal;
+      }
+
+      document.getElementById('fp-select-fp32').addEventListener('click', () => {
+        currentFormat = 'fp32';
+        document.querySelectorAll('.fp-interactive__format-select .btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('fp-select-fp32').classList.add('btn--primary');
+        initFPBits();
+      });
+
+      document.getElementById('fp-select-fp16').addEventListener('click', () => {
+        currentFormat = 'fp16';
+        document.querySelectorAll('.fp-interactive__format-select .btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('fp-select-fp16').classList.add('btn--primary');
+        initFPBits();
+      });
+
+      document.getElementById('fp-select-fp8').addEventListener('click', () => {
+        currentFormat = 'fp8';
+        document.querySelectorAll('.fp-interactive__format-select .btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('fp-select-fp8').classList.add('btn--primary');
+        initFPBits();
+      });
+
+      initFPBits();
+
+      // Quantization visualization
+      function updateQuantViz() {
+        const input = parseFloat(document.getElementById('quant-input').value) || 0;
+        const bits = parseInt(document.getElementById('quant-bits').value);
+        const maxInt = Math.pow(2, bits - 1) - 1; // Symmetric range
+        const range = 8; // Fixed range for visualization
+
+        const scale = range / maxInt;
+        const quantizedInt = Math.round(input / scale);
+        const clampedInt = Math.max(-maxInt, Math.min(maxInt, quantizedInt));
+        const dequantized = clampedInt * scale;
+        const error = Math.abs(input - dequantized);
+
+        // Update bars
+        const origPct = ((input + range) / (2 * range)) * 100;
+        const quantPct = ((dequantized + range) / (2 * range)) * 100;
+        const errorPct = (error / (2 * range)) * 100 * 10; // Scale up for visibility
+
+        document.getElementById('quant-bar-orig').style.width = Math.max(0, Math.min(100, origPct)) + '%';
+        document.getElementById('quant-bar-quant').style.width = Math.max(0, Math.min(100, quantPct)) + '%';
+        document.getElementById('quant-bar-error').style.width = Math.max(0, Math.min(100, errorPct)) + '%';
+
+        document.getElementById('quant-val-orig').textContent = input.toFixed(2);
+        document.getElementById('quant-val-quant').textContent = dequantized.toFixed(2);
+        document.getElementById('quant-val-error').textContent = error.toFixed(3);
+
+        document.getElementById('quant-formula').textContent = 
+          `scale = ${range} / ${maxInt} = ${scale.toFixed(3)}, quantized_int = round(${input} / ${scale.toFixed(3)}) = ${clampedInt}, dequantized = ${clampedInt} × ${scale.toFixed(3)} = ${dequantized.toFixed(2)}`;
+      }
+
+      document.getElementById('quant-input')?.addEventListener('input', updateQuantViz);
+      document.getElementById('quant-bits')?.addEventListener('change', updateQuantViz);
+      updateQuantViz();
+    </script>
+  </body>
+</html>

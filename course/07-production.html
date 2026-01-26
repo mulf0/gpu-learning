@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 7: Production - GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* KV Cache visualization */
+      .kv-viz {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+        padding: var(--space-lg);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+      }
+
+      .kv-viz__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+      }
+
+      .kv-viz__label {
+        width: 80px;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .kv-viz__blocks {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+
+      .kv-viz__block {
+        width: 40px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        transition: all 0.2s;
+      }
+
+      .kv-viz__block--used { background: var(--accent-blue); color: white; }
+      .kv-viz__block--free { background: var(--bg-tertiary); color: var(--text-muted); }
+      .kv-viz__block--wasted { background: var(--accent-orange); color: white; }
+      .kv-viz__block--paged { background: var(--accent-green); color: white; }
+
+      /* Architecture diagram */
+      .arch-flow {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+        padding: var(--space-lg);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+      }
+
+      .arch-flow__row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+      }
+
+      .arch-flow__box {
+        padding: var(--space-md) var(--space-lg);
+        border-radius: var(--radius-md);
+        text-align: center;
+        min-width: 140px;
+      }
+
+      .arch-flow__box--input { background: var(--glow-blue); border: 1px solid var(--accent-blue); }
+      .arch-flow__box--engine { background: var(--glow-purple); border: 1px solid var(--accent-purple); }
+      .arch-flow__box--memory { background: var(--glow-green); border: 1px solid var(--accent-green); }
+      .arch-flow__box--output { background: var(--glow-orange); border: 1px solid var(--accent-orange); }
+
+      .arch-flow__arrow {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+      }
+
+      /* Comparison table styling */
+      .comparison-table {
+        width: 100%;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+      }
+
+      .comparison-table th,
+      .comparison-table td {
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .comparison-table th {
+        background: var(--bg-tertiary);
+        font-weight: 600;
+      }
+
+      /* Code blocks */
+      .code-block {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        overflow-x: auto;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: var(--space-md) 0;
+      }
+
+      .code-block code {
+        color: var(--text-primary);
+      }
+
+      .code-block .comment { color: var(--text-muted); }
+      .code-block .keyword { color: var(--accent-purple); }
+      .code-block .string { color: var(--accent-green); }
+      .code-block .number { color: var(--accent-orange); }
+      .code-block .function { color: var(--accent-blue); }
+
+      /* Callout boxes */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-muted { color: var(--text-muted); }
+      .text-small { font-size: 0.85rem; }
+      .mb-0 { margin-bottom: 0; }
+      .mt-lg { margin-top: var(--space-lg); }
+
+      /* Grid layout */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-md);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Chapter Navigation -->
+    <nav class="chapter-nav">
+      <div class="chapter-nav__inner">
+        <a href="../index.html" class="chapter-nav__home">GPU Learning</a>
+        <div class="chapter-nav__progress">Chapter <span>7</span> of 7</div>
+      </div>
+    </nav>
+
+    <div class="chapter-container">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 7</div>
+        <h1 class="chapter-header__title">Production</h1>
+        <p class="chapter-header__desc">
+          Deploy efficient LLM inference at scale. KV cache strategies, PagedAttention,
+          TensorRT-LLM, and vLLM—the systems that power real-world AI applications.
+        </p>
+      </header>
+
+      <!-- Prereq callout -->
+      <div class="prereq-callout">
+        <div class="prereq-callout__icon">&#128218;</div>
+        <div class="prereq-callout__content">
+          <div class="prereq-callout__title">Prerequisites</div>
+          <p class="prereq-callout__text">
+            This chapter builds on attention and quantization concepts.
+            <a href="05-attention.html">Chapter 5: Attention</a> |
+            <a href="06-quantization.html">Chapter 6: Quantization</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Notebook link -->
+      <div class="notebook-link">
+        <div class="notebook-link__icon">&#128221;</div>
+        <div class="notebook-link__content">
+          <div class="notebook-link__title">Practice Notebooks</div>
+          <p class="notebook-link__text">
+            <a href="../notebooks/part4/">Part 4: Production Labs</a> - KV cache, quantized inference
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 1: KV Cache -->
+      <section class="section" id="kv-cache">
+        <div class="section__number">01 — KV CACHE</div>
+        <h2 class="section__title">Why KV Cache Matters</h2>
+
+        <p>
+          In autoregressive generation, each new token attends to all previous tokens.
+          Without caching, you'd recompute K and V projections for the entire sequence
+          at every step—<a href="https://arxiv.org/abs/2211.05102" target="_blank" rel="noopener">O(n²) complexity</a>.
+        </p>
+
+        <p>
+          The <strong>KV cache</strong> stores computed key and value vectors, so each
+          generation step only computes K/V for the new token. This reduces complexity
+          to O(n) per step, but creates a new bottleneck: <strong>memory</strong>.
+        </p>
+
+        <div class="card">
+          <h4>KV Cache Memory Formula</h4>
+          <div style="background: var(--bg-tertiary); padding: var(--space-md); border-radius: var(--radius-md); font-family: var(--font-mono); text-align: center; margin: var(--space-md) 0;">
+            Memory = 2 × layers × heads × head_dim × seq_len × batch × bytes_per_element
+          </div>
+          <p class="text-muted text-small mb-0">
+            For Llama 2 70B with 4K context in FP16: ~2.5 GB per sequence. At batch size 32, that's 80 GB just for KV cache.
+            Source: <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">vLLM paper</a>.
+          </p>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">The Memory Wall</div>
+          <p class="mb-0">
+            KV cache often exceeds model weights in memory usage for long contexts.
+            A 70B model with 32K context can require 100+ GB just for KV storage.
+            This is why KV cache optimization is critical for production deployment.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: PagedAttention -->
+      <section class="section" id="paged-attention">
+        <div class="section__number">02 — PAGEDATTENTION</div>
+        <h2 class="section__title">Virtual Memory for KV Cache</h2>
+
+        <p>
+          <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">PagedAttention</a> 
+          (introduced in vLLM) applies virtual memory concepts to KV cache management.
+          Instead of pre-allocating contiguous memory per sequence, it allocates fixed-size
+          <strong>blocks</strong> on demand.
+        </p>
+
+        <div class="kv-viz">
+          <p class="text-muted text-small" style="margin: 0 0 var(--space-md);">
+            Traditional allocation wastes memory on unused context. PagedAttention eliminates this.
+          </p>
+          <div class="kv-viz__row">
+            <span class="kv-viz__label">Traditional:</span>
+            <div class="kv-viz__blocks">
+              <div class="kv-viz__block kv-viz__block--used">Seq1</div>
+              <div class="kv-viz__block kv-viz__block--used">Seq1</div>
+              <div class="kv-viz__block kv-viz__block--wasted">-</div>
+              <div class="kv-viz__block kv-viz__block--wasted">-</div>
+              <div class="kv-viz__block kv-viz__block--used">Seq2</div>
+              <div class="kv-viz__block kv-viz__block--wasted">-</div>
+              <div class="kv-viz__block kv-viz__block--wasted">-</div>
+              <div class="kv-viz__block kv-viz__block--wasted">-</div>
+            </div>
+          </div>
+          <div class="kv-viz__row">
+            <span class="kv-viz__label">Paged:</span>
+            <div class="kv-viz__blocks">
+              <div class="kv-viz__block kv-viz__block--paged">S1:0</div>
+              <div class="kv-viz__block kv-viz__block--paged">S1:1</div>
+              <div class="kv-viz__block kv-viz__block--paged">S2:0</div>
+              <div class="kv-viz__block kv-viz__block--free">free</div>
+              <div class="kv-viz__block kv-viz__block--free">free</div>
+              <div class="kv-viz__block kv-viz__block--free">free</div>
+              <div class="kv-viz__block kv-viz__block--free">free</div>
+              <div class="kv-viz__block kv-viz__block--free">free</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>PagedAttention Benefits</h4>
+          <table class="comparison-table">
+            <tr>
+              <th>Aspect</th>
+              <th>Traditional</th>
+              <th>PagedAttention</th>
+            </tr>
+            <tr>
+              <td>Memory utilization</td>
+              <td>~50-60%</td>
+              <td style="color: var(--accent-green);">~95%+</td>
+            </tr>
+            <tr>
+              <td>Max batch size</td>
+              <td>Limited by worst-case</td>
+              <td style="color: var(--accent-green);">Adapts dynamically</td>
+            </tr>
+            <tr>
+              <td>Memory fragmentation</td>
+              <td>Significant</td>
+              <td style="color: var(--accent-green);">Near zero</td>
+            </tr>
+            <tr>
+              <td>Prefix sharing</td>
+              <td>Duplicated</td>
+              <td style="color: var(--accent-green);">Copy-on-write</td>
+            </tr>
+          </table>
+          <p class="text-muted text-small" style="margin-top: var(--space-sm); margin-bottom: 0;">
+            Source: <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">Kwon et al., "Efficient Memory Management for Large Language Model Serving with PagedAttention"</a>
+          </p>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Copy-on-Write for Beam Search</div>
+          <p class="mb-0">
+            PagedAttention enables efficient beam search and parallel sampling by sharing
+            KV cache blocks across sequences. Only modified blocks are copied, reducing
+            memory by up to beam_width × for common prefixes.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3: Continuous Batching -->
+      <section class="section" id="continuous-batching">
+        <div class="section__number">03 — CONTINUOUS BATCHING</div>
+        <h2 class="section__title">Iteration-Level Scheduling</h2>
+
+        <p>
+          Traditional batching waits for all sequences to complete before starting new ones.
+          <a href="https://www.usenix.org/conference/osdi22/presentation/yu" target="_blank" rel="noopener">Continuous batching</a> 
+          (also called iteration-level scheduling) allows new requests to join mid-batch
+          as others finish.
+        </p>
+
+        <div class="arch-flow">
+          <div class="arch-flow__row">
+            <div class="arch-flow__box arch-flow__box--input">
+              <strong>Request Queue</strong><br>
+              <span style="font-size: 0.75rem;">Incoming prompts</span>
+            </div>
+            <div class="arch-flow__arrow">→</div>
+            <div class="arch-flow__box arch-flow__box--engine">
+              <strong>Scheduler</strong><br>
+              <span style="font-size: 0.75rem;">Per-iteration batching</span>
+            </div>
+            <div class="arch-flow__arrow">→</div>
+            <div class="arch-flow__box arch-flow__box--memory">
+              <strong>KV Cache Manager</strong><br>
+              <span style="font-size: 0.75rem;">PagedAttention</span>
+            </div>
+            <div class="arch-flow__arrow">→</div>
+            <div class="arch-flow__box arch-flow__box--output">
+              <strong>Output</strong><br>
+              <span style="font-size: 0.75rem;">Streaming tokens</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-orange);">Static Batching</h4>
+            <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); font-size: 0.9rem;">
+              <li>Wait for batch to fill</li>
+              <li>All sequences same length (padded)</li>
+              <li>Batch completes together</li>
+              <li>GPU idle during padding</li>
+            </ul>
+          </div>
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-green);">Continuous Batching</h4>
+            <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); font-size: 0.9rem;">
+              <li>Add requests immediately</li>
+              <li>Variable sequence lengths</li>
+              <li>Sequences exit independently</li>
+              <li>Higher GPU utilization</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="text-muted text-small" style="margin-top: var(--space-md);">
+          Continuous batching can improve throughput by 
+          <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference" target="_blank" rel="noopener">10-20×</a> 
+          compared to static batching for variable-length workloads.
+        </p>
+      </section>
+
+      <!-- Section 4: TensorRT-LLM -->
+      <section class="section" id="tensorrt-llm">
+        <div class="section__number">04 — TENSORRT-LLM</div>
+        <h2 class="section__title">NVIDIA's Optimized Inference</h2>
+
+        <p>
+          <a href="https://github.com/NVIDIA/TensorRT-LLM" target="_blank" rel="noopener">TensorRT-LLM</a> 
+          is NVIDIA's library for optimized LLM inference. It compiles models into optimized
+          TensorRT engines with fused kernels, in-flight batching, and hardware-specific optimizations.
+        </p>
+
+        <div class="card">
+          <h4>Key Features</h4>
+          <table class="comparison-table">
+            <tr>
+              <th>Feature</th>
+              <th>Description</th>
+            </tr>
+            <tr>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/advanced/gpt-attention.html" target="_blank" rel="noopener">Fused Attention</a></td>
+              <td>FlashAttention-2 + fused QKV projection + RoPE</td>
+            </tr>
+            <tr>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/advanced/batch-manager.html" target="_blank" rel="noopener">In-flight Batching</a></td>
+              <td>Continuous batching with paged KV cache</td>
+            </tr>
+            <tr>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/precision.html" target="_blank" rel="noopener">Quantization</a></td>
+              <td>FP8, INT8, INT4 (AWQ, GPTQ), W4A8</td>
+            </tr>
+            <tr>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/advanced/speculative-decoding.html" target="_blank" rel="noopener">Speculative Decoding</a></td>
+              <td>Draft model + verification for faster generation</td>
+            </tr>
+            <tr>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/llm-api-examples/llm_inference_distributed.html" target="_blank" rel="noopener">Tensor Parallelism</a></td>
+              <td>Multi-GPU inference with NVLink optimization</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="code-block">
+<code><span class="comment"># TensorRT-LLM basic usage</span>
+<span class="keyword">from</span> tensorrt_llm <span class="keyword">import</span> LLM, SamplingParams
+
+<span class="comment"># Load optimized model</span>
+llm = LLM(model=<span class="string">"meta-llama/Llama-2-7b-hf"</span>)
+
+<span class="comment"># Generate with sampling params</span>
+outputs = llm.generate(
+    [<span class="string">"What is the capital of France?"</span>],
+    sampling_params=SamplingParams(temperature=<span class="number">0.7</span>, max_tokens=<span class="number">100</span>)
+)
+
+<span class="keyword">for</span> output <span class="keyword">in</span> outputs:
+    <span class="function">print</span>(output.outputs[<span class="number">0</span>].text)</code>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">When to Use TensorRT-LLM</div>
+          <p class="mb-0">
+            Best for: NVIDIA GPUs (especially H100/A100), maximum throughput, production deployments
+            with stable models. Requires model compilation step but delivers highest performance
+            on NVIDIA hardware.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 5: vLLM -->
+      <section class="section" id="vllm">
+        <div class="section__number">05 — VLLM</div>
+        <h2 class="section__title">High-Throughput Serving</h2>
+
+        <p>
+          <a href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener">vLLM</a> 
+          is an open-source library focused on high-throughput serving. It introduced
+          PagedAttention and provides an easy-to-use API compatible with OpenAI's format.
+        </p>
+
+        <div class="card">
+          <h4>vLLM Architecture</h4>
+          <table class="comparison-table">
+            <tr>
+              <th>Component</th>
+              <th>Implementation</th>
+            </tr>
+            <tr>
+              <td>KV Cache</td>
+              <td><a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">PagedAttention</a> with block-level management</td>
+            </tr>
+            <tr>
+              <td>Batching</td>
+              <td>Continuous batching with preemption support</td>
+            </tr>
+            <tr>
+              <td>Attention</td>
+              <td>FlashAttention / FlashInfer backends</td>
+            </tr>
+            <tr>
+              <td>Quantization</td>
+              <td>AWQ, GPTQ, FP8, bitsandbytes</td>
+            </tr>
+            <tr>
+              <td>Parallelism</td>
+              <td>Tensor parallel, pipeline parallel</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="code-block">
+<code><span class="comment"># vLLM offline inference</span>
+<span class="keyword">from</span> vllm <span class="keyword">import</span> LLM, SamplingParams
+
+llm = LLM(model=<span class="string">"meta-llama/Llama-2-7b-hf"</span>)
+sampling_params = SamplingParams(temperature=<span class="number">0.8</span>, top_p=<span class="number">0.95</span>)
+
+prompts = [<span class="string">"Hello, my name is"</span>, <span class="string">"The capital of France is"</span>]
+outputs = llm.generate(prompts, sampling_params)
+
+<span class="keyword">for</span> output <span class="keyword">in</span> outputs:
+    <span class="function">print</span>(<span class="string">f"Prompt: </span>{output.prompt}<span class="string">"</span>)
+    <span class="function">print</span>(<span class="string">f"Output: </span>{output.outputs[<span class="number">0</span>].text}<span class="string">"</span>)</code>
+        </div>
+
+        <div class="code-block">
+<code><span class="comment"># vLLM OpenAI-compatible server</span>
+python -m vllm.entrypoints.openai.api_server \
+    --model meta-llama/Llama-2-7b-hf \
+    --tensor-parallel-size 2
+
+<span class="comment"># Client usage (standard OpenAI API)</span>
+curl http://localhost:8000/v1/completions \
+    -H <span class="string">"Content-Type: application/json"</span> \
+    -d <span class="string">'{"model": "meta-llama/Llama-2-7b-hf", "prompt": "Hello", "max_tokens": 50}'</span></code>
+        </div>
+      </section>
+
+      <!-- Section 6: Quantized KV Cache -->
+      <section class="section" id="quantized-kv">
+        <div class="section__number">06 — QUANTIZED KV CACHE</div>
+        <h2 class="section__title">Reducing Memory Further</h2>
+
+        <p>
+          Even with PagedAttention, KV cache dominates memory for long contexts. 
+          <a href="https://arxiv.org/abs/2401.18079" target="_blank" rel="noopener">Quantizing the KV cache</a> 
+          to INT8 or FP8 can halve memory usage with minimal quality loss.
+        </p>
+
+        <div class="card">
+          <h4>KV Cache Quantization Options</h4>
+          <table class="comparison-table">
+            <tr>
+              <th>Format</th>
+              <th>Memory Reduction</th>
+              <th>Quality Impact</th>
+              <th>Support</th>
+            </tr>
+            <tr>
+              <td>FP16 (baseline)</td>
+              <td>1×</td>
+              <td>None</td>
+              <td>All frameworks</td>
+            </tr>
+            <tr>
+              <td>FP8 E4M3</td>
+              <td>2×</td>
+              <td>Minimal</td>
+              <td><a href="https://nvidia.github.io/TensorRT-LLM/precision.html#fp8" target="_blank" rel="noopener">TensorRT-LLM</a>, vLLM</td>
+            </tr>
+            <tr>
+              <td>INT8</td>
+              <td>2×</td>
+              <td>Low</td>
+              <td>TensorRT-LLM, vLLM</td>
+            </tr>
+            <tr>
+              <td>INT4</td>
+              <td>4×</td>
+              <td>Moderate</td>
+              <td>Experimental</td>
+            </tr>
+          </table>
+          <p class="text-muted text-small" style="margin-top: var(--space-sm); margin-bottom: 0;">
+            FP8 KV cache is recommended for H100/B100 deployments. See 
+            <a href="https://arxiv.org/abs/2402.02750" target="_blank" rel="noopener">KIVI</a> for INT2 KV cache research.
+          </p>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Practical Recommendation</div>
+          <p class="mb-0">
+            Start with FP8 KV cache on Hopper+ GPUs—it's nearly lossless and halves memory.
+            For extreme memory constraints, INT8 with per-head scaling works well.
+            INT4 requires careful evaluation on your specific use case.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 7: Choosing a Framework -->
+      <section class="section" id="choosing">
+        <div class="section__number">07 — CHOOSING</div>
+        <h2 class="section__title">Framework Selection</h2>
+
+        <div class="card">
+          <h4>Decision Matrix</h4>
+          <table class="comparison-table">
+            <tr>
+              <th>Priority</th>
+              <th>Recommendation</th>
+            </tr>
+            <tr>
+              <td>Maximum throughput on NVIDIA</td>
+              <td><a href="https://github.com/NVIDIA/TensorRT-LLM" target="_blank" rel="noopener">TensorRT-LLM</a></td>
+            </tr>
+            <tr>
+              <td>Easy deployment, OpenAI compatibility</td>
+              <td><a href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener">vLLM</a></td>
+            </tr>
+            <tr>
+              <td>Research / rapid iteration</td>
+              <td><a href="https://github.com/huggingface/text-generation-inference" target="_blank" rel="noopener">TGI</a> or vLLM</td>
+            </tr>
+            <tr>
+              <td>Multi-cloud / AMD GPUs</td>
+              <td>vLLM (ROCm support)</td>
+            </tr>
+            <tr>
+              <td>Edge deployment</td>
+              <td><a href="https://github.com/ggerganov/llama.cpp" target="_blank" rel="noopener">llama.cpp</a></td>
+            </tr>
+          </table>
+        </div>
+
+        <h3 style="margin-top: var(--space-xl);">References</h3>
+        <div class="card">
+          <ul style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary); font-size: 0.9rem;">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener" style="color: var(--accent-blue);">PagedAttention Paper</a> - Kwon et al., "Efficient Memory Management for Large Language Model Serving"
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://www.usenix.org/conference/osdi22/presentation/yu" target="_blank" rel="noopener" style="color: var(--accent-blue);">Orca: Continuous Batching</a> - Yu et al., OSDI 2022
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://nvidia.github.io/TensorRT-LLM/" target="_blank" rel="noopener" style="color: var(--accent-blue);">TensorRT-LLM Documentation</a> - NVIDIA's official docs
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.vllm.ai/" target="_blank" rel="noopener" style="color: var(--accent-blue);">vLLM Documentation</a> - Official vLLM docs
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2401.18079" target="_blank" rel="noopener" style="color: var(--accent-blue);">KV Cache Quantization Survey</a> - Methods and benchmarks
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://arxiv.org/abs/2402.02750" target="_blank" rel="noopener" style="color: var(--accent-blue);">KIVI: INT2 KV Cache</a> - Extreme KV cache compression
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference" target="_blank" rel="noopener" style="color: var(--accent-blue);">Continuous Batching Explained</a> - Anyscale blog
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            Congratulations! You've completed the GPU Learning course. You now understand
+            GPU architecture, memory optimization, kernel development, attention mechanisms,
+            quantization, and production deployment.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="06-quantization.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">Quantization</div>
+          </a>
+          <a href="../index.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Course Complete</div>
+            <div class="chapter-footer__link-title">Back to Start</div>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../scripts/components.js"></script>
+  </body>
+</html>

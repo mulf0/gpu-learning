@@ -74,6 +74,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 
 body {
   font-family: var(--font-serif);
+  font-size: 20px;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.7;
@@ -1314,4 +1315,241 @@ input[type="range"]::-webkit-slider-thumb {
 .quiz-fb.show { display: block; }
 .quiz-fb.ok { background: var(--glow-green); color: var(--accent-green); }
 .quiz-fb.no { background: rgba(248,113,113,0.1); color: var(--accent-red); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHAPTER NAVIGATION (Book-style course layout)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Chapter Nav Bar - fixed at top */
+.chapter-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 100;
+  padding: var(--space-md) var(--space-xl);
+}
+
+.chapter-nav__inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chapter-nav__home {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  transition: color var(--transition-fast);
+}
+
+.chapter-nav__home:hover { color: var(--accent-blue); }
+
+.chapter-nav__progress {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.chapter-nav__progress span {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+/* Chapter Container - main content area */
+.chapter-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 5rem var(--space-xl) var(--space-3xl);
+}
+
+/* Chapter Header */
+.chapter-header {
+  margin-bottom: var(--space-2xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chapter-header__label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-purple);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.chapter-header__title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+.chapter-header__desc {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 650px;
+}
+
+/* Prereq Callout - links to math-prerequisites.html */
+.prereq-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  background: var(--glow-purple);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-lg) 0;
+}
+
+.prereq-callout__icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.prereq-callout__content {
+  flex: 1;
+}
+
+.prereq-callout__title {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-purple);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.prereq-callout__text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.prereq-callout__text a {
+  color: var(--accent-purple);
+  text-decoration: underline;
+  text-decoration-color: rgba(167, 139, 250, 0.4);
+}
+
+.prereq-callout__text a:hover {
+  text-decoration-color: var(--accent-purple);
+}
+
+/* Notebook Link - links to practice notebooks */
+.notebook-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-lg) 0;
+  transition: all var(--transition-fast);
+}
+
+.notebook-link:hover {
+  border-color: var(--accent-green);
+  background: var(--glow-green);
+}
+
+.notebook-link__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.notebook-link__content {
+  flex: 1;
+}
+
+.notebook-link__title {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.notebook-link__desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Chapter Footer - prev/next navigation */
+.chapter-footer {
+  margin-top: var(--space-3xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.chapter-footer__flow {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.chapter-footer__flow-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto var(--space-lg);
+}
+
+.chapter-footer__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.chapter-footer__link {
+  flex: 1;
+  max-width: 45%;
+  padding: var(--space-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.chapter-footer__link:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.chapter-footer__link--prev { text-align: left; }
+.chapter-footer__link--next { text-align: right; margin-left: auto; }
+
+.chapter-footer__link-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
+}
+
+.chapter-footer__link-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Responsive adjustments for chapters */
+@media (max-width: 600px) {
+  .chapter-nav { padding: var(--space-sm) var(--space-md); }
+  .chapter-container { padding: 4rem var(--space-md) var(--space-2xl); }
+  .chapter-header__title { font-size: 1.75rem; }
+  .chapter-footer__nav { flex-direction: column; }
+  .chapter-footer__link { max-width: 100%; text-align: center; }
+}
 

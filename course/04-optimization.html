@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 4: Optimization - GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* Priority list */
+      .priority-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+        margin: var(--space-lg) 0;
+      }
+      .priority-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+      }
+      .priority-item__num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+      }
+      .priority-item:nth-child(1) .priority-item__num { background: var(--accent-red); color: white; }
+      .priority-item:nth-child(2) .priority-item__num { background: var(--accent-orange); color: white; }
+      .priority-item:nth-child(3) .priority-item__num { background: var(--accent-blue); color: white; }
+      .priority-item:nth-child(4) .priority-item__num { background: var(--accent-purple); color: white; }
+      .priority-item:nth-child(5) .priority-item__num { background: var(--accent-green); color: var(--bg-primary); }
+      .priority-item__content h4 {
+        margin: 0 0 var(--space-xs);
+        font-size: 0.95rem;
+      }
+      .priority-item__content p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      /* Bank visualization */
+      .bank-viz {
+        display: flex;
+        gap: var(--space-xs);
+        margin: var(--space-md) 0;
+        overflow-x: auto;
+        padding-bottom: var(--space-sm);
+        flex-wrap: wrap;
+      }
+      .bank-viz__bank {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 36px;
+      }
+      .bank-viz__label {
+        font-size: 0.65rem;
+        text-align: center;
+        color: var(--text-muted);
+        padding: var(--space-xs);
+      }
+      .bank-viz__slot {
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        font-size: 0.7rem;
+        transition: all 0.2s;
+      }
+      .bank-viz__slot.accessed { background: var(--accent-green); color: white; }
+      .bank-viz__slot.conflict { background: var(--accent-orange); color: white; }
+
+      /* TMA flow */
+      .tma-flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+        flex-wrap: wrap;
+      }
+      .tma-flow__box {
+        padding: var(--space-md) var(--space-lg);
+        border-radius: var(--radius-md);
+        text-align: center;
+        min-width: 120px;
+      }
+      .tma-flow__box--hbm { background: var(--glow-orange); border: 1px solid var(--accent-orange); }
+      .tma-flow__box--tma { background: var(--glow-purple); border: 1px solid var(--accent-purple); }
+      .tma-flow__box--smem { background: var(--glow-green); border: 1px solid var(--accent-green); }
+      .tma-flow__arrow {
+        font-size: 1.5rem;
+        color: var(--text-muted);
+      }
+
+      /* Code blocks */
+      .code-block {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        overflow-x: auto;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: var(--space-md) 0;
+      }
+      .code-block code {
+        color: var(--text-primary);
+      }
+      .code-block .comment { color: var(--text-muted); }
+      .code-block .keyword { color: var(--accent-purple); }
+      .code-block .string { color: var(--accent-green); }
+      .code-block .number { color: var(--accent-orange); }
+      .code-block .function { color: var(--accent-blue); }
+
+      /* Interactive containers */
+      .interactive {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+      .interactive__title {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+        color: var(--accent-purple);
+      }
+      .interactive__title::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--accent-purple);
+        border-radius: 50%;
+      }
+
+      /* Result box */
+      .result-box {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: var(--space-md);
+      }
+
+      /* Callout boxes */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-muted { color: var(--text-muted); }
+      .text-small { font-size: 0.85rem; }
+      .mb-0 { margin-bottom: 0; }
+      .mt-lg { margin-top: var(--space-lg); }
+
+      /* Grid layout */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-md);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Chapter Navigation -->
+    <nav class="chapter-nav">
+      <div class="chapter-nav__inner">
+        <a href="../index.html" class="chapter-nav__home">GPU Learning</a>
+        <div class="chapter-nav__progress">Chapter <span>4</span> of 7</div>
+      </div>
+    </nav>
+
+    <div class="chapter-container">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 4</div>
+        <h1 class="chapter-header__title">Optimization</h1>
+        <p class="chapter-header__desc">
+          Push your kernels to 80%+ of peak performance. Profiling, bank conflicts,
+          Tensor Cores, and TMA—the techniques that separate good code from great code.
+        </p>
+      </header>
+
+      <!-- Prereq callout -->
+      <div class="prereq-callout">
+        <div class="prereq-callout__icon">&#128218;</div>
+        <div class="prereq-callout__content">
+          <div class="prereq-callout__title">Prerequisites</div>
+          <p class="prereq-callout__text">
+            This chapter assumes you've written tiled kernels.
+            <a href="03-kernels.html">Chapter 3: First Kernels</a> |
+            <a href="02-memory.html">Chapter 2: Memory Hierarchy</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Notebook link -->
+      <div class="notebook-link">
+        <div class="notebook-link__icon">&#128221;</div>
+        <div class="notebook-link__content">
+          <div class="notebook-link__title">Practice Notebooks</div>
+          <p class="notebook-link__text">
+            <a href="../notebooks/part2/">Part 2: Optimization Labs</a> - Profiling through optimized GEMM
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 1: Profiling -->
+      <section class="section" id="profiling">
+        <div class="section__number">01 — PROFILING</div>
+        <h2 class="section__title">Measure Before You Optimize</h2>
+
+        <p>
+          The first rule of optimization: <strong>don't guess</strong>. Use 
+          <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener">Nsight Compute</a>
+          to understand where time is actually spent.
+        </p>
+
+        <div class="code-block">
+<code><span class="comment"># Profile a kernel</span>
+ncu --set full -o profile python my_kernel.py
+
+<span class="comment"># Key metrics to check:</span>
+<span class="comment"># - Memory throughput (% of peak)</span>
+<span class="comment"># - Compute throughput (% of peak)</span>
+<span class="comment"># - Occupancy (warps/SM)</span>
+<span class="comment"># - L1/L2 hit rates</span>
+<span class="comment"># - Bank conflicts</span></code>
+        </div>
+
+        <div class="card">
+          <h4>Common Bottlenecks</h4>
+          <table style="width: 100%; font-size: 0.85rem;">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="text-align: left; padding: var(--space-sm);">Symptom</th>
+              <th style="text-align: left; padding: var(--space-sm);">Likely Cause</th>
+              <th style="text-align: left; padding: var(--space-sm);">Fix</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">High memory latency</td>
+              <td style="padding: var(--space-sm);">Uncoalesced access</td>
+              <td style="padding: var(--space-sm);">Fix access patterns</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">Low occupancy</td>
+              <td style="padding: var(--space-sm);">Too many registers</td>
+              <td style="padding: var(--space-sm);">Reduce register pressure</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">SMEM conflicts</td>
+              <td style="padding: var(--space-sm);">Bank conflicts</td>
+              <td style="padding: var(--space-sm);">Pad arrays, change stride</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);">Low compute %</td>
+              <td style="padding: var(--space-sm);">Memory bound</td>
+              <td style="padding: var(--space-sm);">Increase data reuse</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">The 80% Rule</div>
+          <p class="mb-0">
+            If you're at 80% of theoretical peak, you're done. The last 20% requires
+            heroic effort and architecture-specific tricks. Ship it and move on.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: Bank Conflicts -->
+      <section class="section" id="bank-conflicts">
+        <div class="section__number">02 — BANK CONFLICTS</div>
+        <h2 class="section__title">Shared Memory Banks</h2>
+
+        <p>
+          Shared memory is divided into <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener">32 banks</a>. 
+          Each bank can serve one address per cycle. When multiple threads in a warp access 
+          different addresses in the same bank, accesses serialize—this is a <strong>bank conflict</strong>.
+        </p>
+
+        <div class="interactive">
+          <div class="interactive__title">Bank Conflict Visualizer</div>
+          <p class="text-muted text-small">
+            Bank = (address / 4) % 32. Consecutive 4-byte words map to consecutive banks.
+          </p>
+
+          <div class="bank-viz" id="bank-viz">
+            <!-- 8 banks shown (simplified from 32) -->
+          </div>
+
+          <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md); flex-wrap: wrap;">
+            <button class="btn btn--primary" id="bank-no-conflict">No Conflict</button>
+            <button class="btn" id="bank-2way">2-way Conflict</button>
+            <button class="btn" id="bank-broadcast">Broadcast (OK)</button>
+          </div>
+
+          <div class="result-box" id="bank-result">
+            Click a pattern to visualize bank access.
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: var(--space-lg);">
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-green);">Conflict-Free</h4>
+            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: 0.8rem;"><code>// Each thread hits different bank
+smem[threadIdx.x]
+
+// All 32 accesses parallel</code></pre>
+          </div>
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-orange);">N-way Conflict</h4>
+            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: 0.8rem;"><code>// Stride of 32 = same bank!
+smem[threadIdx.x * 32]
+
+// Serialized: 32x slower</code></pre>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Broadcast Exception</div>
+          <p class="mb-0">
+            If multiple threads read the <strong>same address</strong>, it's a broadcast—no conflict.
+            Conflicts only occur when threads access <strong>different addresses</strong> in the same bank.
+          </p>
+        </div>
+
+        <div class="quiz" id="bank-quiz">
+          <div class="quiz-q">What stride causes maximum bank conflicts (32-way)?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Stride of 1 (consecutive access)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Stride of 16</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Stride of 32 (or any multiple of 32)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Stride of 33</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <!-- Section 3: Tensor Cores -->
+      <section class="section" id="tensor-cores">
+        <div class="section__number">03 — TENSOR CORES</div>
+        <h2 class="section__title">Matrix Multiply-Accumulate Units</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#wmma" target="_blank" rel="noopener">Tensor Cores</a> 
+          are specialized hardware for matrix operations. They perform
+          <strong>matrix multiply-accumulate (MMA)</strong> operations on small tiles
+          in a single cycle—8-16x faster than CUDA cores for compatible workloads.
+        </p>
+
+        <div class="card">
+          <h4>Tensor Core Specs (<a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">H100 SXM</a>)</h4>
+          <table style="width: 100%; font-size: 0.85rem;">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="text-align: left; padding: var(--space-sm);">Format</th>
+              <th style="text-align: left; padding: var(--space-sm);">Shape (M×N×K)</th>
+              <th style="text-align: left; padding: var(--space-sm);">Peak TFLOPS</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP16</td>
+              <td style="padding: var(--space-sm);"><a href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-shape" target="_blank" rel="noopener">16×8×16</a></td>
+              <td style="padding: var(--space-sm);">~990</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">BF16</td>
+              <td style="padding: var(--space-sm);">16×8×16</td>
+              <td style="padding: var(--space-sm);">~990</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">FP8</td>
+              <td style="padding: var(--space-sm);">16×8×32</td>
+              <td style="padding: var(--space-sm);">~1979</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);">INT8</td>
+              <td style="padding: var(--space-sm);">16×8×32</td>
+              <td style="padding: var(--space-sm);">~1979</td>
+            </tr>
+          </table>
+          <p class="text-muted text-small" style="margin-top: var(--space-sm); margin-bottom: 0;">
+            Source: <a href="https://www.nvidia.com/en-us/data-center/h100/" target="_blank" rel="noopener">NVIDIA H100 Datasheet</a>. 
+            MMA shapes from <a href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions" target="_blank" rel="noopener">PTX ISA</a>.
+          </p>
+        </div>
+
+        <div class="code-block">
+<code><span class="comment"># Triton automatically uses Tensor Cores when:</span>
+<span class="comment"># 1. Matrix dimensions align to MMA shapes</span>
+<span class="comment"># 2. Data types are FP16, BF16, FP8, or INT8</span>
+<span class="comment"># 3. Using tl.dot() operation</span>
+
+<span class="keyword">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">matmul_kernel</span>(...):
+    <span class="comment"># This uses Tensor Cores automatically</span>
+    acc = tl.<span class="function">dot</span>(a, b, acc)  <span class="comment"># MMA operation</span></code>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Alignment Requirements</div>
+          <p class="mb-0">
+            Tensor Core performance requires alignment. Tile sizes should be multiples of 
+            MMA shapes (16, 32, etc.). Misaligned tiles fall back to slower CUDA core execution.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 4: TMA -->
+      <section class="section" id="tma">
+        <div class="section__number">04 — TMA</div>
+        <h2 class="section__title">Tensor Memory Accelerator</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Hopper introduced TMA</a>—dedicated 
+          hardware for bulk data movement between HBM and shared memory. TMA offloads 
+          address computation from SMs, enabling asynchronous tile transfers.
+        </p>
+
+        <div class="tma-flow">
+          <div class="tma-flow__box tma-flow__box--hbm">
+            <strong>HBM</strong><br>
+            <span style="font-size: 0.75rem;">Global tensors</span>
+          </div>
+          <div class="tma-flow__arrow">→</div>
+          <div class="tma-flow__box tma-flow__box--tma">
+            <strong>TMA Unit</strong><br>
+            <span style="font-size: 0.75rem;">Address gen + transfer</span>
+          </div>
+          <div class="tma-flow__arrow">→</div>
+          <div class="tma-flow__box tma-flow__box--smem">
+            <strong>SMEM</strong><br>
+            <span style="font-size: 0.75rem;">Ready for compute</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>TMA vs Manual Loads</h4>
+          <table style="width: 100%; font-size: 0.85rem;">
+            <tr>
+              <th style="text-align: left; padding: var(--space-sm);">Aspect</th>
+              <th style="text-align: left; padding: var(--space-sm);">Manual (LDG/STG)</th>
+              <th style="text-align: left; padding: var(--space-sm);">TMA</th>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Address computation</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">SM cycles</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">TMA unit (free)</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Tile dimensions</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Manual indexing</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Descriptor-based</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Multicast</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Not available</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Built-in to multiple SMs</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Async</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">cp.async</td>
+              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Native, with barriers</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">When to Use TMA</div>
+          <p class="mb-0">
+            TMA shines for structured tile access patterns (GEMM, convolution, attention).
+            For irregular access, manual loads may still be necessary. CuTe and Triton 
+            abstract TMA through their copy operations.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 5: Optimization Checklist -->
+      <section class="section" id="checklist">
+        <div class="section__number">05 — CHECKLIST</div>
+        <h2 class="section__title">Optimization Priority Order</h2>
+
+        <p>
+          Memory optimization follows a hierarchy of impact. Address these in order:
+        </p>
+
+        <div class="priority-list">
+          <div class="priority-item">
+            <div class="priority-item__num">1</div>
+            <div class="priority-item__content">
+              <h4>Memory Coalescing</h4>
+              <p>Adjacent threads access adjacent addresses. Single biggest impact on bandwidth.</p>
+            </div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-item__num">2</div>
+            <div class="priority-item__content">
+              <h4>Data Reuse (Tiling)</h4>
+              <p>Load once from HBM, use many times from SMEM. Transforms memory-bound to compute-bound.</p>
+            </div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-item__num">3</div>
+            <div class="priority-item__content">
+              <h4>Occupancy</h4>
+              <p>Enough warps to hide latency. Balance registers/SMEM against parallelism.</p>
+            </div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-item__num">4</div>
+            <div class="priority-item__content">
+              <h4>Bank Conflicts</h4>
+              <p>Avoid same-bank access in SMEM. Pad arrays or use different strides.</p>
+            </div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-item__num">5</div>
+            <div class="priority-item__content">
+              <h4>Tensor Cores + TMA</h4>
+              <p>Hardware acceleration. Requires proper alignment and data types.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Performance Targets</h4>
+          <table style="width: 100%; font-size: 0.85rem;">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="text-align: left; padding: var(--space-sm);">Metric</th>
+              <th style="text-align: left; padding: var(--space-sm);">Good</th>
+              <th style="text-align: left; padding: var(--space-sm);">Great</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">Memory Bandwidth</td>
+              <td style="padding: var(--space-sm);">60%</td>
+              <td style="padding: var(--space-sm);">80%+</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);">Compute Throughput</td>
+              <td style="padding: var(--space-sm);">50%</td>
+              <td style="padding: var(--space-sm);">70%+</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);">vs cuBLAS</td>
+              <td style="padding: var(--space-sm);">50%</td>
+              <td style="padding: var(--space-sm);">80%+</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 6: Practice -->
+      <section class="section" id="practice">
+        <div class="section__number">06 — PRACTICE</div>
+        <h2 class="section__title">Hands-On Labs</h2>
+
+        <div class="card">
+          <h4>Part 2 Labs</h4>
+          <ol style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/01_profiling.ipynb">Profiling</a> - Learn Nsight Compute
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/02_coalescing.ipynb">Coalescing</a> - Optimize memory access patterns
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/03_bank_conflicts.ipynb">Bank Conflicts</a> - Eliminate shared memory bottlenecks
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/04_pipelining.ipynb">Pipelining</a> - Overlap compute and memory
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/05_tma.ipynb">TMA (Hopper+)</a> - Hardware-accelerated data movement
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/06_tensor_cores.ipynb">Tensor Cores</a> - MMA operations
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part2/07_optimized_gemm.ipynb">Optimized GEMM</a> - Put it all together
+            </li>
+          </ol>
+        </div>
+
+        <h3 style="margin-top: var(--space-xl);">References</h3>
+        <div class="card">
+          <ul style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary); font-size: 0.9rem;">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener" style="color: var(--accent-blue);">Nsight Compute Documentation</a> - NVIDIA's kernel profiler
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener" style="color: var(--accent-blue);">CUDA Programming Guide: Shared Memory</a> - Bank conflict details
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions" target="_blank" rel="noopener" style="color: var(--accent-blue);">PTX ISA: Warp-Level Matrix Instructions</a> - MMA shapes and semantics
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener" style="color: var(--accent-blue);">Hopper Tuning Guide</a> - TMA and H100-specific optimizations
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://www.nvidia.com/en-us/data-center/h100/" target="_blank" rel="noopener" style="color: var(--accent-blue);">NVIDIA H100 Datasheet</a> - Official specs and TFLOPS numbers
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener" style="color: var(--accent-blue);">NVIDIA Tensor Core Resources</a> - Architecture whitepapers
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You now have the tools to push kernels to near-peak performance.
+            Next, we'll apply these techniques to the attention mechanism—the heart of transformers.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="03-kernels.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">First Kernels</div>
+          </a>
+          <a href="05-attention.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Attention</div>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Bank conflict visualization
+      const bankViz = document.getElementById('bank-viz');
+      const bankResult = document.getElementById('bank-result');
+
+      // Create 8 banks (simplified from 32)
+      for (let b = 0; b < 8; b++) {
+        const bank = document.createElement('div');
+        bank.className = 'bank-viz__bank';
+        
+        const label = document.createElement('div');
+        label.className = 'bank-viz__label';
+        label.textContent = `B${b}`;
+        bank.appendChild(label);
+        
+        for (let s = 0; s < 4; s++) {
+          const slot = document.createElement('div');
+          slot.className = 'bank-viz__slot';
+          slot.textContent = b * 4 + s;
+          slot.id = `slot-${b}-${s}`;
+          bank.appendChild(slot);
+        }
+        
+        bankViz.appendChild(bank);
+      }
+
+      function resetBankViz() {
+        document.querySelectorAll('.bank-viz__slot').forEach(s => {
+          s.classList.remove('accessed', 'conflict');
+        });
+      }
+
+      function showNoConflict() {
+        resetBankViz();
+        for (let b = 0; b < 8; b++) {
+          document.getElementById(`slot-${b}-0`).classList.add('accessed');
+        }
+        bankResult.innerHTML = `<strong style="color: var(--accent-green)">No conflict:</strong> Each thread accesses a different bank. All 8 accesses happen in parallel.`;
+      }
+
+      function show2WayConflict() {
+        resetBankViz();
+        for (let b = 0; b < 4; b++) {
+          document.getElementById(`slot-${b}-0`).classList.add('conflict');
+          document.getElementById(`slot-${b}-2`).classList.add('conflict');
+        }
+        bankResult.innerHTML = `<strong style="color: var(--accent-orange)">2-way conflict:</strong> Two threads access different addresses in the same bank. Takes 2 cycles instead of 1.`;
+      }
+
+      function showBroadcast() {
+        resetBankViz();
+        document.getElementById('slot-0-0').classList.add('accessed');
+        bankResult.innerHTML = `<strong style="color: var(--accent-green)">Broadcast:</strong> All threads read the same address. Hardware broadcasts to all—no conflict!`;
+      }
+
+      document.getElementById('bank-no-conflict').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('bank-no-conflict').classList.add('btn--primary');
+        showNoConflict();
+      });
+
+      document.getElementById('bank-2way').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('bank-2way').classList.add('btn--primary');
+        show2WayConflict();
+      });
+
+      document.getElementById('bank-broadcast').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('bank-broadcast').classList.add('btn--primary');
+        showBroadcast();
+      });
+    </script>
+  </body>
+</html>

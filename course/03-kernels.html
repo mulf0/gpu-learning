@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 3: First Kernels - GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* Code blocks */
+      .code-block {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        overflow-x: auto;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: var(--space-md) 0;
+      }
+      .code-block code {
+        color: var(--text-primary);
+      }
+      .code-block .comment { color: var(--text-muted); }
+      .code-block .keyword { color: var(--accent-purple); }
+      .code-block .string { color: var(--accent-green); }
+      .code-block .number { color: var(--accent-orange); }
+      .code-block .function { color: var(--accent-blue); }
+
+      /* Interactive containers */
+      .interactive {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+      .interactive__title {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+        color: var(--accent-purple);
+      }
+      .interactive__title::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--accent-purple);
+        border-radius: 50%;
+      }
+
+      /* Thread visualization */
+      .thread-viz {
+        display: grid;
+        grid-template-columns: repeat(16, 1fr);
+        gap: 3px;
+        margin: var(--space-md) 0;
+      }
+      .thread-viz__thread {
+        aspect-ratio: 1;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        color: var(--text-muted);
+      }
+      .thread-viz__thread.active {
+        background: var(--accent-blue);
+        color: white;
+      }
+      .thread-viz__thread.diverged {
+        background: var(--accent-orange);
+        color: white;
+      }
+
+      /* Coalescing visualization */
+      .coal-viz {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+      .coal-viz__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+      }
+      .coal-viz__label {
+        width: 80px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+      .coal-viz__cells {
+        display: flex;
+        gap: 2px;
+        flex: 1;
+        flex-wrap: wrap;
+      }
+      .coal-viz__cell {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        font-size: 0.7rem;
+        transition: all 0.2s;
+      }
+      .coal-viz__cell.active { background: var(--accent-blue); color: white; }
+      .coal-viz__cell.accessed { background: var(--accent-green); color: white; }
+      .coal-viz__cell.conflict { background: var(--accent-orange); color: white; }
+
+      /* Result display */
+      .result-box {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: var(--space-md);
+      }
+
+      /* Memory bars */
+      .mem-bars {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        padding: var(--space-md);
+      }
+      .mem-bar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: var(--space-xs);
+      }
+      .mem-bar-label {
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      .mem-bar-stats {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+      .mem-bar-track {
+        height: 28px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+      .mem-bar-fill {
+        height: 100%;
+        width: var(--w);
+        display: flex;
+        align-items: center;
+        padding-left: var(--space-sm);
+        font-size: 0.75rem;
+        color: white;
+        font-weight: 500;
+      }
+      .bg-green { background: var(--accent-green); }
+      .bg-blue { background: var(--accent-blue); }
+      .bg-purple { background: var(--accent-purple); }
+      .bg-orange { background: var(--accent-orange); }
+
+      /* Callout boxes */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-muted { color: var(--text-muted); }
+      .text-small { font-size: 0.85rem; }
+      .mb-0 { margin-bottom: 0; }
+      .mt-lg { margin-top: var(--space-lg); }
+
+      .insight {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        background: var(--bg-secondary);
+        border: 1px solid var(--accent-green);
+        border-radius: var(--radius-lg);
+      }
+      .insight-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--accent-green);
+        color: var(--bg-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+      .insight h4 {
+        color: var(--accent-green);
+        margin: 0 0 var(--space-xs);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Chapter Navigation -->
+    <nav class="chapter-nav">
+      <div class="chapter-nav__inner">
+        <a href="../index.html" class="chapter-nav__home">GPU Learning</a>
+        <div class="chapter-nav__progress">Chapter <span>3</span> of 7</div>
+      </div>
+    </nav>
+
+    <div class="chapter-container">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 3</div>
+        <h1 class="chapter-header__title">First Kernels</h1>
+        <p class="chapter-header__desc">
+          Write your first GPU kernels with Triton. From Python to 500,000x faster code—
+          understanding index arithmetic, memory access patterns, and why tiling matters.
+        </p>
+      </header>
+
+      <!-- Prereq callout -->
+      <div class="prereq-callout">
+        <div class="prereq-callout__icon">&#128218;</div>
+        <div class="prereq-callout__content">
+          <div class="prereq-callout__title">Prerequisites</div>
+          <p class="prereq-callout__text">
+            This chapter builds on GPU architecture and memory concepts.
+            <a href="01-gpu-fundamentals.html">Chapter 1</a> |
+            <a href="02-memory.html">Chapter 2</a> |
+            <a href="../math-prerequisites.html#index-arithmetic">Index Arithmetic</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Notebook link -->
+      <div class="notebook-link">
+        <div class="notebook-link__icon">&#128221;</div>
+        <div class="notebook-link__content">
+          <div class="notebook-link__title">Practice Notebooks</div>
+          <p class="notebook-link__text">
+            <a href="../notebooks/part1/">Part 1: NumPy to Triton</a> - Environment setup through fast matmul
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 1: The Challenge -->
+      <section class="section" id="challenge">
+        <div class="section__number">01 — THE CHALLENGE</div>
+        <h2 class="section__title">Your Code is Slow</h2>
+
+        <p>
+          Let's establish a baseline. Here's matrix multiplication in Python with NumPy:
+        </p>
+
+        <div class="code-block">
+<code><span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">import</span> time
+
+<span class="comment"># Two 1024x1024 matrices</span>
+A = np.<span class="function">random.randn</span>(<span class="number">1024</span>, <span class="number">1024</span>).astype(np.float32)
+B = np.<span class="function">random.randn</span>(<span class="number">1024</span>, <span class="number">1024</span>).astype(np.float32)
+
+<span class="comment"># Time it</span>
+start = time.<span class="function">perf_counter</span>()
+C = A @ B
+elapsed = time.<span class="function">perf_counter</span>() - start
+
+<span class="comment"># Calculate GFLOPS (2 * N^3 operations for matmul)</span>
+flops = <span class="number">2</span> * <span class="number">1024</span>**<span class="number">3</span>
+gflops = flops / elapsed / <span class="number">1e9</span>
+<span class="function">print</span>(<span class="string">f"NumPy: {gflops:.1f} GFLOPS"</span>)  <span class="comment"># ~50-100 GFLOPS on modern CPU</span></code>
+        </div>
+
+        <p>
+          NumPy uses optimized BLAS libraries, so it's not terrible—maybe 50-100 GFLOPS on a good CPU.
+          But your GPU can do <strong>100+ TFLOPS</strong>. That's 1000x more potential, sitting unused.
+        </p>
+
+        <div class="callout info">
+          <div class="callout-title">What's a GFLOP?</div>
+          <p class="mb-0">
+            <strong>GFLOPS</strong> = billion floating-point operations per second. Matrix multiplication
+            of two N×N matrices requires 2N³ operations (multiply + add for each element).
+            For 1024×1024: 2 × 1024³ ≈ 2.1 billion operations.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: CuPy -->
+      <section class="section" id="cupy">
+        <div class="section__number">02 — THE INSTANT FIX</div>
+        <h2 class="section__title">CuPy: One Import Changes Everything</h2>
+
+        <div class="code-block">
+<code><span class="keyword">import</span> cupy <span class="keyword">as</span> cp  <span class="comment"># Drop-in NumPy replacement for GPU</span>
+
+<span class="comment"># Same code, different import</span>
+A_gpu = cp.<span class="function">asarray</span>(A)  <span class="comment"># Copy to GPU</span>
+B_gpu = cp.<span class="function">asarray</span>(B)
+
+start = time.<span class="function">perf_counter</span>()
+C_gpu = A_gpu @ B_gpu
+cp.cuda.<span class="function">Stream.null.synchronize</span>()  <span class="comment"># Wait for GPU</span>
+elapsed = time.<span class="function">perf_counter</span>() - start
+
+gflops = <span class="number">2</span> * <span class="number">1024</span>**<span class="number">3</span> / elapsed / <span class="number">1e9</span>
+<span class="function">print</span>(<span class="string">f"CuPy: {gflops:.1f} GFLOPS"</span>)  <span class="comment"># ~5000-10000 GFLOPS!</span></code>
+        </div>
+
+        <p>
+          <strong>50-100x speedup with zero algorithm changes.</strong> <a href="https://cupy.dev/" target="_blank" rel="noopener">CuPy</a> calls 
+          <a href="https://docs.nvidia.com/cuda/cublas/" target="_blank" rel="noopener">cuBLAS</a> under the hood,
+          which is NVIDIA's heavily optimized matrix library.
+        </p>
+
+        <p>
+          But <em>why</em> is it so fast? To write our own fast kernels, we need to understand
+          how GPUs execute code—which you learned in Chapters 1 and 2.
+        </p>
+      </section>
+
+      <!-- Section 3: First Kernel -->
+      <section class="section" id="first-kernel">
+        <div class="section__number">03 — YOUR FIRST KERNEL</div>
+        <h2 class="section__title">Writing GPU Code with Triton</h2>
+
+        <p>
+          Let's write a simple kernel in <a href="https://triton-lang.org/" target="_blank" rel="noopener">Triton</a>,
+          a Python-like language for GPU programming:
+        </p>
+
+        <div class="code-block">
+<code><span class="keyword">import</span> triton
+<span class="keyword">import</span> triton.language <span class="keyword">as</span> tl
+
+<span class="keyword">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">add_kernel</span>(x_ptr, y_ptr, out_ptr, n, BLOCK: tl.constexpr):
+    <span class="comment"># Which block am I?</span>
+    pid = tl.<span class="function">program_id</span>(<span class="number">0</span>)
+    
+    <span class="comment"># Calculate which elements this block handles</span>
+    offsets = pid * BLOCK + tl.<span class="function">arange</span>(<span class="number">0</span>, BLOCK)
+    
+    <span class="comment"># Mask for bounds checking</span>
+    mask = offsets < n
+    
+    <span class="comment"># Load, compute, store</span>
+    x = tl.<span class="function">load</span>(x_ptr + offsets, mask=mask)
+    y = tl.<span class="function">load</span>(y_ptr + offsets, mask=mask)
+    tl.<span class="function">store</span>(out_ptr + offsets, x + y, mask=mask)
+
+<span class="comment"># Launch kernel</span>
+n = <span class="number">1024</span>
+grid = (n // <span class="number">256</span>,)  <span class="comment"># Number of blocks</span>
+<span class="function">add_kernel</span>[grid](x, y, out, n, BLOCK=<span class="number">256</span>)</code>
+        </div>
+
+        <p>
+          Key concepts:
+        </p>
+        <ul>
+          <li><strong>program_id</strong>: Which block am I? (like blockIdx in CUDA)</li>
+          <li><strong>BLOCK</strong>: How many elements each block processes</li>
+          <li><strong>offsets</strong>: Linear indices into the array</li>
+          <li><strong>mask</strong>: Bounds checking (don't access beyond array end)</li>
+        </ul>
+
+        <div class="callout info">
+          <div class="callout-title">Index Arithmetic</div>
+          <p class="mb-0">
+            For 2D arrays stored in row-major order: <code>linear_idx = row * num_cols + col</code>
+            <br>This formula is the foundation of all GPU memory access patterns.
+          </p>
+        </div>
+
+        <div class="quiz" id="index-quiz">
+          <div class="quiz-q">In a 4×8 row-major matrix, what is the linear index of element [2, 5]?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>13 (5 * 2 + 3)</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>21 (2 * 8 + 5)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>25 (5 * 4 + 5)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>10 (2 * 4 + 2)</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <!-- Section 4: Memory -->
+      <section class="section" id="memory-bottleneck">
+        <div class="section__number">04 — THE BOTTLENECK</div>
+        <h2 class="section__title">Why Naive Kernels Are Slow</h2>
+
+        <p>
+          Your kernel works, but it's 10-50x slower than cuBLAS. Why? <strong>Memory bandwidth
+          is the bottleneck</strong>, not compute.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-title">Memory Hierarchy Latency (<a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener" style="font-weight: normal; font-size: 0.75rem;">H100 estimates</a>)</div>
+          <div class="mem-bars">
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">Registers</span>
+                <span class="mem-bar-stats">~1 cycle, ~20 TB/s</span>
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-green" style="--w: 100%">Fastest</div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">Shared Memory</span>
+                <span class="mem-bar-stats">~20 cycles, ~12 TB/s</span>
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-blue" style="--w: 85%">Fast</div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">L2 Cache</span>
+                <span class="mem-bar-stats">~200 cycles, ~5 TB/s</span>
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-purple" style="--w: 50%">Medium</div>
+              </div>
+            </div>
+            <div class="mem-bar">
+              <div class="mem-bar-head">
+                <span class="mem-bar-label">HBM (Global)</span>
+                <span class="mem-bar-stats">~400 cycles, <a href="https://www.nvidia.com/en-us/data-center/h100/" target="_blank" rel="noopener">~3 TB/s</a></span>
+              </div>
+              <div class="mem-bar-track">
+                <div class="mem-bar-fill bg-orange" style="--w: 25%">Slow</div>
+              </div>
+            </div>
+          </div>
+          <p class="text-muted text-small" style="margin-top: var(--space-sm);">
+            Latencies are approximate and vary by access pattern. See <a href="02-memory.html">Chapter 2</a> for details.
+          </p>
+        </div>
+
+        <p>
+          <strong>400 cycles</strong> to read from global memory! If your kernel reads from HBM
+          every operation, most time is spent waiting, not computing.
+        </p>
+
+        <!-- Coalescing Visualization -->
+        <div class="interactive">
+          <div class="interactive__title">Memory Coalescing Visualizer</div>
+          <p class="text-muted text-small">
+            Adjacent threads should access adjacent memory addresses for maximum bandwidth.
+          </p>
+
+          <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap;">
+            <button class="btn btn--primary" id="coal-good">Coalesced</button>
+            <button class="btn" id="coal-strided">Strided</button>
+            <button class="btn" id="coal-random">Random</button>
+          </div>
+
+          <div class="coal-viz">
+            <div class="coal-viz__row">
+              <span class="coal-viz__label">Threads:</span>
+              <div class="coal-viz__cells" id="coal-threads"></div>
+            </div>
+            <div class="coal-viz__row">
+              <span class="coal-viz__label">Memory:</span>
+              <div class="coal-viz__cells" id="coal-memory"></div>
+            </div>
+          </div>
+
+          <div class="result-box" id="coal-result">
+            Click a pattern to see memory access behavior.
+          </div>
+        </div>
+
+        <div class="quiz" id="coal-quiz">
+          <div class="quiz-q">Which access pattern achieves maximum bandwidth?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Thread i accesses address i (coalesced)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Thread i accesses address i*32 (strided)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Thread i accesses a random address</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <!-- Section 5: Tiling -->
+      <section class="section" id="tiling">
+        <div class="section__number">05 — THE SOLUTION</div>
+        <h2 class="section__title">Tiling: Data Reuse is Everything</h2>
+
+        <p>
+          The key insight: <strong>load data once from slow HBM, reuse many times from fast
+          shared memory</strong>.
+        </p>
+
+        <div class="code-block">
+<code><span class="comment"># Tiled matrix multiplication concept:</span>
+<span class="comment"># Instead of: for each output element, read entire row/column from HBM</span>
+<span class="comment"># Do this: load tiles into shared memory, compute partial results</span>
+
+<span class="keyword">for</span> tile <span class="keyword">in</span> <span class="function">range</span>(num_tiles):
+    <span class="comment"># 1. Load tile of A and tile of B into shared memory</span>
+    A_tile = tl.<span class="function">load</span>(A_ptr + tile_offsets)  <span class="comment"># One HBM read</span>
+    B_tile = tl.<span class="function">load</span>(B_ptr + tile_offsets)  <span class="comment"># One HBM read</span>
+    
+    <span class="comment"># 2. Compute partial results using shared memory (FAST!)</span>
+    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="function">range</span>(TILE_SIZE):
+        C_acc += A_tile[:, k] * B_tile[k, :]  <span class="comment"># Many reuses!</span>
+    
+    <span class="comment"># 3. Synchronize before loading next tile</span>
+    tl.<span class="function">debug_barrier</span>()</code>
+        </div>
+
+        <p>
+          <strong>Data reuse</strong> is everything. A TILE_SIZE×TILE_SIZE tile is loaded once
+          but used TILE_SIZE times for computation. This transforms your kernel from
+          memory-bound to compute-bound.
+        </p>
+
+        <div class="callout info">
+          <div class="callout-title">Arithmetic Intensity</div>
+          <p class="mb-0">
+            <strong>Arithmetic Intensity = FLOPS / Bytes</strong><br>
+            Naive matmul: ~1 FLOP/byte (memory-bound)<br>
+            Tiled matmul: ~100 FLOPS/byte (compute-bound)<br>
+            Higher intensity = less time waiting for memory.
+          </p>
+        </div>
+
+        <div class="insight mt-lg">
+          <div class="insight-icon">+</div>
+          <div>
+            <h4>Chapter 3 Milestone</h4>
+            <p class="mb-0">
+              By implementing tiled matmul, you can achieve <strong>500+ GFLOPS</strong>—a
+              500,000x improvement over naive Python. You understand WHY: coalesced access,
+              data reuse in shared memory, and hiding memory latency.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: Practice -->
+      <section class="section" id="practice">
+        <div class="section__number">06 — PRACTICE</div>
+        <h2 class="section__title">Build It Yourself</h2>
+
+        <p>
+          The best way to learn is hands-on. Work through these notebooks in order:
+        </p>
+
+        <div class="card">
+          <h4>Part 1 Labs</h4>
+          <ol style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/00_ready_check.ipynb">Environment Check</a> - Verify GPU setup
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/01_numpy_baseline.ipynb">NumPy Baseline</a> - Establish CPU performance
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/02_cupy_intro.ipynb">CuPy Introduction</a> - Instant GPU speedup
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/03_gpu_architecture.ipynb">GPU Architecture</a> - Understand the hardware
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/04_first_triton_kernel.ipynb">First Triton Kernel</a> - Write your own GPU code
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/05_memory_hierarchy.ipynb">Memory Hierarchy</a> - Profile memory access
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/06_tiling_basics.ipynb">Tiling Basics</a> - Implement tiled access
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="../notebooks/part1/07_fast_matmul.ipynb">Fast Matrix Multiplication</a> - Achieve 500+ GFLOPS
+            </li>
+          </ol>
+        </div>
+
+        <h3 style="margin-top: var(--space-xl);">References</h3>
+        <div class="card">
+          <ul style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary); font-size: 0.9rem;">
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://triton-lang.org/" target="_blank" rel="noopener" style="color: var(--accent-blue);">Triton Language</a> - Python-like GPU programming
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://cupy.dev/" target="_blank" rel="noopener" style="color: var(--accent-blue);">CuPy Documentation</a> - NumPy-compatible GPU arrays
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener" style="color: var(--accent-blue);">CUDA Best Practices: Memory Optimizations</a> - Coalescing and bandwidth
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <a href="https://www.nvidia.com/en-us/data-center/h100/" target="_blank" rel="noopener" style="color: var(--accent-blue);">NVIDIA H100 Datasheet</a> - Memory bandwidth specs
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You've written your first kernels and understand why tiling matters.
+            Next, we'll push for 80%+ of peak performance through profiling and advanced optimization.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="02-memory.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">Memory Hierarchy</div>
+          </a>
+          <a href="04-optimization.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Optimization</div>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Coalescing visualization
+      const coalThreads = document.getElementById('coal-threads');
+      const coalMemory = document.getElementById('coal-memory');
+      const coalResult = document.getElementById('coal-result');
+
+      // Initialize cells
+      for (let i = 0; i < 8; i++) {
+        const threadCell = document.createElement('div');
+        threadCell.className = 'coal-viz__cell';
+        threadCell.textContent = `T${i}`;
+        coalThreads.appendChild(threadCell);
+
+        const memCell = document.createElement('div');
+        memCell.className = 'coal-viz__cell';
+        memCell.textContent = i;
+        coalMemory.appendChild(memCell);
+      }
+
+      function resetCoalViz() {
+        document.querySelectorAll('.coal-viz__cell').forEach(c => {
+          c.classList.remove('active', 'accessed', 'conflict');
+        });
+      }
+
+      function animateCoalesced() {
+        resetCoalViz();
+        const threads = coalThreads.querySelectorAll('.coal-viz__cell');
+        const memory = coalMemory.querySelectorAll('.coal-viz__cell');
+        
+        threads.forEach((t, i) => {
+          setTimeout(() => {
+            t.classList.add('active');
+            memory[i].classList.add('accessed');
+          }, i * 100);
+        });
+
+        coalResult.innerHTML = `<strong style="color: var(--accent-green)">Coalesced access:</strong> Threads 0-7 access memory 0-7. Single 128-byte transaction. <strong>Maximum bandwidth!</strong>`;
+      }
+
+      function animateStrided() {
+        resetCoalViz();
+        const threads = coalThreads.querySelectorAll('.coal-viz__cell');
+        const memory = coalMemory.querySelectorAll('.coal-viz__cell');
+        
+        threads.forEach((t, i) => {
+          setTimeout(() => {
+            t.classList.add('active');
+            if (i % 2 === 0 && i < 8) {
+              memory[i].classList.add('conflict');
+            }
+          }, i * 100);
+        });
+
+        coalResult.innerHTML = `<strong style="color: var(--accent-orange)">Strided access:</strong> Thread i accesses memory i*stride. Multiple transactions needed. <strong>Wasted bandwidth!</strong>`;
+      }
+
+      function animateRandom() {
+        resetCoalViz();
+        const threads = coalThreads.querySelectorAll('.coal-viz__cell');
+        const memory = coalMemory.querySelectorAll('.coal-viz__cell');
+        const randomOrder = [5, 1, 7, 3, 0, 6, 2, 4];
+        
+        threads.forEach((t, i) => {
+          setTimeout(() => {
+            t.classList.add('active');
+            memory[randomOrder[i]].classList.add('conflict');
+          }, i * 100);
+        });
+
+        coalResult.innerHTML = `<strong style="color: var(--accent-red)">Random access:</strong> Each thread accesses arbitrary location. Worst case—8 separate transactions. <strong>12.5% efficiency!</strong>`;
+      }
+
+      document.getElementById('coal-good').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('coal-good').classList.add('btn--primary');
+        animateCoalesced();
+      });
+
+      document.getElementById('coal-strided').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('coal-strided').classList.add('btn--primary');
+        animateStrided();
+      });
+
+      document.getElementById('coal-random').addEventListener('click', () => {
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('btn--primary'));
+        document.getElementById('coal-random').classList.add('btn--primary');
+        animateRandom();
+      });
+    </script>
+  </body>
+</html>
