@@ -488,29 +488,73 @@ Single notebook at start: `00_ready_check.ipynb`
 
 ## Implementation Phases
 
-### Phase 1: Foundation (2 weeks)
-- [ ] Create Week 1 notebooks (Days 1-7)
-- [ ] Migrate GPU architecture content
-- [ ] Migrate memory hierarchy content
+### Phase 1: Foundation (2 weeks) — PARTIALLY COMPLETE
+- [x] Create Week 1 notebooks (Days 0-7) — 8 notebooks, ~127KB
+- [x] Integrate Week 1 into kernel-course.html — sidebar + main content linked
+- [ ] Migrate GPU architecture content — HTML page exists, not embedded in notebooks
+- [ ] Migrate memory hierarchy content — HTML page exists, not embedded in notebooks
 - [ ] Test on fresh environment
 
-### Phase 2: Core Content (2 weeks)
-- [ ] Create Week 2 notebooks
-- [ ] Create Week 3 notebooks
-- [ ] Migrate attention math content
-- [ ] Migrate math foundations content
+### Phase 2: Core Content (2 weeks) — NOTEBOOKS CREATED, NOT INTEGRATED
+- [x] Create Week 2 notebooks — 7 notebooks, ~137KB
+- [x] Create Week 3 notebooks — 7 notebooks, ~178KB
+- [ ] **Integrate Week 2 notebooks into kernel-course.html** — sidebar links are placeholders
+- [ ] **Integrate Week 3 notebooks into kernel-course.html** — sidebar links are placeholders
+- [ ] Migrate attention math content — HTML page exists, notebooks reference it
+- [ ] Migrate math foundations content — partial, FP content in Week 3
 
-### Phase 3: Advanced + Polish (2 weeks)
-- [ ] Create Week 4 notebooks
-- [ ] Embed interactive visualizations
+### Phase 3: Advanced + Polish (2 weeks) — PENDING
+- [ ] **Create Week 4 notebooks** — 7 notebooks needed
+- [ ] Integrate Week 4 notebooks into kernel-course.html
+- [ ] Embed interactive visualizations (ipywidgets or iframe)
 - [ ] Create quizzes/assessments
 - [ ] Write solutions notebooks
 
-### Phase 4: Integration (1 week)
-- [ ] Update main course navigation
+### Phase 4: Integration (1 week) — PENDING
+- [x] Update main course navigation — Week 1 done, Weeks 2-4 pending
 - [ ] Cross-link between notebooks and HTML pages
 - [ ] Final testing and polish
 - [ ] Write instructor notes
+
+---
+
+## Progress Log
+
+### 2025-01-26: Initial Implementation Sprint
+
+**Commits on `course-restructure` branch:**
+```
+72a91c8 - Add Week 1 Python notebooks for interleaved curriculum
+108372e - Restructure kernel-course.html to interleaved 4-week format  
+cfbff5b - Add Week 2 Python notebooks: GPU optimization deep dive
+e2d8302 - Add Week 3 Python notebooks: attention math to FlashAttention
+```
+
+**Created notebooks:**
+
+| Week | Files | Total Size | Content |
+|------|-------|------------|---------|
+| Week 1 | 8 | ~127KB | NumPy → CuPy → Triton matmul journey |
+| Week 2 | 7 | ~137KB | Profiling, coalescing, bank conflicts, tensor cores, GEMM |
+| Week 3 | 7 | ~178KB | Dot product, softmax stability, online softmax, FlashAttention |
+| Week 4 | 0 | — | Not yet created |
+
+**Integration status:**
+
+| Component | Week 1 | Week 2 | Week 3 | Week 4 |
+|-----------|--------|--------|--------|--------|
+| Notebooks created | ✓ | ✓ | ✓ | ✗ |
+| Sidebar links | ✓ notebooks | ✗ anchors | ✗ anchors | ✗ anchors |
+| Main content cards | ✓ linked | ✗ overview | ✗ overview | ✗ overview |
+| Interactive embed | ✗ linked | ✗ | ✗ | ✗ |
+
+**Gap identified:** Notebooks exist but aren't accessible from the course page (except Week 1).
+
+**Next steps:**
+1. Update kernel-course.html Week 2 section with notebook links
+2. Update kernel-course.html Week 3 section with notebook links
+3. Create Week 4 notebooks
+4. Update kernel-course.html Week 4 section with notebook links
 
 ---
 
@@ -549,4 +593,5 @@ For learners without GPU access:
 
 - **Created:** 2025-01-26
 - **Authors:** Expert Council (Curriculum Design, GPU Engineering, Educational Technology)
-- **Status:** Planning complete, ready for implementation
+- **Updated:** 2025-01-26 — Added progress log, updated phase status
+- **Status:** Implementation in progress (Weeks 1-3 notebooks done, integration partial)
