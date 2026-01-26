@@ -36,6 +36,56 @@
 
       <div class="nav-section open">
         <button class="nav-section__btn">
+          <span class="nav-icon bg-green">P</span>
+          Python Notebooks
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="notebooks/week1/00_ready_check.ipynb" class="nav-item">Ready Check</a>
+          <a href="notebooks/week1/01_numpy_baseline.ipynb" class="nav-item">Day 1: NumPy Baseline</a>
+          <a href="notebooks/week1/02_cupy_intro.ipynb" class="nav-item">Day 2: CuPy Intro</a>
+          <a href="notebooks/week1/03_gpu_architecture.ipynb" class="nav-item">Day 3: GPU Architecture</a>
+          <a href="notebooks/week1/04_first_triton_kernel.ipynb" class="nav-item">Day 4: First Triton Kernel</a>
+          <a href="notebooks/week1/05_memory_hierarchy.ipynb" class="nav-item">Day 5: Memory Hierarchy</a>
+          <a href="notebooks/week1/06_tiling_basics.ipynb" class="nav-item">Day 6: Tiling Basics</a>
+          <a href="notebooks/week1/07_fast_matmul.ipynb" class="nav-item">Day 7: Fast Matmul</a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <button class="nav-section__btn">
+          <span class="nav-icon bg-yellow">M</span>
+          Math Foundations
+          <svg
+            class="nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+        <div class="nav-items">
+          <a href="math-prerequisites.html" class="nav-item">Prerequisites Quiz</a>
+          <a href="lessons/math-foundations.html" class="nav-item">Math for Kernels</a>
+        </div>
+      </div>
+
+      <div class="nav-section open">
+        <button class="nav-section__btn">
           <span class="nav-icon bg-blue">F</span>
           Foundations
           <svg
@@ -51,6 +101,7 @@
           </svg>
         </button>
         <div class="nav-items">
+          <a href="lessons/math-foundations.html" class="nav-item">Math Foundations</a>
           <a href="lessons/gpu-architecture.html" class="nav-item">GPU Architecture</a>
           <a href="#memory" class="nav-item">Memory Hierarchy</a>
           <a href="#tensor-cores" class="nav-item">Tensor Cores</a>
@@ -179,6 +230,74 @@
 
     <main id="main" class="main-content">
       <!-- ═══════════════════════════════════════════════════════════════════════
+     PYTHON NOTEBOOKS - NEW INTERACTIVE CURRICULUM
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+      <section class="section" id="notebooks">
+        <div class="section__head">
+          <div class="section__num bg-green">NEW</div>
+          <div>
+            <h2>Python-First Interactive Curriculum</h2>
+            <p class="mb-0 text-muted">Learn by coding: NumPy → CuPy → Triton</p>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Week 1: "Why GPUs?" - From Slow to Fast</div>
+          <p class="mb-0">
+            Take a naive matmul from 1 GFLOPS to 1000+ GFLOPS. Build understanding through hands-on
+            Python code with immediate feedback. No prerequisites required - concepts introduced when needed.
+          </p>
+        </div>
+
+        <div class="grid grid-2">
+          <a href="notebooks/week1/00_ready_check.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 0: Ready Check</h4>
+            <p class="mb-0 text-muted">Environment setup + quick math diagnostic</p>
+          </a>
+          <a href="notebooks/week1/01_numpy_baseline.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 1: NumPy Baseline</h4>
+            <p class="mb-0 text-muted">CPU performance, GFLOPS measurement</p>
+          </a>
+          <a href="notebooks/week1/02_cupy_intro.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 2: CuPy Intro</h4>
+            <p class="mb-0 text-muted">50-100x GPU speedup, transfer overhead</p>
+          </a>
+          <a href="notebooks/week1/03_gpu_architecture.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 3: GPU Architecture</h4>
+            <p class="mb-0 text-muted">SMs, warps, SIMT execution model</p>
+          </a>
+          <a href="notebooks/week1/04_first_triton_kernel.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 4: First Triton Kernel</h4>
+            <p class="mb-0 text-muted">Vector add, index arithmetic, program IDs</p>
+          </a>
+          <a href="notebooks/week1/05_memory_hierarchy.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 5: Memory Hierarchy</h4>
+            <p class="mb-0 text-muted">Coalescing, arithmetic intensity, roofline</p>
+          </a>
+          <a href="notebooks/week1/06_tiling_basics.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 6: Tiling Basics</h4>
+            <p class="mb-0 text-muted">Data reuse, shared memory, tile coordinates</p>
+          </a>
+          <a href="notebooks/week1/07_fast_matmul.ipynb" class="card" style="display: block; text-decoration: none; margin: 0;">
+            <h4>Day 7: Fast Matmul</h4>
+            <p class="mb-0 text-muted">Tiled matmul, achieve 500+ GFLOPS</p>
+          </a>
+        </div>
+
+        <div class="insight mt-lg">
+          <div class="insight-icon">🐍</div>
+          <div>
+            <h4>Why Python First?</h4>
+            <p>
+              Start with familiar tools (NumPy), progressively add GPU knowledge (CuPy → Triton).
+              Every optimization backed by measurement. Write GPU kernels by Day 4, fast matmul by Day 7.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════════
      FOUNDATIONS
      ═══════════════════════════════════════════════════════════════════════ -->
 
@@ -238,7 +357,7 @@
               <div class="mem-bar-head">
                 <span class="mem-bar-label">Registers</span
                 ><span class="mem-bar-stats"
-                  >256KB/SM • 0 cycles • ~20 TB/s</span
+                  >256KB/SM • ~1 cycle • ~20 TB/s</span
                 >
               </div>
               <div class="mem-bar-track">
