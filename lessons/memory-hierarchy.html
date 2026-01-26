@@ -503,6 +503,17 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           </p>
         </div>
 
+        <div class="callout" style="background: var(--bg-tertiary); border-left-color: var(--text-muted);">
+          <div class="callout-title" style="color: var(--text-secondary);">Note on Latency Figures</div>
+          <p class="mb-0" style="font-size: 0.9rem; color: var(--text-secondary);">
+            Cycle counts shown above are <strong>approximate</strong> and vary by architecture, workload,
+            and memory access patterns. Actual latency depends on factors like cache hits, bank conflicts,
+            and memory coalescing. For precise measurements, refer to
+            <a href="https://arxiv.org/abs/1804.06826" target="_blank" rel="noopener">Jia et al.'s GPU microbenchmarking</a>
+            or use <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener">Nsight Compute</a> profiling.
+          </p>
+        </div>
+
       </section>
 
       <!-- Section 3: Coalescing -->
