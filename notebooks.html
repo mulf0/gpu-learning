@@ -207,7 +207,7 @@
         <div class="notebooks-header__label">Hands-On Practice</div>
         <h1 class="notebooks-header__title">Practice Notebooks</h1>
         <p class="notebooks-header__desc">
-          29 Jupyter notebooks covering the complete GPU programming journey.
+          33 Jupyter notebooks covering the complete GPU programming journey.
           Run them in Google Colab with free GPU access.
         </p>
         <a href="index.html" class="notebooks-header__back">
@@ -215,12 +215,71 @@
         </a>
       </header>
 
+      <!-- Part 0: Parallel Mindset -->
+      <section class="notebooks-part" style="margin-bottom: var(--space-3xl);">
+        <div class="notebooks-part__header">
+          <span class="notebooks-part__number" style="background: var(--accent-purple);">Part 0</span>
+          <h2 class="notebooks-part__title">The Parallel Mindset</h2>
+          <span class="notebooks-part__chapter">Chapter 0</span>
+        </div>
+        <div class="notebooks-list">
+          <div class="notebook-item">
+            <span class="notebook-item__number">01</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Sequential vs Parallel</div>
+              <p class="notebook-item__desc">Race conditions, data dependencies, parallel hazards</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part0/01_sequential_vs_parallel.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">02</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Amdahl's Law</div>
+              <p class="notebook-item__desc">Speedup limits, sequential bottlenecks, efficiency</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part0/02_amdahls_law.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">03</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Parallel Patterns</div>
+              <p class="notebook-item__desc">Embarrassingly parallel, reduction, stencil, irregular</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part0/03_parallel_patterns.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">04</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">NumPy Vectorization</div>
+              <p class="notebook-item__desc">Loops vs vectors, broadcasting, GPU thinking</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part0/04_numpy_vectorization.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+        </div>
+      </section>
+
       <!-- Part 1: Foundations -->
       <section class="notebooks-part notebooks-part--1">
         <div class="notebooks-part__header">
           <span class="notebooks-part__number">Part 1</span>
           <h2 class="notebooks-part__title">Foundations: NumPy to Triton</h2>
-          <span class="notebooks-part__chapter">Chapters 1-3</span>
+          <span class="notebooks-part__chapter">Chapters 0-3</span>
         </div>
         <div class="notebooks-list">
           <div class="notebook-item">
@@ -327,7 +386,7 @@
         <div class="notebooks-part__header">
           <span class="notebooks-part__number">Part 2</span>
           <h2 class="notebooks-part__title">Optimization Deep Dive</h2>
-          <span class="notebooks-part__chapter">Chapter 4</span>
+          <span class="notebooks-part__chapter">Chapters 4-6</span>
         </div>
         <div class="notebooks-list">
           <div class="notebook-item">
@@ -422,7 +481,7 @@
         <div class="notebooks-part__header">
           <span class="notebooks-part__number">Part 3</span>
           <h2 class="notebooks-part__title">Attention Mechanisms</h2>
-          <span class="notebooks-part__chapter">Chapter 5</span>
+          <span class="notebooks-part__chapter">Chapter 8</span>
         </div>
         <div class="notebooks-list">
           <div class="notebook-item">
@@ -517,7 +576,7 @@
         <div class="notebooks-part__header">
           <span class="notebooks-part__number">Part 4</span>
           <h2 class="notebooks-part__title">Production & Quantization</h2>
-          <span class="notebooks-part__chapter">Chapters 6-7</span>
+          <span class="notebooks-part__chapter">Chapters 9 & 13</span>
         </div>
         <div class="notebooks-list">
           <div class="notebook-item">
