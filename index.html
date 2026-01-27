@@ -3,23 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPU Learning | From Fundamentals to Production Kernels</title>
-    <meta name="description" content="Learn GPU programming from Python to production CUDA kernels. Covers architecture, memory optimization, Triton, Tensor Cores, FlashAttention, and quantization.">
+    <title>GPU Learning | From Kernels to Clusters</title>
+    <meta
+      name="description"
+      content="Learn GPU programming from architecture to production systems. Covers memory optimization, Triton, training kernels, multi-GPU scaling, and deployment."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://gpu.mulf.net/">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="GPU Learning | From Fundamentals to Production Kernels">
-    <meta property="og:description" content="Learn GPU programming from Python to production CUDA kernels. Covers architecture, memory optimization, Triton, Tensor Cores, FlashAttention, and quantization.">
-    <meta property="og:image" content="https://gpu.mulf.net/og-image.png">
+    <meta property="og:url" content="https://gpu.mulf.net/" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="GPU Learning | From Kernels to Clusters"
+    />
+    <meta
+      property="og:description"
+      content="Learn GPU programming from architecture to production systems. Covers memory optimization, Triton, training kernels, multi-GPU scaling, and deployment."
+    />
+    <meta property="og:image" content="https://gpu.mulf.net/og-image.png" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="twitter:domain" content="gpu.mulf.net">
-    <meta property="twitter:url" content="https://gpu.mulf.net/">
-    <meta name="twitter:title" content="GPU Learning | From Fundamentals to Production Kernels">
-    <meta name="twitter:description" content="Learn GPU programming from Python to production CUDA kernels. Covers architecture, memory optimization, Triton, Tensor Cores, FlashAttention, and quantization.">
-    <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="gpu.mulf.net" />
+    <meta property="twitter:url" content="https://gpu.mulf.net/" />
+    <meta
+      name="twitter:title"
+      content="GPU Learning | From Kernels to Clusters"
+    />
+    <meta
+      name="twitter:description"
+      content="Learn GPU programming from architecture to production systems. Covers memory optimization, Triton, training kernels, multi-GPU scaling, and deployment."
+    />
+    <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png" />
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -296,13 +311,11 @@
       <!-- Hero -->
       <header class="book-hero" id="main-content">
         <div class="book-hero__label">Interactive Course</div>
-        <h1 class="book-hero__title">
-          GPU Programming &<br />Kernel Development
-        </h1>
+        <h1 class="book-hero__title">GPU Programming<br />& Systems</h1>
         <p class="book-hero__desc">
-          From Python to production-grade CUDA kernels. Learn GPU architecture,
-          memory optimization, Triton, Tensor Cores, and quantization through
-          interactive lessons and hands-on notebooks.
+          From architecture to production. Learn memory optimization, kernel
+          development, training at scale, multi-GPU parallelism, and deployment
+          through interactive lessons and hands-on notebooks.
         </p>
       </header>
 
@@ -311,7 +324,15 @@
         <div class="toc__header">Table of Contents</div>
         <div class="toc__list">
           <a href="course/00-parallel-mindset.html" class="toc__chapter">
-            <div class="toc__num" style="background: var(--glow-purple); color: var(--accent-purple);">0</div>
+            <div
+              class="toc__num"
+              style="
+                background: var(--glow-purple);
+                color: var(--accent-purple);
+              "
+            >
+              0
+            </div>
             <div class="toc__content">
               <div class="toc__title">The Parallel Mindset</div>
               <p class="toc__desc">
@@ -415,7 +436,8 @@
             <div class="toc__content">
               <div class="toc__title">Training Kernels</div>
               <p class="toc__desc">
-                Backward passes, mixed precision, checkpointing, gradient accumulation
+                Backward passes, mixed precision, checkpointing, gradient
+                accumulation
               </p>
             </div>
             <span class="toc__badge">NEW</span>
@@ -467,8 +489,8 @@
           <span class="reference__title">Practice Notebooks</span>
         </div>
         <p class="reference__desc">
-          29 hands-on Jupyter notebooks covering the complete GPU programming journey.
-          Run them in Google Colab with free GPU access.
+          29 hands-on Jupyter notebooks covering the complete GPU programming
+          journey. Run them in Google Colab with free GPU access.
         </p>
         <a href="notebooks.html" class="reference__link">
           View all notebooks &rarr;
@@ -480,14 +502,25 @@
         <p>
           Built for engineers who want to understand GPU programming deeply.
           <br />
-          <a href="https://github.com/your-repo" target="_blank" rel="noopener"
-            >Source on GitHub</a
+          If you find any issues, please send a pull request on
+
+          <a
+            href="https://github.com/mulf0/gpu-learning"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
           >
         </p>
       </footer>
 
       <div class="site-license">
-        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        All material licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en"
+          target="_blank"
+          rel="noopener"
+          >CC BY-NC-SA 4.0</a
+        >
       </div>
     </div>
   </body>
