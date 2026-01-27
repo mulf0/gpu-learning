@@ -400,6 +400,19 @@
               can run on one SM simultaneously (limited by resources).
             </div>
 
+            <div class="hier-item" data-detail="d-wg" tabindex="0">
+              <div class="hier-icon bg-orange">WG</div>
+              <div class="hier-info">
+                <h5><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Warpgroup (Hopper+)</a></h5>
+                <p>4 warps (128 threads) for Tensor Core operations</p>
+              </div>
+            </div>
+            <div class="hier-detail" id="d-wg">
+              Modern Tensor Core operations work at <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">warpgroup granularity</a>. This enables
+              larger tiles (64x64+), asynchronous execution, and better hardware utilization.
+              <a href="https://github.com/NVIDIA/cutlass/blob/main/media/docs/cute/00_quickstart.md" target="_blank" rel="noopener">CuTe DSL</a> uses warpgroups for SM90+ architectures.
+            </div>
+
             <div class="hier-item" data-detail="d-warp" tabindex="0">
               <div class="hier-icon bg-purple">W</div>
               <div class="hier-info">
@@ -412,19 +425,6 @@
               <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 threads in a warp</a>
               execute the same instruction simultaneously. Divergent branches serialize execution.
               Always think in warps, not individual threads.
-            </div>
-
-            <div class="hier-item" data-detail="d-wg" tabindex="0">
-              <div class="hier-icon bg-orange">WG</div>
-              <div class="hier-info">
-                <h5><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Warpgroup (Hopper+)</a></h5>
-                <p>4 warps (128 threads) for Tensor Core operations</p>
-              </div>
-            </div>
-            <div class="hier-detail" id="d-wg">
-              Modern Tensor Core operations work at <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">warpgroup granularity</a>. This enables
-              larger tiles (64x64+), asynchronous execution, and better hardware utilization.
-              <a href="https://github.com/NVIDIA/cutlass/blob/main/media/docs/cute/00_quickstart.md" target="_blank" rel="noopener">CuTe DSL</a> uses warpgroups for SM90+ architectures.
             </div>
 
             <div class="hier-item" data-detail="d-thread" tabindex="0">
