@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 4: Synchronization & Reductions - GPU Learning</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body {
+        display: block;
+      }
+
+      /* Reduction visualization */
+      .reduction-viz {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .reduction-viz__stage {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+        padding: var(--space-sm) 0;
+      }
+
+      .reduction-viz__label {
+        width: 80px;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      .reduction-viz__values {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+
+      .reduction-viz__value {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        transition: all var(--transition-fast);
+      }
+
+      .reduction-viz__value--active {
+        background: var(--accent-blue);
+        color: white;
+      }
+
+      .reduction-viz__value--inactive {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+      }
+
+      .reduction-viz__value--result {
+        background: var(--accent-green);
+        color: white;
+      }
+
+      .reduction-viz__controls {
+        display: flex;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+        padding-top: var(--space-md);
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      /* Shuffle visualization */
+      .shuffle-viz {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      .shuffle-viz__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+      }
+
+      .shuffle-viz__label {
+        width: 100px;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+
+      .shuffle-viz__lanes {
+        display: flex;
+        gap: 2px;
+      }
+
+      .shuffle-viz__lane {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        transition: all var(--transition-fast);
+      }
+
+      .shuffle-viz__lane--source {
+        background: var(--accent-blue);
+        color: white;
+      }
+
+      .shuffle-viz__lane--dest {
+        background: var(--bg-tertiary);
+        border: 2px dashed var(--border-subtle);
+        color: var(--text-muted);
+      }
+
+      .shuffle-viz__lane--dest.filled {
+        background: var(--accent-green);
+        border: none;
+        color: white;
+      }
+
+      .shuffle-viz__arrow {
+        color: var(--text-muted);
+        font-size: var(--text-lg);
+      }
+
+      /* Atomic contention visualization */
+      .atomic-viz {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .atomic-viz__memory {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+      }
+
+      .atomic-viz__cell {
+        width: 80px;
+        height: 60px;
+        background: var(--accent-purple);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      .atomic-viz__cell-label {
+        font-size: var(--text-xs);
+        opacity: 0.8;
+      }
+
+      .atomic-viz__cell-value {
+        font-family: var(--font-mono);
+        font-size: var(--text-xl);
+        font-weight: 600;
+      }
+
+      .atomic-viz__threads {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+      }
+
+      .atomic-viz__thread {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        transition: all var(--transition-fast);
+      }
+
+      .atomic-viz__thread--waiting {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+      }
+
+      .atomic-viz__thread--active {
+        background: var(--accent-green);
+        color: white;
+        transform: scale(1.1);
+      }
+
+      .atomic-viz__thread--done {
+        background: var(--accent-blue);
+        color: white;
+        opacity: 0.5;
+      }
+
+      /* Callout overrides */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-secondary { color: var(--text-secondary); }
+      .text-small { font-size: var(--text-sm); }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main class="chapter-container" id="main-content">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 4</div>
+        <h1 class="chapter-header__title">Synchronization & Reductions</h1>
+        <p class="chapter-header__desc">
+          When threads need to coordinate, things get interesting. Master barriers,
+          warp shuffles, parallel reductions, and atomic operations—the building blocks
+          of efficient collective operations.
+        </p>
+      </header>
+
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapter 3</div>
+        In Chapter 3, you wrote kernels where each thread worked independently on its own data.
+        Now we tackle the harder case: what happens when threads need to <em>communicate</em>?
+        Reductions, scans, and histograms all require coordination between threads.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Implement thread-block synchronization with __syncthreads()</li>
+          <li class="learning-objectives__item">Use warp shuffle operations for intra-warp communication</li>
+          <li class="learning-objectives__item">Write efficient parallel reductions (sum, max, argmax)</li>
+          <li class="learning-objectives__item">Apply atomic operations correctly and understand their cost</li>
+          <li class="learning-objectives__item">Use cooperative groups for flexible synchronization</li>
+        </ol>
+      </div>
+
+      <!-- Section 1: The Synchronization Problem -->
+      <section class="section" id="section-0">
+        <div class="section__number">01 - THE PROBLEM</div>
+        <h2 class="section__title">Why Threads Need to Coordinate</h2>
+
+        <p>
+          Consider computing the sum of an array. Each thread could add some elements to a
+          <code>total</code> variable—but without coordination, threads overwrite each other's results.
+        </p>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># Naive parallel sum (WRONG - race condition)</span>
+@triton.jit
+def broken_sum(x_ptr, out_ptr, N):
+    pid = tl.program_id(0)
+    x = tl.load(x_ptr + pid)
+    
+    <span class="comment"># Every thread reads, adds, writes to same location</span>
+    current = tl.load(out_ptr)  <span class="comment"># Thread A reads 0</span>
+    tl.store(out_ptr, current + x)  <span class="comment"># Thread A writes 5</span>
+    <span class="comment"># Meanwhile Thread B also read 0, writes 3</span>
+    <span class="comment"># Final result: 3 (not 8!)</span></code></pre>
+
+        <p>
+          The problem is a <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions" target="_blank" rel="noopener">race condition</a>: 
+          multiple threads reading and writing the same memory location. Solutions include:
+        </p>
+
+        <ul style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+          <li><strong>Barriers</strong>: Force all threads to reach a point before continuing</li>
+          <li><strong>Atomics</strong>: Hardware-guaranteed read-modify-write operations</li>
+          <li><strong>Reduction patterns</strong>: Structured algorithms that avoid conflicts</li>
+        </ul>
+
+        <div class="callout warn">
+          <div class="callout-title">Synchronization Has Cost</div>
+          <p class="mb-0">
+            Every synchronization point is a potential bottleneck. Threads that finish early must wait.
+            The goal is to minimize synchronization while maintaining correctness.
+          </p>
+        </div>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-race">
+          <div class="quiz-q">A race condition occurs when multiple threads:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Execute the same instruction</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Access shared data with at least one write</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Run on different SMs</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 2: Block-Level Barriers -->
+      <section class="section" id="section-1">
+        <div class="section__number">02 - BARRIERS</div>
+        <h2 class="section__title">Block-Level Synchronization</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions" target="_blank" rel="noopener"><code>__syncthreads()</code></a>
+          (or <code>tl.debug_barrier()</code> in Triton) is a barrier: all threads in a block must reach it before any can proceed.
+        </p>
+
+        <div class="card">
+          <h4>When Barriers Are Required</h4>
+          <ol style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+            <li><strong>After writing to shared memory</strong> that other threads will read</li>
+            <li><strong>Before reading shared memory</strong> that other threads wrote</li>
+            <li><strong>Between reduction stages</strong> that depend on previous results</li>
+          </ol>
+        </div>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># Shared memory pattern requiring barrier</span>
+shared = tl.zeros([BLOCK_SIZE], dtype=tl.float32)
+
+<span class="comment"># Stage 1: Each thread writes its value</span>
+shared[tid] = my_value
+
+<span class="comment"># BARRIER: Wait for ALL threads to finish writing</span>
+tl.debug_barrier()
+
+<span class="comment"># Stage 2: Now safe to read neighbor's values</span>
+neighbor = shared[(tid + 1) % BLOCK_SIZE]</code></pre>
+
+        <div class="callout warn">
+          <div class="callout-title">Deadlock Danger</div>
+          <p class="mb-0">
+            <strong>All threads in a block must reach the barrier.</strong> If some threads take a branch
+            with a barrier and others don't, you get a deadlock—threads waiting forever for each other.
+          </p>
+        </div>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># DEADLOCK: Conditional barrier</span>
+if tid < 16:
+    tl.debug_barrier()  <span class="comment"># Only half the threads reach this!</span>
+<span class="comment"># Threads 16-31 never call barrier → deadlock</span>
+
+<span class="comment"># CORRECT: Barrier outside conditional</span>
+if tid < 16:
+    do_something()
+tl.debug_barrier()  <span class="comment"># ALL threads reach this</span></code></pre>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-barrier">
+          <div class="quiz-q">What happens if only half the threads in a block call __syncthreads()?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Only those threads synchronize</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Deadlock - threads wait forever</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The kernel crashes immediately</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 3: Warp Shuffles -->
+      <section class="section" id="section-2">
+        <div class="section__number">03 - WARP SHUFFLES</div>
+        <h2 class="section__title">Intra-Warp Communication</h2>
+
+        <p>
+          Within a warp (32 threads), threads can directly exchange register values using
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#warp-shuffle-functions" target="_blank" rel="noopener">shuffle instructions</a>—no 
+          shared memory or barriers needed.
+        </p>
+
+        <div class="card">
+          <h4>Shuffle Operations</h4>
+          <table style="width: 100%; font-size: var(--text-sm);">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="padding: var(--space-sm); text-align: left;">Operation</th>
+              <th style="padding: var(--space-sm); text-align: left;">Description</th>
+              <th style="padding: var(--space-sm); text-align: left;">Use Case</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>__shfl_sync</code></td>
+              <td style="padding: var(--space-sm);">Get value from specific lane</td>
+              <td style="padding: var(--space-sm);">Broadcast, gather</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>__shfl_down_sync</code></td>
+              <td style="padding: var(--space-sm);">Get value from lane + delta</td>
+              <td style="padding: var(--space-sm);">Reduction (log N steps)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>__shfl_up_sync</code></td>
+              <td style="padding: var(--space-sm);">Get value from lane - delta</td>
+              <td style="padding: var(--space-sm);">Prefix scan</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);"><code>__shfl_xor_sync</code></td>
+              <td style="padding: var(--space-sm);">Get value from lane XOR delta</td>
+              <td style="padding: var(--space-sm);">Butterfly reduction</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">Warp Shuffle: shfl_down</div>
+          </div>
+
+          <div class="shuffle-viz">
+            <div class="shuffle-viz__row">
+              <span class="shuffle-viz__label">Source lanes</span>
+              <div class="shuffle-viz__lanes" id="shuffle-source">
+                <!-- 8 lanes for visualization -->
+              </div>
+            </div>
+            <div class="shuffle-viz__row">
+              <span class="shuffle-viz__label"></span>
+              <span class="shuffle-viz__arrow">↓ shfl_down(delta=2)</span>
+            </div>
+            <div class="shuffle-viz__row">
+              <span class="shuffle-viz__label">Dest lanes</span>
+              <div class="shuffle-viz__lanes" id="shuffle-dest">
+                <!-- 8 destination lanes -->
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+            <button class="btn btn--primary" id="shuffle-run">Run Shuffle</button>
+            <button class="btn" id="shuffle-reset">Reset</button>
+          </div>
+        </div>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># Warp-level sum reduction using shfl_down</span>
+<span class="comment"># Each thread starts with its own value</span>
+val = my_value
+
+<span class="comment"># Log2(32) = 5 steps to reduce 32 values</span>
+for offset in [16, 8, 4, 2, 1]:
+    val += __shfl_down_sync(0xFFFFFFFF, val, offset)
+
+<span class="comment"># After loop: lane 0 has the sum of all 32 values</span>
+if lane_id == 0:
+    result = val</code></pre>
+
+        <details class="expert-note">
+          <summary class="expert-note__summary">Why is warp shuffle faster than shared memory?</summary>
+          <div class="expert-note__content">
+            Shuffle operates directly on registers—no memory access at all. Shared memory
+            requires a load/store through the memory subsystem (~20 cycles). Shuffles are
+            essentially free (1 cycle). For warp-level operations, always prefer shuffles.
+          </div>
+        </details>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-shuffle">
+          <div class="quiz-q">How many shfl_down steps are needed to sum 32 values in a warp?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>32</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>5 (log2(32))</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>16</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 4: Parallel Reductions -->
+      <section class="section" id="section-3">
+        <div class="section__number">04 - REDUCTIONS</div>
+        <h2 class="section__title">Parallel Reduction Patterns</h2>
+
+        <p>
+          A <strong>reduction</strong> combines N values into 1 using an associative operator
+          (sum, max, min, product). The parallel approach: repeatedly combine pairs until one remains.
+        </p>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--green">Interactive: Tree Reduction</div>
+          </div>
+
+          <div class="reduction-viz" id="reduction-viz">
+            <div class="reduction-viz__stage" id="reduction-stage-0">
+              <span class="reduction-viz__label">Input</span>
+              <div class="reduction-viz__values" id="reduction-values-0">
+                <!-- Values will be created by JS -->
+              </div>
+            </div>
+            <div class="reduction-viz__stage" id="reduction-stage-1" style="display: none;">
+              <span class="reduction-viz__label">Step 1</span>
+              <div class="reduction-viz__values" id="reduction-values-1"></div>
+            </div>
+            <div class="reduction-viz__stage" id="reduction-stage-2" style="display: none;">
+              <span class="reduction-viz__label">Step 2</span>
+              <div class="reduction-viz__values" id="reduction-values-2"></div>
+            </div>
+            <div class="reduction-viz__stage" id="reduction-stage-3" style="display: none;">
+              <span class="reduction-viz__label">Result</span>
+              <div class="reduction-viz__values" id="reduction-values-3"></div>
+            </div>
+
+            <div class="reduction-viz__controls">
+              <button class="btn btn--primary" id="reduction-step">Step</button>
+              <button class="btn" id="reduction-reset">Reset</button>
+              <span class="text-muted text-small" id="reduction-status">Click Step to begin</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-lg);">
+          <strong>Efficient reduction structure:</strong>
+        </p>
+
+        <ol style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+          <li><strong>Warp-level</strong>: Use shuffles (5 steps for 32 threads, no sync needed)</li>
+          <li><strong>Block-level</strong>: Combine warp results in shared memory (need barriers)</li>
+          <li><strong>Grid-level</strong>: Either multiple kernel launches or atomics</li>
+        </ol>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># Two-level reduction: warp then block</span>
+<span class="comment"># Step 1: Each warp reduces its 32 values</span>
+warp_sum = warp_reduce(my_value)  <span class="comment"># Uses shuffles</span>
+
+<span class="comment"># Step 2: First thread of each warp writes to shared mem</span>
+if lane_id == 0:
+    shared[warp_id] = warp_sum
+
+tl.debug_barrier()  <span class="comment"># Wait for all warps</span>
+
+<span class="comment"># Step 3: First warp reduces the warp sums</span>
+if warp_id == 0:
+    val = shared[lane_id] if lane_id < num_warps else 0
+    block_sum = warp_reduce(val)
+    if lane_id == 0:
+        output[block_id] = block_sum</code></pre>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-reduction">
+          <div class="quiz-q">Reducing 1024 values with 2-level reduction (warp + block) requires how many sync barriers?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>0 (shuffles don't need sync)</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1 (between warp and block levels)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>10 (log2(1024))</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 5: Atomic Operations -->
+      <section class="section" id="section-4">
+        <div class="section__number">05 - ATOMICS</div>
+        <h2 class="section__title">Atomic Operations</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomic-functions" target="_blank" rel="noopener">Atomic operations</a>
+          guarantee that a read-modify-write sequence completes without interference from other threads.
+          The hardware ensures only one thread accesses the location at a time.
+        </p>
+
+        <div class="card">
+          <h4>Common Atomics</h4>
+          <table style="width: 100%; font-size: var(--text-sm);">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="padding: var(--space-sm); text-align: left;">Operation</th>
+              <th style="padding: var(--space-sm); text-align: left;">Action</th>
+              <th style="padding: var(--space-sm); text-align: left;">Use Case</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>atomicAdd</code></td>
+              <td style="padding: var(--space-sm);">*addr += val</td>
+              <td style="padding: var(--space-sm);">Histograms, counters, grid reduction</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>atomicMax/Min</code></td>
+              <td style="padding: var(--space-sm);">*addr = max(*addr, val)</td>
+              <td style="padding: var(--space-sm);">Finding extrema</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>atomicExch</code></td>
+              <td style="padding: var(--space-sm);">swap(*addr, val)</td>
+              <td style="padding: var(--space-sm);">Locks, flags</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);"><code>atomicCAS</code></td>
+              <td style="padding: var(--space-sm);">compare-and-swap</td>
+              <td style="padding: var(--space-sm);">Lock-free algorithms</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card__header">
+            <div class="card__icon card__icon--purple">Atomic Contention Visualizer</div>
+          </div>
+
+          <div class="atomic-viz">
+            <div class="atomic-viz__memory">
+              <div class="atomic-viz__cell">
+                <span class="atomic-viz__cell-label">counter</span>
+                <span class="atomic-viz__cell-value" id="atomic-value">0</span>
+              </div>
+            </div>
+            <div class="atomic-viz__threads" id="atomic-threads">
+              <!-- Threads created by JS -->
+            </div>
+            <div style="margin-top: var(--space-md); text-align: center;">
+              <button class="btn btn--primary" id="atomic-run">Run atomicAdd</button>
+              <button class="btn" id="atomic-reset">Reset</button>
+            </div>
+            <p class="text-muted text-small" style="text-align: center; margin-top: var(--space-sm);" id="atomic-status">
+              8 threads each adding 1. Watch them serialize!
+            </p>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Atomics Are Slow</div>
+          <p class="mb-0">
+            When many threads atomicAdd to the same location, they serialize—only one succeeds at a time.
+            <strong>High contention = sequential performance.</strong> Use atomics for final accumulation,
+            not inner loops. Prefer reductions when possible.
+          </p>
+        </div>
+
+        <div class="grid grid-2" style="margin-top: var(--space-lg);">
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-orange);">Slow: Atomic in Inner Loop</h4>
+            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code><span class="comment"># Every thread hits same address</span>
+for i in range(1000):
+    atomicAdd(total, val[i])
+<span class="comment"># 1000 serialized atomics!</span></code></pre>
+          </div>
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-green);">Fast: Local Sum + One Atomic</h4>
+            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code><span class="comment"># Sum locally first</span>
+local_sum = 0
+for i in range(1000):
+    local_sum += val[i]
+atomicAdd(total, local_sum)
+<span class="comment"># Only 1 atomic per thread!</span></code></pre>
+          </div>
+        </div>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-atomic">
+          <div class="quiz-q">When 1000 threads all atomicAdd to the same location, performance is:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>1000x faster than sequential</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Approximately sequential (serialized)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Undefined behavior</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 6: Cooperative Groups -->
+      <section class="section" id="section-5">
+        <div class="section__number">06 - COOPERATIVE GROUPS</div>
+        <h2 class="section__title">Flexible Synchronization</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups" target="_blank" rel="noopener">Cooperative Groups</a>
+          (CUDA 9+) provide flexible thread groupings beyond the fixed block/warp hierarchy.
+          You can synchronize subsets of threads or even across the entire grid.
+        </p>
+
+        <div class="card">
+          <h4>Group Types</h4>
+          <table style="width: 100%; font-size: var(--text-sm);">
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <th style="padding: var(--space-sm); text-align: left;">Group</th>
+              <th style="padding: var(--space-sm); text-align: left;">Size</th>
+              <th style="padding: var(--space-sm); text-align: left;">Sync Scope</th>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>thread_block</code></td>
+              <td style="padding: var(--space-sm);">Up to 1024</td>
+              <td style="padding: var(--space-sm);">Same as __syncthreads()</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>thread_block_tile&lt;N&gt;</code></td>
+              <td style="padding: var(--space-sm);">N (power of 2, ≤32)</td>
+              <td style="padding: var(--space-sm);">Warp or sub-warp</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: var(--space-sm);"><code>coalesced_threads</code></td>
+              <td style="padding: var(--space-sm);">Active threads</td>
+              <td style="padding: var(--space-sm);">Dynamic (after divergence)</td>
+            </tr>
+            <tr>
+              <td style="padding: var(--space-sm);"><code>grid_group</code></td>
+              <td style="padding: var(--space-sm);">Entire grid</td>
+              <td style="padding: var(--space-sm);">All blocks (requires special launch)</td>
+            </tr>
+          </table>
+        </div>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment">// Cooperative groups example</span>
+#include &lt;cooperative_groups.h&gt;
+namespace cg = cooperative_groups;
+
+__global__ void kernel() {
+    <span class="comment">// Get block group (replaces __syncthreads)</span>
+    cg::thread_block block = cg::this_thread_block();
+    block.sync();
+    
+    <span class="comment">// Get warp-sized tile for shuffle operations</span>
+    cg::thread_block_tile&lt;32&gt; warp = cg::tiled_partition&lt;32&gt;(block);
+    int sum = cg::reduce(warp, my_val, cg::plus&lt;int&gt;());
+    
+    <span class="comment">// Sub-warp tiles (e.g., 16 threads)</span>
+    cg::thread_block_tile&lt;16&gt; half_warp = cg::tiled_partition&lt;16&gt;(block);
+}</code></pre>
+
+        <div class="callout info">
+          <div class="callout-title">Grid-Wide Sync</div>
+          <p class="mb-0">
+            <code>grid_group.sync()</code> synchronizes all blocks in the grid—something impossible
+            with <code>__syncthreads()</code>. Requires <code>cudaLaunchCooperativeKernel()</code>
+            and limits grid size to what can run concurrently. Useful for iterative algorithms
+            without kernel launch overhead.
+          </p>
+        </div>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-coop">
+          <div class="quiz-q">Cooperative groups allow synchronization of:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Only threads within a warp</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Only threads within a block</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Flexible groups including entire grid</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Practice Section -->
+      <section class="section" id="practice">
+        <div class="section__number">PRACTICE</div>
+        <h2 class="section__title">Hands-On Labs</h2>
+
+        <a href="../notebooks.html" class="notebook-link">
+          <div class="notebook-link__icon">&#128211;</div>
+          <div class="notebook-link__content">
+            <div class="notebook-link__title">Part 4 Notebooks: Synchronization</div>
+            <div class="notebook-link__desc">5 labs: Barriers, warp shuffles, parallel reduction, atomics, cooperative groups</div>
+          </div>
+        </a>
+      </section>
+
+      <!-- References -->
+      <section class="section" id="references">
+        <div class="section__number">REFERENCES</div>
+        <h2 class="section__title">Further Reading</h2>
+
+        <div class="card">
+          <h4>Primary Documentation</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA Programming Guide: Synchronization</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/.../synchronization-functions</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA Programming Guide: Warp Shuffle</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#warp-shuffle-functions" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/.../warp-shuffle-functions</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA Programming Guide: Atomic Functions</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomic-functions" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/.../atomic-functions</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA Programming Guide: Cooperative Groups</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/.../cooperative-groups</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>NVIDIA Developer Blog: Faster Parallel Reductions on Kepler</strong><br>
+              <a href="https://developer.nvidia.com/blog/faster-parallel-reductions-kepler/" target="_blank" rel="noopener" style="color: var(--accent-blue);">developer.nvidia.com/blog/faster-parallel-reductions-kepler</a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You now understand how threads coordinate: barriers for blocks, shuffles for warps,
+            atomics for global accumulation, and cooperative groups for flexibility.
+            Next, we'll apply these techniques to optimize real kernels.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="03-kernels.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">First Kernels</div>
+          </a>
+          <a href="05-optimization.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Optimization</div>
+          </a>
+        </div>
+      </footer>
+
+      <div class="site-license">
+        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+      </div>
+    </main>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Shuffle visualization
+      const shuffleSource = document.getElementById('shuffle-source');
+      const shuffleDest = document.getElementById('shuffle-dest');
+      const shuffleRun = document.getElementById('shuffle-run');
+      const shuffleReset = document.getElementById('shuffle-reset');
+
+      // Create 8 lanes for visualization
+      const sourceVals = [1, 2, 3, 4, 5, 6, 7, 8];
+      for (let i = 0; i < 8; i++) {
+        const src = document.createElement('div');
+        src.className = 'shuffle-viz__lane shuffle-viz__lane--source';
+        src.textContent = sourceVals[i];
+        shuffleSource.appendChild(src);
+
+        const dst = document.createElement('div');
+        dst.className = 'shuffle-viz__lane shuffle-viz__lane--dest';
+        dst.textContent = '?';
+        shuffleDest.appendChild(dst);
+      }
+
+      const destLanes = shuffleDest.querySelectorAll('.shuffle-viz__lane');
+
+      shuffleRun.addEventListener('click', () => {
+        // shfl_down with delta=2: lane i gets value from lane i+2
+        for (let i = 0; i < 8; i++) {
+          const srcIdx = i + 2;
+          if (srcIdx < 8) {
+            destLanes[i].textContent = sourceVals[srcIdx];
+            destLanes[i].classList.add('filled');
+          } else {
+            destLanes[i].textContent = '-';
+          }
+        }
+      });
+
+      shuffleReset.addEventListener('click', () => {
+        destLanes.forEach(lane => {
+          lane.textContent = '?';
+          lane.classList.remove('filled');
+        });
+      });
+
+      // Reduction visualization
+      const initialValues = [3, 1, 4, 1, 5, 9, 2, 6];
+      let reductionStep = 0;
+      const reductionStages = [
+        initialValues,
+        [4, 5, 14, 8],
+        [9, 22],
+        [31]
+      ];
+
+      function initReduction() {
+        const container = document.getElementById('reduction-values-0');
+        container.innerHTML = '';
+        initialValues.forEach(val => {
+          const div = document.createElement('div');
+          div.className = 'reduction-viz__value reduction-viz__value--active';
+          div.textContent = val;
+          container.appendChild(div);
+        });
+      }
+
+      initReduction();
+
+      document.getElementById('reduction-step').addEventListener('click', () => {
+        if (reductionStep >= 3) return;
+        
+        reductionStep++;
+        const stage = document.getElementById('reduction-stage-' + reductionStep);
+        const container = document.getElementById('reduction-values-' + reductionStep);
+        
+        stage.style.display = 'flex';
+        container.innerHTML = '';
+        
+        const values = reductionStages[reductionStep];
+        values.forEach(val => {
+          const div = document.createElement('div');
+          div.className = 'reduction-viz__value ' + 
+            (reductionStep === 3 ? 'reduction-viz__value--result' : 'reduction-viz__value--active');
+          div.textContent = val;
+          container.appendChild(div);
+        });
+
+        // Gray out previous stage
+        const prevContainer = document.getElementById('reduction-values-' + (reductionStep - 1));
+        prevContainer.querySelectorAll('.reduction-viz__value').forEach(v => {
+          v.classList.remove('reduction-viz__value--active');
+          v.classList.add('reduction-viz__value--inactive');
+        });
+
+        document.getElementById('reduction-status').textContent = 
+          reductionStep === 3 ? 'Complete! Sum = 31' : 'Step ' + reductionStep + ': Combine pairs';
+      });
+
+      document.getElementById('reduction-reset').addEventListener('click', () => {
+        reductionStep = 0;
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById('reduction-stage-' + i).style.display = 'none';
+        }
+        initReduction();
+        document.getElementById('reduction-status').textContent = 'Click Step to begin';
+      });
+
+      // Atomic visualization
+      const atomicThreads = document.getElementById('atomic-threads');
+      const atomicValue = document.getElementById('atomic-value');
+      const atomicStatus = document.getElementById('atomic-status');
+
+      // Create 8 threads
+      for (let i = 0; i < 8; i++) {
+        const thread = document.createElement('div');
+        thread.className = 'atomic-viz__thread atomic-viz__thread--waiting';
+        thread.textContent = 'T' + i;
+        atomicThreads.appendChild(thread);
+      }
+
+      const threads = atomicThreads.querySelectorAll('.atomic-viz__thread');
+
+      document.getElementById('atomic-run').addEventListener('click', () => {
+        let counter = 0;
+        let currentThread = 0;
+
+        function processNext() {
+          if (currentThread >= 8) {
+            atomicStatus.textContent = 'Done! 8 threads serialized into 8 atomic operations.';
+            return;
+          }
+
+          // Mark current thread as active
+          threads[currentThread].classList.remove('atomic-viz__thread--waiting');
+          threads[currentThread].classList.add('atomic-viz__thread--active');
+
+          setTimeout(() => {
+            // Complete the atomic
+            counter++;
+            atomicValue.textContent = counter;
+            
+            threads[currentThread].classList.remove('atomic-viz__thread--active');
+            threads[currentThread].classList.add('atomic-viz__thread--done');
+            
+            currentThread++;
+            atomicStatus.textContent = 'Thread ' + (currentThread - 1) + ' completed. Counter = ' + counter;
+            
+            setTimeout(processNext, 200);
+          }, 300);
+        }
+
+        processNext();
+      });
+
+      document.getElementById('atomic-reset').addEventListener('click', () => {
+        atomicValue.textContent = '0';
+        threads.forEach(t => {
+          t.className = 'atomic-viz__thread atomic-viz__thread--waiting';
+        });
+        atomicStatus.textContent = '8 threads each adding 1. Watch them serialize!';
+      });
+    </script>
+  </body>
+</html>
