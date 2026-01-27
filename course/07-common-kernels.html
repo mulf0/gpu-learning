@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 7: Common Kernels - GPU Learning</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* Fusion diagram */
+      .fusion-diagram {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+        flex-wrap: wrap;
+      }
+
+      .fusion-diagram__box {
+        padding: var(--space-md) var(--space-lg);
+        border-radius: var(--radius-md);
+        text-align: center;
+        min-width: 100px;
+        font-size: var(--text-sm);
+      }
+
+      .fusion-diagram__box--memory {
+        background: var(--glow-orange);
+        border: 1px solid var(--accent-orange);
+      }
+
+      .fusion-diagram__box--compute {
+        background: var(--glow-blue);
+        border: 1px solid var(--accent-blue);
+      }
+
+      .fusion-diagram__box--fused {
+        background: var(--glow-green);
+        border: 1px solid var(--accent-green);
+      }
+
+      .fusion-diagram__arrow {
+        color: var(--text-muted);
+        font-size: var(--text-xl);
+      }
+
+      /* Code blocks */
+      .code-block {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        overflow-x: auto;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: var(--text-sm);
+        line-height: 1.6;
+        margin: var(--space-md) 0;
+      }
+
+      .code-block__header {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        margin-bottom: var(--space-sm);
+        font-weight: 600;
+      }
+
+      .code-block .comment { color: var(--text-muted); }
+      .code-block .keyword { color: var(--accent-purple); }
+      .code-block .function { color: var(--accent-blue); }
+      .code-block .string { color: var(--accent-green); }
+      .code-block .number { color: var(--accent-orange); }
+      .code-block .decorator { color: var(--accent-cyan); }
+
+      /* Comparison panels */
+      .compare-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      @media (max-width: 700px) {
+        .compare-panels { grid-template-columns: 1fr; }
+      }
+
+      .compare-panel {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .compare-panel__header {
+        padding: var(--space-sm) var(--space-md);
+        font-weight: 600;
+        font-size: var(--text-sm);
+      }
+
+      .compare-panel__header--slow {
+        background: var(--glow-orange);
+        color: var(--accent-orange);
+      }
+
+      .compare-panel__header--fast {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+
+      .compare-panel__content {
+        padding: var(--space-md);
+      }
+
+      /* Memory access pattern viz */
+      .access-pattern {
+        display: flex;
+        gap: 2px;
+        margin: var(--space-md) 0;
+        flex-wrap: wrap;
+      }
+
+      .access-pattern__cell {
+        width: 24px;
+        height: 24px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xs);
+        font-family: var(--font-mono);
+      }
+
+      .access-pattern__cell--sequential {
+        background: var(--accent-green);
+        color: white;
+      }
+
+      .access-pattern__cell--random {
+        background: var(--accent-orange);
+        color: white;
+      }
+
+      .access-pattern__cell--unused {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+      }
+
+      /* Performance table */
+      .perf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--space-lg) 0;
+        font-size: var(--text-sm);
+      }
+
+      .perf-table th,
+      .perf-table td {
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .perf-table th {
+        background: var(--bg-secondary);
+        font-weight: 600;
+      }
+
+      .perf-table code {
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+      }
+
+      /* Kernel anatomy */
+      .kernel-anatomy {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .kernel-anatomy__step {
+        display: flex;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .kernel-anatomy__step:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .kernel-anatomy__num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        flex-shrink: 0;
+      }
+
+      .kernel-anatomy__content h4 {
+        margin: 0 0 var(--space-xs);
+        font-size: var(--text-base);
+      }
+
+      .kernel-anatomy__content p {
+        margin: 0;
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main class="chapter-container" id="main-content">
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 7</div>
+        <h1 class="chapter-header__title">Common Kernels</h1>
+        <p class="chapter-header__desc">
+          Beyond attention: the essential kernels that make up modern neural networks.
+          LayerNorm, RMSNorm, fused activations, embeddings, and optimizers.
+        </p>
+      </header>
+
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Implement fused element-wise operations (activation + bias)</li>
+          <li class="learning-objectives__item">Write efficient LayerNorm and RMSNorm kernels</li>
+          <li class="learning-objectives__item">Optimize embedding lookups for arbitrary indices</li>
+          <li class="learning-objectives__item">Understand fused optimizer patterns (Adam)</li>
+          <li class="learning-objectives__item">Know when to write custom kernels vs using cuDNN</li>
+        </ol>
+      </div>
+
+      <!-- Section 1: Fused Element-wise Ops -->
+      <section class="section" id="section-0">
+        <div class="section__number">01 - KERNEL FUSION</div>
+        <h2 class="section__title">Why Fusion Matters</h2>
+
+        <p>
+          Most neural network operations are <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener">memory-bound</a>—limited 
+          by how fast you can move data, not compute. Fusion reduces memory traffic by combining multiple operations into one kernel.
+        </p>
+
+        <h3>Unfused vs Fused: Memory Traffic</h3>
+
+        <div class="compare-panels">
+          <div class="compare-panel">
+            <div class="compare-panel__header compare-panel__header--slow">Unfused: 6 Memory Ops</div>
+            <div class="compare-panel__content">
+              <div class="fusion-diagram" style="flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                  <span class="fusion-diagram__box fusion-diagram__box--memory">Load x</span>
+                  <span>→</span>
+                  <span class="fusion-diagram__box fusion-diagram__box--compute">Add bias</span>
+                  <span>→</span>
+                  <span class="fusion-diagram__box fusion-diagram__box--memory">Store tmp1</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-sm);">
+                  <span class="fusion-diagram__box fusion-diagram__box--memory">Load tmp1</span>
+                  <span>→</span>
+                  <span class="fusion-diagram__box fusion-diagram__box--compute">GELU</span>
+                  <span>→</span>
+                  <span class="fusion-diagram__box fusion-diagram__box--memory">Store out</span>
+                </div>
+              </div>
+              <p class="text-muted text-small">2 kernel launches, 6 memory operations</p>
+            </div>
+          </div>
+          <div class="compare-panel">
+            <div class="compare-panel__header compare-panel__header--fast">Fused: 2 Memory Ops</div>
+            <div class="compare-panel__content">
+              <div class="fusion-diagram">
+                <span class="fusion-diagram__box fusion-diagram__box--memory">Load x</span>
+                <span class="fusion-diagram__arrow">→</span>
+                <span class="fusion-diagram__box fusion-diagram__box--fused">Add bias + GELU</span>
+                <span class="fusion-diagram__arrow">→</span>
+                <span class="fusion-diagram__box fusion-diagram__box--memory">Store out</span>
+              </div>
+              <p class="text-muted text-small">1 kernel launch, 2 memory operations → 3x less memory traffic</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Fused Bias + Activation in Triton</h3>
+
+        <div class="code-block">
+          <div class="code-block__header">Triton: Fused bias + GELU (<a href="https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html" target="_blank" rel="noopener">Triton Tutorial Style</a>)</div>
+<pre><span class="decorator">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">fused_bias_gelu</span>(
+    x_ptr, bias_ptr, out_ptr,
+    N,  <span class="comment"># number of elements</span>
+    BLOCK: tl.constexpr
+):
+    pid = tl.program_id(<span class="number">0</span>)
+    offsets = pid * BLOCK + tl.arange(<span class="number">0</span>, BLOCK)
+    mask = offsets < N
+    
+    <span class="comment"># Load x and bias (bias is broadcast)</span>
+    x = tl.load(x_ptr + offsets, mask=mask)
+    bias = tl.load(bias_ptr + offsets % BIAS_SIZE, mask=mask)
+    
+    <span class="comment"># Fused: add bias, then GELU</span>
+    x = x + bias
+    <span class="comment"># GELU approximation: x * 0.5 * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))</span>
+    out = x * <span class="number">0.5</span> * (<span class="number">1.0</span> + tl.libdevice.tanh(
+        <span class="number">0.7978845608</span> * (x + <span class="number">0.044715</span> * x * x * x)
+    ))
+    
+    tl.store(out_ptr + offsets, out, mask=mask)</pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">GELU Approximation</div>
+          <p class="mb-0">
+            The <a href="https://arxiv.org/abs/1606.08415" target="_blank" rel="noopener">GELU activation (Hendrycks & Gimpel, 2016)</a> 
+            uses a tanh approximation for efficiency. PyTorch's <code>nn.GELU(approximate='tanh')</code> uses this form.
+            The exact form uses <code>erf()</code> which is slower.
+          </p>
+        </div>
+
+        <div class="quiz quiz--micro" id="quiz-fusion">
+          <div class="quiz-q">Fusing two element-wise operations primarily improves performance by:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Reducing computation</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Reducing memory traffic (fewer loads/stores)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Using fewer threads</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 2: Normalization Kernels -->
+      <section class="section" id="section-1">
+        <div class="section__number">02 - NORMALIZATION</div>
+        <h2 class="section__title">LayerNorm and RMSNorm</h2>
+
+        <p>
+          <a href="https://arxiv.org/abs/1607.06450" target="_blank" rel="noopener">Layer Normalization (Ba et al., 2016)</a> 
+          is ubiquitous in Transformers. <a href="https://arxiv.org/abs/1910.07467" target="_blank" rel="noopener">RMSNorm (Zhang & Sennrich, 2019)</a> 
+          is a simplified variant used in LLaMA and other modern architectures.
+        </p>
+
+        <h3>LayerNorm vs RMSNorm</h3>
+
+        <table class="perf-table">
+          <tr>
+            <th>Operation</th>
+            <th>LayerNorm</th>
+            <th>RMSNorm</th>
+          </tr>
+          <tr>
+            <td>Formula</td>
+            <td><code>γ * (x - μ) / √(σ² + ε) + β</code></td>
+            <td><code>γ * x / √(mean(x²) + ε)</code></td>
+          </tr>
+          <tr>
+            <td>Compute mean?</td>
+            <td>Yes (for centering)</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Learnable bias?</td>
+            <td>Yes (β)</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Passes over data</td>
+            <td>2 (mean, then variance)</td>
+            <td>1 (just RMS)</td>
+          </tr>
+          <tr>
+            <td>Used in</td>
+            <td>BERT, GPT-2, T5</td>
+            <td><a href="https://arxiv.org/abs/2302.13971" target="_blank" rel="noopener">LLaMA</a>, Mistral, Gemma</td>
+          </tr>
+        </table>
+
+        <h3>LayerNorm Kernel Anatomy</h3>
+
+        <div class="kernel-anatomy">
+          <div class="kernel-anatomy__step">
+            <div class="kernel-anatomy__num">1</div>
+            <div class="kernel-anatomy__content">
+              <h4>Load row into registers/shared memory</h4>
+              <p>Each thread block handles one or more rows. Load the entire row for reduction.</p>
+            </div>
+          </div>
+          <div class="kernel-anatomy__step">
+            <div class="kernel-anatomy__num">2</div>
+            <div class="kernel-anatomy__content">
+              <h4>Compute mean via parallel reduction</h4>
+              <p>Sum all elements, divide by count. Use warp shuffles for efficiency.</p>
+            </div>
+          </div>
+          <div class="kernel-anatomy__step">
+            <div class="kernel-anatomy__num">3</div>
+            <div class="kernel-anatomy__content">
+              <h4>Compute variance via parallel reduction</h4>
+              <p>Sum (x - mean)², divide by count. Can use <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm" target="_blank" rel="noopener">Welford's algorithm</a> for single-pass.</p>
+            </div>
+          </div>
+          <div class="kernel-anatomy__step">
+            <div class="kernel-anatomy__num">4</div>
+            <div class="kernel-anatomy__content">
+              <h4>Normalize and apply affine transform</h4>
+              <p>Compute (x - mean) * rsqrt(var + eps) * gamma + beta. Write output.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>RMSNorm: Simpler and Faster</h3>
+
+        <div class="code-block">
+          <div class="code-block__header">RMSNorm in Triton</div>
+<pre><span class="decorator">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">rmsnorm_kernel</span>(
+    x_ptr, weight_ptr, out_ptr,
+    stride, N,
+    eps: tl.constexpr,
+    BLOCK: tl.constexpr
+):
+    row = tl.program_id(<span class="number">0</span>)
+    x_ptr += row * stride
+    out_ptr += row * stride
+    
+    <span class="comment"># Load row</span>
+    cols = tl.arange(<span class="number">0</span>, BLOCK)
+    mask = cols < N
+    x = tl.load(x_ptr + cols, mask=mask, other=<span class="number">0.0</span>).to(tl.float32)
+    
+    <span class="comment"># Compute RMS (no mean subtraction!)</span>
+    x_sq = x * x
+    mean_sq = tl.sum(x_sq) / N
+    rms = tl.rsqrt(mean_sq + eps)
+    
+    <span class="comment"># Normalize and scale</span>
+    weight = tl.load(weight_ptr + cols, mask=mask)
+    out = x * rms * weight
+    
+    tl.store(out_ptr + cols, out, mask=mask)</pre>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Numerical Stability</div>
+          <p class="mb-0">
+            Always compute reductions in FP32, even for FP16 inputs. Accumulating many small values in FP16 causes precision loss.
+            Cast back to the output dtype only at the final store.
+          </p>
+        </div>
+
+        <div class="quiz" id="quiz-norm">
+          <div class="quiz-q">Why is RMSNorm faster than LayerNorm?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It uses less memory</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It skips mean computation and has no bias parameter</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It uses Tensor Cores</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It has better cache behavior</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 3: Embedding Lookups -->
+      <section class="section" id="section-2">
+        <div class="section__number">03 - EMBEDDINGS</div>
+        <h2 class="section__title">Embedding Lookups</h2>
+
+        <p>
+          Embedding tables convert token IDs to vectors. The challenge: indices are arbitrary, 
+          causing <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory" target="_blank" rel="noopener">non-coalesced memory access</a>.
+        </p>
+
+        <h3>The Coalescing Problem</h3>
+
+        <div class="compare-panels">
+          <div class="compare-panel">
+            <div class="compare-panel__header compare-panel__header--fast">Sequential indices (rare)</div>
+            <div class="compare-panel__content">
+              <p class="text-small text-secondary">Indices: [0, 1, 2, 3, 4, 5, 6, 7]</p>
+              <div class="access-pattern">
+                <div class="access-pattern__cell access-pattern__cell--sequential">0</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">1</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">2</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">3</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">4</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">5</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">6</div>
+                <div class="access-pattern__cell access-pattern__cell--sequential">7</div>
+              </div>
+              <p class="text-small text-muted">Coalesced: 1 memory transaction</p>
+            </div>
+          </div>
+          <div class="compare-panel">
+            <div class="compare-panel__header compare-panel__header--slow">Random indices (typical)</div>
+            <div class="compare-panel__content">
+              <p class="text-small text-secondary">Indices: [42, 7, 1024, 3, 999, 15, 42, 100]</p>
+              <div class="access-pattern">
+                <div class="access-pattern__cell access-pattern__cell--random">42</div>
+                <div class="access-pattern__cell access-pattern__cell--random">7</div>
+                <div class="access-pattern__cell access-pattern__cell--random">1K</div>
+                <div class="access-pattern__cell access-pattern__cell--random">3</div>
+                <div class="access-pattern__cell access-pattern__cell--random">999</div>
+                <div class="access-pattern__cell access-pattern__cell--random">15</div>
+                <div class="access-pattern__cell access-pattern__cell--random">42</div>
+                <div class="access-pattern__cell access-pattern__cell--random">100</div>
+              </div>
+              <p class="text-small text-muted">Scattered: up to 8 memory transactions</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Optimization Strategies</h3>
+
+        <table class="perf-table">
+          <tr>
+            <th>Strategy</th>
+            <th>When to Use</th>
+            <th>Trade-off</th>
+          </tr>
+          <tr>
+            <td>Vectorized loads</td>
+            <td>Embedding dim divisible by 4</td>
+            <td>Load float4 instead of float → 4x fewer transactions per row</td>
+          </tr>
+          <tr>
+            <td>L2 cache persistence</td>
+            <td>Repeated access to same embeddings</td>
+            <td>Use <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-cache-access-management" target="_blank" rel="noopener">cudaAccessPolicyWindow</a> to pin hot embeddings</td>
+          </tr>
+          <tr>
+            <td>Sorted indices</td>
+            <td>Batch allows reordering</td>
+            <td>Sort indices to improve locality, then unsort output</td>
+          </tr>
+          <tr>
+            <td>Embedding bag</td>
+            <td>Sum/mean pooling over variable-length sequences</td>
+            <td>Fuse gather + reduction in one kernel</td>
+          </tr>
+        </table>
+
+        <div class="code-block">
+          <div class="code-block__header">Vectorized Embedding Lookup</div>
+<pre><span class="decorator">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">embedding_kernel</span>(
+    indices_ptr, weight_ptr, out_ptr,
+    seq_len, embed_dim,
+    weight_stride,
+    BLOCK_SIZE: tl.constexpr
+):
+    <span class="comment"># Each program handles one token</span>
+    token_idx = tl.program_id(<span class="number">0</span>)
+    
+    <span class="comment"># Load the vocabulary index for this token</span>
+    vocab_idx = tl.load(indices_ptr + token_idx)
+    
+    <span class="comment"># Calculate pointer to embedding row</span>
+    embed_ptr = weight_ptr + vocab_idx * weight_stride
+    
+    <span class="comment"># Load embedding in chunks (vectorized)</span>
+    offsets = tl.arange(<span class="number">0</span>, BLOCK_SIZE)
+    mask = offsets < embed_dim
+    embedding = tl.load(embed_ptr + offsets, mask=mask)
+    
+    <span class="comment"># Store to output</span>
+    out_offset = token_idx * embed_dim
+    tl.store(out_ptr + out_offset + offsets, embedding, mask=mask)</pre>
+        </div>
+
+        <div class="quiz quiz--micro" id="quiz-embed">
+          <div class="quiz-q">Why are embedding lookups memory-inefficient compared to matrix multiplies?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Random indices cause non-coalesced (scattered) memory access</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Embeddings use more memory</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>They can't use Tensor Cores</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 4: Fused Optimizers -->
+      <section class="section" id="section-3">
+        <div class="section__number">04 - FUSED OPTIMIZERS</div>
+        <h2 class="section__title">Fused Adam</h2>
+
+        <p>
+          The <a href="https://arxiv.org/abs/1412.6980" target="_blank" rel="noopener">Adam optimizer (Kingma & Ba, 2014)</a> 
+          updates parameters using first and second moment estimates. A naive implementation requires 
+          multiple kernel launches and memory passes.
+        </p>
+
+        <h3>Adam Memory Traffic</h3>
+
+        <table class="perf-table">
+          <tr>
+            <th>Operation</th>
+            <th>Unfused (separate kernels)</th>
+            <th>Fused (one kernel)</th>
+          </tr>
+          <tr>
+            <td>Load gradient</td>
+            <td>1 load</td>
+            <td rowspan="5" style="vertical-align: middle; text-align: center; background: var(--glow-green);">
+              <strong>1 kernel</strong><br>
+              Load: g, m, v, p<br>
+              Store: m, v, p<br>
+              = 7 memory ops
+            </td>
+          </tr>
+          <tr>
+            <td>Update m = β₁m + (1-β₁)g</td>
+            <td>Load m, store m</td>
+          </tr>
+          <tr>
+            <td>Update v = β₂v + (1-β₂)g²</td>
+            <td>Load g, load v, store v</td>
+          </tr>
+          <tr>
+            <td>Compute m̂, v̂ (bias correction)</td>
+            <td>Load m, load v</td>
+          </tr>
+          <tr>
+            <td>Update p = p - lr * m̂ / (√v̂ + ε)</td>
+            <td>Load p, store p</td>
+          </tr>
+          <tr>
+            <td><strong>Total memory ops</strong></td>
+            <td><strong>11 ops</strong> (5 kernels)</td>
+            <td><strong>7 ops</strong> (1 kernel)</td>
+          </tr>
+        </table>
+
+        <div class="code-block">
+          <div class="code-block__header">Fused Adam Kernel (simplified)</div>
+<pre><span class="decorator">@triton.jit</span>
+<span class="keyword">def</span> <span class="function">fused_adam</span>(
+    param_ptr, grad_ptr, m_ptr, v_ptr,
+    lr, beta1, beta2, eps, step,
+    N, BLOCK: tl.constexpr
+):
+    pid = tl.program_id(<span class="number">0</span>)
+    offsets = pid * BLOCK + tl.arange(<span class="number">0</span>, BLOCK)
+    mask = offsets < N
+    
+    <span class="comment"># Load all tensors once</span>
+    p = tl.load(param_ptr + offsets, mask=mask)
+    g = tl.load(grad_ptr + offsets, mask=mask)
+    m = tl.load(m_ptr + offsets, mask=mask)
+    v = tl.load(v_ptr + offsets, mask=mask)
+    
+    <span class="comment"># Update moments</span>
+    m = beta1 * m + (<span class="number">1</span> - beta1) * g
+    v = beta2 * v + (<span class="number">1</span> - beta2) * g * g
+    
+    <span class="comment"># Bias correction</span>
+    m_hat = m / (<span class="number">1</span> - tl.math.pow(beta1, step))
+    v_hat = v / (<span class="number">1</span> - tl.math.pow(beta2, step))
+    
+    <span class="comment"># Update parameters</span>
+    p = p - lr * m_hat / (tl.sqrt(v_hat) + eps)
+    
+    <span class="comment"># Store updated values</span>
+    tl.store(param_ptr + offsets, p, mask=mask)
+    tl.store(m_ptr + offsets, m, mask=mask)
+    tl.store(v_ptr + offsets, v, mask=mask)</pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Multi-Tensor Apply</div>
+          <p class="mb-0">
+            Real-world optimizers use <a href="https://nvidia.github.io/apex/optimizers.html" target="_blank" rel="noopener">multi-tensor apply</a>: 
+            process all model parameters in one kernel launch. This amortizes kernel launch overhead 
+            (which can be ~5-10μs per launch) across all parameters.
+          </p>
+        </div>
+
+        <div class="quiz" id="quiz-optim">
+          <div class="quiz-q">Fused Adam stores which tensors?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Just the updated parameters</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Parameters and gradients</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Parameters, first moment (m), and second moment (v)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Only the moments</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 5: When to Use cuDNN -->
+      <section class="section" id="section-4">
+        <div class="section__number">05 - LIBRARIES VS CUSTOM</div>
+        <h2 class="section__title">When to Write Custom Kernels</h2>
+
+        <p>
+          <a href="https://docs.nvidia.com/deeplearning/cudnn/latest/" target="_blank" rel="noopener">cuDNN</a> and 
+          <a href="https://docs.nvidia.com/cuda/cublas/" target="_blank" rel="noopener">cuBLAS</a> are highly optimized. 
+          Don't reinvent the wheel—but know when custom kernels win.
+        </p>
+
+        <h3>Use Libraries When...</h3>
+
+        <table class="perf-table">
+          <tr>
+            <th>Operation</th>
+            <th>Library</th>
+            <th>Why</th>
+          </tr>
+          <tr>
+            <td>Matrix multiply (GEMM)</td>
+            <td>cuBLAS</td>
+            <td>Tensor Core optimized, auto-tuned per GPU</td>
+          </tr>
+          <tr>
+            <td>Convolution</td>
+            <td>cuDNN</td>
+            <td>Multiple algorithms (Winograd, FFT, implicit GEMM), auto-tuned</td>
+          </tr>
+          <tr>
+            <td>Batch normalization</td>
+            <td>cuDNN</td>
+            <td>Fused forward+backward, running stats handled</td>
+          </tr>
+          <tr>
+            <td>Attention (standard)</td>
+            <td><a href="https://github.com/Dao-AILab/flash-attention" target="_blank" rel="noopener">FlashAttention</a></td>
+            <td>IO-aware, extensively optimized</td>
+          </tr>
+        </table>
+
+        <h3>Write Custom When...</h3>
+
+        <table class="perf-table">
+          <tr>
+            <th>Scenario</th>
+            <th>Example</th>
+            <th>Why Custom Wins</th>
+          </tr>
+          <tr>
+            <td>Fusion opportunities</td>
+            <td>Bias + GELU + Dropout</td>
+            <td>Libraries can't fuse across op boundaries</td>
+          </tr>
+          <tr>
+            <td>Non-standard shapes</td>
+            <td>Very small matrices, odd dimensions</td>
+            <td>Libraries optimized for common sizes</td>
+          </tr>
+          <tr>
+            <td>Custom attention patterns</td>
+            <td>Sliding window, sparse patterns</td>
+            <td>Standard attention doesn't support masking patterns</td>
+          </tr>
+          <tr>
+            <td>Research ops</td>
+            <td>Novel activations, custom losses</td>
+            <td>No library implementation exists</td>
+          </tr>
+        </table>
+
+        <div class="callout warn">
+          <div class="callout-title">Benchmark First</div>
+          <p class="mb-0">
+            Always benchmark your custom kernel against the library version. A "clever" custom kernel 
+            that's 20% slower than cuDNN is a waste of engineering time. Profile with realistic batch sizes and shapes.
+          </p>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- References -->
+      <section class="section" id="references">
+        <div class="section__number">REFERENCES</div>
+        <h2 class="section__title">Citations & Further Reading</h2>
+
+        <div class="card">
+          <h4>Papers</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Layer Normalization</strong><br>
+              Ba, Kiros, Hinton, 2016<br>
+              <a href="https://arxiv.org/abs/1607.06450" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1607.06450</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Root Mean Square Layer Normalization</strong><br>
+              Zhang & Sennrich, 2019<br>
+              <a href="https://arxiv.org/abs/1910.07467" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1910.07467</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>GELU Activation</strong><br>
+              Hendrycks & Gimpel, 2016<br>
+              <a href="https://arxiv.org/abs/1606.08415" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1606.08415</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Adam Optimizer</strong><br>
+              Kingma & Ba, 2014<br>
+              <a href="https://arxiv.org/abs/1412.6980" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1412.6980</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>LLaMA (uses RMSNorm)</strong><br>
+              Touvron et al., 2023<br>
+              <a href="https://arxiv.org/abs/2302.13971" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2302.13971</a>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Documentation</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Triton Tutorials</strong><br>
+              Fused softmax, matrix multiply, and more<br>
+              <a href="https://triton-lang.org/main/getting-started/tutorials/" target="_blank" rel="noopener" style="color: var(--accent-blue);">triton-lang.org/tutorials</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA C++ Best Practices Guide</strong><br>
+              Memory coalescing, occupancy, optimization<br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>cuDNN Documentation</strong><br>
+              Convolution, normalization, attention APIs<br>
+              <a href="https://docs.nvidia.com/deeplearning/cudnn/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cudnn</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>APEX Fused Optimizers</strong><br>
+              Multi-tensor apply, fused Adam/LAMB<br>
+              <a href="https://nvidia.github.io/apex/optimizers.html" target="_blank" rel="noopener" style="color: var(--accent-blue);">nvidia.github.io/apex</a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You now know how to implement the common kernels that make up most neural networks.
+            Next, we'll dive deep into attention mechanisms—the heart of modern Transformers.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="06-debugging.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">Debugging & Profiling</div>
+          </a>
+          <a href="08-attention.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Attention Mechanisms</div>
+          </a>
+        </div>
+      </footer>
+
+      <div class="site-license">
+        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+      </div>
+    </main>
+
+    <script src="../scripts/components.js"></script>
+  </body>
+</html>

@@ -714,6 +714,143 @@ smem[threadIdx.x * 32]
         </div>
       </section>
 
+      <hr class="chunk-divider">
+
+      <!-- Section 7: CUDA Graphs -->
+      <section class="section" id="cuda-graphs">
+        <div class="section__number">07 — CUDA GRAPHS</div>
+        <h2 class="section__title">Reducing Launch Overhead</h2>
+
+        <p>
+          Each kernel launch has overhead: <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-graphs" target="_blank" rel="noopener">~5-10 microseconds</a> for 
+          the CPU to set up and dispatch work to the GPU. For large kernels, this is negligible. 
+          For many small kernels (common in inference), it dominates runtime.
+        </p>
+
+        <h3>When CUDA Graphs Help</h3>
+
+        <div class="card">
+          <h4>Good Candidates</h4>
+          <ul>
+            <li><strong>Inference with fixed shapes</strong> — Same operations repeated many times</li>
+            <li><strong>Small batch sizes</strong> — Kernel compute time comparable to launch overhead</li>
+            <li><strong>Many small kernels</strong> — Transformer layers with separate attention, FFN, norm calls</li>
+          </ul>
+
+          <h4 style="margin-top: var(--space-lg);">Not Useful For</h4>
+          <ul>
+            <li><strong>Training</strong> — Dynamic shapes, gradient checkpointing, varying batch sizes</li>
+            <li><strong>Large kernels</strong> — Compute time >> launch overhead anyway</li>
+            <li><strong>Control flow dependent on data</strong> — Graphs can't handle dynamic branches</li>
+          </ul>
+        </div>
+
+        <h3>How CUDA Graphs Work</h3>
+
+        <p>
+          A <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graph-objects" target="_blank" rel="noopener">CUDA Graph</a> 
+          captures a sequence of operations (kernels, memory copies) and their dependencies, then replays them with minimal CPU involvement.
+        </p>
+
+        <div class="tma-flow">
+          <div class="tma-flow__box tma-flow__box--hbm">
+            <strong>Capture</strong><br>
+            <span style="font-size: var(--text-xs);">Record ops</span>
+          </div>
+          <div class="tma-flow__arrow">→</div>
+          <div class="tma-flow__box tma-flow__box--tma">
+            <strong>Instantiate</strong><br>
+            <span style="font-size: var(--text-xs);">Create executable</span>
+          </div>
+          <div class="tma-flow__arrow">→</div>
+          <div class="tma-flow__box tma-flow__box--smem">
+            <strong>Launch</strong><br>
+            <span style="font-size: var(--text-xs);">Single API call</span>
+          </div>
+        </div>
+
+        <h3>PyTorch Example</h3>
+
+        <div class="code-block">
+          <div class="code-block__header">CUDA Graphs in PyTorch (<a href="https://pytorch.org/docs/stable/notes/cuda.html#cuda-graphs" target="_blank" rel="noopener">PyTorch Docs</a>)</div>
+<pre><span class="keyword">import</span> torch
+
+<span class="comment"># Warmup (required to allocate memory, compile kernels)</span>
+<span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">3</span>):
+    output = model(static_input)
+
+<span class="comment"># Capture graph</span>
+g = torch.cuda.CUDAGraph()
+<span class="keyword">with</span> torch.cuda.graph(g):
+    static_output = model(static_input)
+
+<span class="comment"># Replay graph for inference (much faster for small batches)</span>
+<span class="keyword">for</span> batch <span class="keyword">in</span> dataloader:
+    <span class="comment"># Copy new data into static input buffer</span>
+    static_input.copy_(batch)
+    
+    <span class="comment"># Replay the captured graph</span>
+    g.replay()
+    
+    <span class="comment"># Results are in static_output</span>
+    process(static_output)</pre>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Static Shapes Required</div>
+          <p class="mb-0">
+            The graph captures exact tensor shapes and memory addresses. Changing shapes requires recapturing the graph.
+            For variable-length sequences, pad to max length or bucket by length and capture multiple graphs.
+          </p>
+        </div>
+
+        <h3>Performance Impact</h3>
+
+        <table class="perf-table" style="margin-top: var(--space-md);">
+          <tr>
+            <th>Scenario</th>
+            <th>Without Graphs</th>
+            <th>With Graphs</th>
+            <th>Speedup</th>
+          </tr>
+          <tr>
+            <td>Small batch inference (BS=1)</td>
+            <td>~500 μs</td>
+            <td>~200 μs</td>
+            <td>~2.5x</td>
+          </tr>
+          <tr>
+            <td>Large batch inference (BS=64)</td>
+            <td>~8 ms</td>
+            <td>~7.9 ms</td>
+            <td>~1.01x</td>
+          </tr>
+        </table>
+        <p class="text-muted text-small">
+          Typical numbers for a Transformer layer. Speedup depends on kernel count and individual kernel duration. 
+          Profile your specific workload.
+        </p>
+
+        <div class="quiz quiz--micro" id="quiz-graphs">
+          <div class="quiz-q">CUDA Graphs are most beneficial when:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Training large models</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Inference with small batches and fixed shapes</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Variable-length sequence processing</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
       <!-- Chapter Footer -->
       <footer class="chapter-footer">
         <div class="chapter-footer__flow">

@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 6: Debugging & Profiling - GPU Learning</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body { display: block; }
+
+      /* Error code lookup */
+      .error-lookup {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .error-lookup__input {
+        display: flex;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+      }
+
+      .error-lookup__result {
+        padding: var(--space-md);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        min-height: 80px;
+      }
+
+      .error-lookup__name {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        color: var(--accent-orange);
+        margin-bottom: var(--space-xs);
+      }
+
+      .error-lookup__desc {
+        color: var(--text-secondary);
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-sm);
+      }
+
+      .error-lookup__fix {
+        font-size: var(--text-sm);
+        color: var(--text-primary);
+      }
+
+      /* Flowchart */
+      .flowchart {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .flowchart__node {
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+
+      .flowchart__node--question {
+        background: var(--glow-blue);
+        border: 1px solid var(--accent-blue);
+      }
+
+      .flowchart__node--action {
+        background: var(--glow-green);
+        border: 1px solid var(--accent-green);
+        margin-left: var(--space-lg);
+      }
+
+      .flowchart__node--warning {
+        background: var(--glow-orange);
+        border: 1px solid var(--accent-orange);
+        margin-left: var(--space-lg);
+      }
+
+      .flowchart__node:hover {
+        transform: translateX(4px);
+      }
+
+      .flowchart__node-title {
+        font-weight: 600;
+        margin-bottom: var(--space-xs);
+      }
+
+      .flowchart__node-desc {
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
+      }
+
+      /* Precision comparison */
+      .precision-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--space-lg) 0;
+        font-size: var(--text-sm);
+      }
+
+      .precision-table th,
+      .precision-table td {
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .precision-table th {
+        background: var(--bg-secondary);
+        font-weight: 600;
+      }
+
+      .precision-table code {
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+      }
+
+      /* NaN detector visualization */
+      .nan-viz {
+        display: flex;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+        flex-wrap: wrap;
+      }
+
+      .nan-viz__stage {
+        flex: 1;
+        min-width: 150px;
+        padding: var(--space-md);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        text-align: center;
+      }
+
+      .nan-viz__stage-label {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        margin-bottom: var(--space-xs);
+      }
+
+      .nan-viz__stage-value {
+        font-family: var(--font-mono);
+        font-size: var(--text-lg);
+        font-weight: 600;
+      }
+
+      .nan-viz__stage--ok .nan-viz__stage-value { color: var(--accent-green); }
+      .nan-viz__stage--warn .nan-viz__stage-value { color: var(--accent-orange); }
+      .nan-viz__stage--bad .nan-viz__stage-value { color: var(--accent-red); }
+
+      .nan-viz__arrow {
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: var(--text-xl);
+      }
+
+      /* Code comparison */
+      .code-compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      @media (max-width: 700px) {
+        .code-compare {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .code-compare__panel {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .code-compare__header {
+        padding: var(--space-sm) var(--space-md);
+        background: var(--bg-secondary);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 600;
+      }
+
+      .code-compare__header--bad { color: var(--accent-red); }
+      .code-compare__header--good { color: var(--accent-green); }
+
+      .code-compare__code {
+        padding: var(--space-md);
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        line-height: 1.6;
+        overflow-x: auto;
+      }
+
+      /* Metric cards */
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      .metric-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+      }
+
+      .metric-card__label {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        margin-bottom: var(--space-xs);
+      }
+
+      .metric-card__value {
+        font-family: var(--font-mono);
+        font-size: var(--text-xl);
+        font-weight: 600;
+        color: var(--accent-blue);
+      }
+
+      .metric-card__unit {
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main class="chapter-container" id="main-content">
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 6</div>
+        <h1 class="chapter-header__title">Debugging & Profiling</h1>
+        <p class="chapter-header__desc">
+          Systematic approaches to finding and fixing GPU kernel issues.
+          From cryptic error messages to silent numerical bugs—learn to diagnose problems efficiently.
+        </p>
+      </header>
+
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Diagnose common kernel errors from CUDA error messages</li>
+          <li class="learning-objectives__item">Apply systematic debugging flowcharts for "wrong results" and "slow kernel" issues</li>
+          <li class="learning-objectives__item">Detect and fix numerical issues (NaN, Inf, precision loss)</li>
+          <li class="learning-objectives__item">Ensure deterministic execution for reproducibility</li>
+          <li class="learning-objectives__item">Use Nsight tools to identify performance bottlenecks</li>
+        </ol>
+      </div>
+
+      <!-- Section 1: Error Message Decoder -->
+      <section class="section" id="section-0">
+        <div class="section__number">01 - ERROR MESSAGES</div>
+        <h2 class="section__title">Decoding CUDA Errors</h2>
+
+        <p>
+          CUDA errors can be cryptic. The <a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#group__CUDART__TYPES_1g3f51e3575c2178246db0a94a430e0038" target="_blank" rel="noopener">CUDA Runtime API</a> 
+          defines error codes that tell you what went wrong—if you know how to interpret them.
+        </p>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__icon card__icon--orange">Interactive: Error Code Lookup</div>
+          </div>
+
+          <div class="error-lookup">
+            <div class="error-lookup__input">
+              <select id="error-select" class="input" style="flex: 1;">
+                <option value="">Select an error...</option>
+                <option value="illegal-address">cudaErrorIllegalAddress (700)</option>
+                <option value="launch-failed">cudaErrorLaunchFailure (719)</option>
+                <option value="misaligned">cudaErrorMisalignedAddress (716)</option>
+                <option value="oom">cudaErrorMemoryAllocation (2)</option>
+                <option value="invalid-config">cudaErrorInvalidConfiguration (9)</option>
+                <option value="assert">cudaErrorAssert (710)</option>
+                <option value="too-many-blocks">cudaErrorLaunchOutOfResources (701)</option>
+              </select>
+            </div>
+            <div class="error-lookup__result" id="error-result">
+              <p class="text-muted">Select an error code to see its explanation and common fixes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Async Error Checking</div>
+          <p class="mb-0">
+            CUDA kernel launches are <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-concurrent-execution" target="_blank" rel="noopener">asynchronous</a>. 
+            Errors may not appear until you synchronize. Always check errors after <code>cudaDeviceSynchronize()</code> 
+            or <code>cudaStreamSynchronize()</code> to catch kernel failures.
+          </p>
+        </div>
+
+        <h3>Common Error Patterns</h3>
+
+        <div class="code-compare">
+          <div class="code-compare__panel">
+            <div class="code-compare__header code-compare__header--bad">Out-of-Bounds Access</div>
+            <div class="code-compare__code">
+<pre>// Thread accesses beyond array
+int idx = blockIdx.x * blockDim.x + threadIdx.x;
+output[idx] = input[idx];  // No bounds check!
+// Error: cudaErrorIllegalAddress</pre>
+            </div>
+          </div>
+          <div class="code-compare__panel">
+            <div class="code-compare__header code-compare__header--good">With Bounds Check</div>
+            <div class="code-compare__code">
+<pre>int idx = blockIdx.x * blockDim.x + threadIdx.x;
+if (idx < N) {  // Guard clause
+    output[idx] = input[idx];
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz quiz--micro" id="quiz-errors">
+          <div class="quiz-q">A kernel that worked yesterday now gives "cudaErrorIllegalAddress". What's most likely?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The GPU driver updated</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Input data changed size, causing out-of-bounds access</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The kernel is using too much shared memory</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 2: Wrong Results Debugging -->
+      <section class="section" id="section-1">
+        <div class="section__number">02 - WRONG RESULTS</div>
+        <h2 class="section__title">"My Kernel Gives Wrong Results"</h2>
+
+        <p>
+          When a kernel runs but produces incorrect output, systematic diagnosis beats random guessing.
+          Follow this flowchart to isolate the problem.
+        </p>
+
+        <div class="flowchart">
+          <div class="flowchart__node flowchart__node--question">
+            <div class="flowchart__node-title">Does a small input (e.g., 32 elements) give correct results?</div>
+            <div class="flowchart__node-desc">Test with trivially small inputs to isolate scaling issues.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--action">
+            <div class="flowchart__node-title">YES → Problem is size-dependent</div>
+            <div class="flowchart__node-desc">Check: loop bounds, grid/block dimensions, buffer sizes, index calculations at boundaries.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--warning">
+            <div class="flowchart__node-title">NO → Core logic is wrong</div>
+            <div class="flowchart__node-desc">Check: algorithm implementation, operator precedence, off-by-one errors.</div>
+          </div>
+
+          <div class="flowchart__node flowchart__node--question" style="margin-top: var(--space-lg);">
+            <div class="flowchart__node-title">Does running with 1 thread give correct results?</div>
+            <div class="flowchart__node-desc">Eliminate parallelism to test sequential correctness.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--action">
+            <div class="flowchart__node-title">YES → Race condition or synchronization issue</div>
+            <div class="flowchart__node-desc">Check: missing __syncthreads(), atomic operations needed, shared memory bank conflicts.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--warning">
+            <div class="flowchart__node-title">NO → Algorithm bug, not parallelism issue</div>
+            <div class="flowchart__node-desc">Debug as you would sequential code. Print intermediate values.</div>
+          </div>
+        </div>
+
+        <h3>Comparison Testing</h3>
+        <p>
+          The gold standard: compare your kernel output against a known-correct reference.
+          PyTorch and NumPy provide reliable baselines.
+        </p>
+
+        <div class="code-compare">
+          <div class="code-compare__panel">
+            <div class="code-compare__header">Reference Implementation</div>
+            <div class="code-compare__code">
+<pre># NumPy reference (always correct)
+def layernorm_ref(x, gamma, beta, eps=1e-5):
+    mean = x.mean(axis=-1, keepdims=True)
+    var = x.var(axis=-1, keepdims=True)
+    return gamma * (x - mean) / np.sqrt(var + eps) + beta</pre>
+            </div>
+          </div>
+          <div class="code-compare__panel">
+            <div class="code-compare__header">Comparison Code</div>
+            <div class="code-compare__code">
+<pre># Compare with tolerance
+ref = layernorm_ref(x_np, gamma_np, beta_np)
+out = my_kernel(x_gpu, gamma_gpu, beta_gpu)
+
+if not np.allclose(ref, out.cpu().numpy(), 
+                   rtol=1e-3, atol=1e-5):
+    print("MISMATCH:", np.abs(ref - out).max())</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Tolerance Selection</div>
+          <p class="mb-0">
+            Different precisions require different tolerances. Per <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#floating-point-standard" target="_blank" rel="noopener">IEEE 754</a>: 
+            FP32 has ~7 decimal digits of precision, FP16 has ~3-4, BF16 has ~2-3.
+            Use <code>rtol=1e-3</code> for FP16, <code>rtol=1e-5</code> for FP32.
+          </p>
+        </div>
+
+        <div class="quiz" id="quiz-debug">
+          <div class="quiz-q">Your kernel works for batch_size=1 but fails for batch_size=64. What should you check first?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>GPU temperature</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Grid/block dimensions and index calculations</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>CUDA driver version</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>CPU memory usage</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 3: Slow Kernel Debugging -->
+      <section class="section" id="section-2">
+        <div class="section__number">03 - SLOW KERNELS</div>
+        <h2 class="section__title">"My Kernel is Slow"</h2>
+
+        <p>
+          Before optimizing, you must identify the bottleneck. Is your kernel 
+          <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener">memory-bound or compute-bound</a>?
+        </p>
+
+        <h3>Memory-Bound vs Compute-Bound</h3>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-card__label">H100 Memory Bandwidth</div>
+            <div class="metric-card__value">3.35</div>
+            <div class="metric-card__unit"><a href="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet" target="_blank" rel="noopener">TB/s (HBM3)</a></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card__label">H100 FP16 Tensor Core</div>
+            <div class="metric-card__value">1,979</div>
+            <div class="metric-card__unit"><a href="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet" target="_blank" rel="noopener">TFLOPS</a></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card__label">Arithmetic Intensity Threshold</div>
+            <div class="metric-card__value">~590</div>
+            <div class="metric-card__unit">FLOP/byte (FP16)</div>
+          </div>
+        </div>
+
+        <p>
+          <strong>Arithmetic intensity</strong> = FLOPs / Bytes loaded. If your kernel's intensity is below the threshold,
+          you're memory-bound—no amount of compute optimization helps.
+        </p>
+
+        <div class="flowchart">
+          <div class="flowchart__node flowchart__node--question">
+            <div class="flowchart__node-title">Is achieved memory bandwidth close to peak?</div>
+            <div class="flowchart__node-desc">Check with Nsight Compute. H100 peak: <a href="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet" target="_blank" rel="noopener">3.35 TB/s</a></div>
+          </div>
+          <div class="flowchart__node flowchart__node--action">
+            <div class="flowchart__node-title">YES (>80% peak) → Memory-bound, well-optimized</div>
+            <div class="flowchart__node-desc">You've hit the limit. Reduce memory traffic via fusion, caching, or algorithmic changes.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--warning">
+            <div class="flowchart__node-title">NO (<50% peak) → Memory access pattern issue</div>
+            <div class="flowchart__node-desc">Check: coalescing, bank conflicts, L2 cache utilization, TLB misses.</div>
+          </div>
+
+          <div class="flowchart__node flowchart__node--question" style="margin-top: var(--space-lg);">
+            <div class="flowchart__node-title">Is occupancy reasonable?</div>
+            <div class="flowchart__node-desc">Check warps per SM. Low occupancy → not enough parallelism to hide latency.</div>
+          </div>
+          <div class="flowchart__node flowchart__node--action">
+            <div class="flowchart__node-title">Low occupancy → Check register and shared memory usage</div>
+            <div class="flowchart__node-desc">Use <code>--maxrregcount</code> to limit registers. Reduce shared memory per block.</div>
+          </div>
+        </div>
+
+        <h3>Key Metrics to Check</h3>
+
+        <table class="precision-table">
+          <tr>
+            <th>Metric</th>
+            <th>Good Value</th>
+            <th>What Low Values Mean</th>
+          </tr>
+          <tr>
+            <td>Memory Throughput</td>
+            <td>>80% of peak</td>
+            <td>Poor coalescing, cache thrashing</td>
+          </tr>
+          <tr>
+            <td>Occupancy</td>
+            <td>50-100%</td>
+            <td>Too many registers or shared memory per thread</td>
+          </tr>
+          <tr>
+            <td>SM Efficiency</td>
+            <td>>80%</td>
+            <td>Warp divergence, load imbalance</td>
+          </tr>
+          <tr>
+            <td>L2 Hit Rate</td>
+            <td>Depends on kernel</td>
+            <td>Working set doesn't fit in cache</td>
+          </tr>
+        </table>
+
+        <div class="quiz quiz--micro" id="quiz-perf">
+          <div class="quiz-q">Your kernel achieves 95% of peak memory bandwidth but is still "slow". What does this mean?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>There's a bug in your kernel</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The kernel is memory-bound; need algorithmic changes to go faster</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>You should increase occupancy</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 4: Numerical Debugging -->
+      <section class="section" id="section-3">
+        <div class="section__number">04 - NUMERICAL ISSUES</div>
+        <h2 class="section__title">NaN, Inf, and Precision Loss</h2>
+
+        <p>
+          Numerical bugs are insidious—kernels run without errors but produce garbage.
+          Understanding <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#floating-point-standard" target="_blank" rel="noopener">floating-point behavior</a> 
+          is essential for GPU programming.
+        </p>
+
+        <h3>How NaN and Inf Propagate</h3>
+
+        <div class="nan-viz">
+          <div class="nan-viz__stage nan-viz__stage--ok">
+            <div class="nan-viz__stage-label">Input</div>
+            <div class="nan-viz__stage-value">1e38</div>
+          </div>
+          <div class="nan-viz__arrow">→</div>
+          <div class="nan-viz__stage nan-viz__stage--warn">
+            <div class="nan-viz__stage-label">After x²</div>
+            <div class="nan-viz__stage-value">Inf</div>
+          </div>
+          <div class="nan-viz__arrow">→</div>
+          <div class="nan-viz__stage nan-viz__stage--bad">
+            <div class="nan-viz__stage-label">After Inf - Inf</div>
+            <div class="nan-viz__stage-value">NaN</div>
+          </div>
+          <div class="nan-viz__arrow">→</div>
+          <div class="nan-viz__stage nan-viz__stage--bad">
+            <div class="nan-viz__stage-label">Everything after</div>
+            <div class="nan-viz__stage-value">NaN</div>
+          </div>
+        </div>
+
+        <p class="text-secondary">
+          Once NaN appears, it <a href="https://en.wikipedia.org/wiki/NaN#Propagation" target="_blank" rel="noopener">propagates through all subsequent operations</a>. 
+          The key is finding <em>where</em> it first appears.
+        </p>
+
+        <h3>Common NaN Sources</h3>
+
+        <table class="precision-table">
+          <tr>
+            <th>Operation</th>
+            <th>Dangerous Input</th>
+            <th>Result</th>
+            <th>Fix</th>
+          </tr>
+          <tr>
+            <td><code>sqrt(x)</code></td>
+            <td>x < 0</td>
+            <td>NaN</td>
+            <td><code>sqrt(max(x, 0))</code></td>
+          </tr>
+          <tr>
+            <td><code>log(x)</code></td>
+            <td>x ≤ 0</td>
+            <td>-Inf or NaN</td>
+            <td><code>log(x + eps)</code></td>
+          </tr>
+          <tr>
+            <td><code>x / y</code></td>
+            <td>y = 0</td>
+            <td>Inf or NaN</td>
+            <td><code>x / (y + eps)</code></td>
+          </tr>
+          <tr>
+            <td><code>exp(x)</code></td>
+            <td>x > 88 (FP32)</td>
+            <td>Inf</td>
+            <td>Clamp input or use log-space</td>
+          </tr>
+          <tr>
+            <td><code>Inf - Inf</code></td>
+            <td>Softmax overflow</td>
+            <td>NaN</td>
+            <td>Subtract max before exp()</td>
+          </tr>
+        </table>
+
+        <h3>Precision Comparison</h3>
+
+        <table class="precision-table">
+          <tr>
+            <th>Format</th>
+            <th>Bits</th>
+            <th>Exponent/Mantissa</th>
+            <th>Range</th>
+            <th>Precision</th>
+          </tr>
+          <tr>
+            <td><a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format" target="_blank" rel="noopener">FP32</a></td>
+            <td>32</td>
+            <td>8 / 23</td>
+            <td>±3.4×10³⁸</td>
+            <td>~7 decimal digits</td>
+          </tr>
+          <tr>
+            <td><a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener">FP16</a></td>
+            <td>16</td>
+            <td>5 / 10</td>
+            <td>±65,504</td>
+            <td>~3-4 digits</td>
+          </tr>
+          <tr>
+            <td><a href="https://en.wikipedia.org/wiki/Bfloat16_floating-point_format" target="_blank" rel="noopener">BF16</a></td>
+            <td>16</td>
+            <td>8 / 7</td>
+            <td>±3.4×10³⁸</td>
+            <td>~2-3 digits</td>
+          </tr>
+          <tr>
+            <td><a href="https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/index.html" target="_blank" rel="noopener">FP8 (E4M3)</a></td>
+            <td>8</td>
+            <td>4 / 3</td>
+            <td>±448</td>
+            <td>~2 digits</td>
+          </tr>
+        </table>
+
+        <div class="callout info">
+          <div class="callout-title">FP16 vs BF16 Trade-off</div>
+          <p class="mb-0">
+            <strong>FP16</strong>: Better precision but limited range (max ~65K). Overflow-prone in training.
+            <strong>BF16</strong>: Same range as FP32, less precision. Generally safer for training.
+            See <a href="https://arxiv.org/abs/1905.12322" target="_blank" rel="noopener">Mixed Precision Training (Micikevicius et al., 2018)</a>.
+          </p>
+        </div>
+
+        <div class="quiz" id="quiz-nan">
+          <div class="quiz-q">Softmax produces NaN. What's the most likely cause?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Division by zero in the denominator</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>exp() overflow followed by Inf - Inf</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Input contains negative numbers</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Wrong data type</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 5: Determinism -->
+      <section class="section" id="section-4">
+        <div class="section__number">05 - DETERMINISM</div>
+        <h2 class="section__title">Reproducibility</h2>
+
+        <p>
+          Non-deterministic results make debugging nightmares. GPU operations can vary between runs due to
+          <a href="https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility" target="_blank" rel="noopener">floating-point reassociation</a>,
+          atomics, and framework choices.
+        </p>
+
+        <h3>Sources of Non-Determinism</h3>
+
+        <table class="precision-table">
+          <tr>
+            <th>Source</th>
+            <th>Why It's Non-Deterministic</th>
+            <th>How to Fix</th>
+          </tr>
+          <tr>
+            <td>Atomic operations</td>
+            <td>Order of accumulation varies</td>
+            <td>Use deterministic reductions or sorting</td>
+          </tr>
+          <tr>
+            <td>cuBLAS/cuDNN</td>
+            <td>May choose different algorithms per run</td>
+            <td>Set <code>CUBLAS_WORKSPACE_CONFIG</code> and <code>torch.backends.cudnn.deterministic = True</code></td>
+          </tr>
+          <tr>
+            <td>Parallel reductions</td>
+            <td>FP addition is not associative</td>
+            <td>Use tree reduction with fixed order</td>
+          </tr>
+          <tr>
+            <td>Thread scheduling</td>
+            <td>Warp execution order varies</td>
+            <td>Ensure algorithm doesn't depend on order</td>
+          </tr>
+        </table>
+
+        <h3>PyTorch Determinism Settings</h3>
+
+        <div class="code-compare">
+          <div class="code-compare__panel" style="grid-column: span 2;">
+            <div class="code-compare__header">Enable Deterministic Mode</div>
+            <div class="code-compare__code">
+<pre># <a href="https://pytorch.org/docs/stable/notes/randomness.html" target="_blank" rel="noopener">PyTorch Reproducibility Guide</a>
+import torch
+import os
+
+# Set seeds
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
+
+# Force deterministic algorithms
+torch.use_deterministic_algorithms(True)
+
+# Required for some cuBLAS operations
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
+# cuDNN determinism
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Performance Cost</div>
+          <p class="mb-0">
+            Deterministic mode can be significantly slower. Per <a href="https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html" target="_blank" rel="noopener">PyTorch docs</a>,
+            some operations have no deterministic implementation and will raise errors.
+            Use deterministic mode for debugging and validation, not production.
+          </p>
+        </div>
+
+        <div class="quiz quiz--micro" id="quiz-determinism">
+          <div class="quiz-q">Why is floating-point addition non-associative?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>It's a GPU hardware bug</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Rounding errors accumulate differently based on order</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>CUDA uses different addition algorithms</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 6: Nsight Tools -->
+      <section class="section" id="section-5">
+        <div class="section__number">06 - PROFILING TOOLS</div>
+        <h2 class="section__title">Nsight Deep Dive</h2>
+
+        <p>
+          NVIDIA provides two primary profiling tools:
+          <a href="https://docs.nvidia.com/nsight-systems/" target="_blank" rel="noopener">Nsight Systems</a> for system-wide timeline analysis and
+          <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener">Nsight Compute</a> for detailed kernel analysis.
+        </p>
+
+        <h3>When to Use Each Tool</h3>
+
+        <table class="precision-table">
+          <tr>
+            <th>Tool</th>
+            <th>Best For</th>
+            <th>Key Metrics</th>
+          </tr>
+          <tr>
+            <td><a href="https://docs.nvidia.com/nsight-systems/" target="_blank" rel="noopener">Nsight Systems</a></td>
+            <td>Finding bottlenecks, CPU-GPU overlap, timeline</td>
+            <td>Kernel duration, memory transfers, API calls, gaps</td>
+          </tr>
+          <tr>
+            <td><a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener">Nsight Compute</a></td>
+            <td>Optimizing specific kernels, roofline</td>
+            <td>Memory bandwidth, compute throughput, occupancy, stalls</td>
+          </tr>
+        </table>
+
+        <h3>Nsight Compute Key Sections</h3>
+
+        <div class="card">
+          <h4>GPU Speed of Light</h4>
+          <p class="text-secondary">
+            Shows achieved percentage of peak compute and memory throughput. 
+            If both are low, the kernel has inefficiencies. If memory is high but compute is low, you're memory-bound.
+          </p>
+
+          <h4>Memory Workload Analysis</h4>
+          <p class="text-secondary">
+            L1/L2 cache hit rates, global memory access patterns. 
+            Low hit rates suggest poor locality or working set doesn't fit.
+          </p>
+
+          <h4>Warp State Statistics</h4>
+          <p class="text-secondary">
+            Shows why warps are stalled. Common reasons: waiting for memory (memory-bound), 
+            waiting for barrier (sync overhead), waiting for instruction fetch (code too large).
+          </p>
+
+          <h4>Source Correlation</h4>
+          <p class="text-secondary mb-0">
+            Maps metrics back to source lines. Requires compiling with <code>-lineinfo</code>.
+            Shows which lines cause the most stalls or memory traffic.
+          </p>
+        </div>
+
+        <h3>Command Line Quick Start</h3>
+
+        <div class="code-compare">
+          <div class="code-compare__panel">
+            <div class="code-compare__header">Nsight Systems</div>
+            <div class="code-compare__code">
+<pre># Capture timeline
+nsys profile -o report python train.py
+
+# View in GUI
+nsys-ui report.nsys-rep</pre>
+            </div>
+          </div>
+          <div class="code-compare__panel">
+            <div class="code-compare__header">Nsight Compute</div>
+            <div class="code-compare__code">
+<pre># Profile specific kernel
+ncu --set full -o report python train.py
+
+# Quick metrics only
+ncu --metrics sm__throughput.avg.pct_of_peak_sustained_elapsed python train.py</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Profiling Overhead</div>
+          <p class="mb-0">
+            Nsight Compute reruns kernels multiple times for accurate metrics, causing significant slowdown.
+            Profile representative workloads, not full training runs. Use <code>--kernel-name</code> to target specific kernels.
+          </p>
+        </div>
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- References -->
+      <section class="section" id="references">
+        <div class="section__number">REFERENCES</div>
+        <h2 class="section__title">Citations & Further Reading</h2>
+
+        <div class="card">
+          <h4>Official Documentation</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA C++ Programming Guide - Floating Point</strong><br>
+              IEEE 754 compliance, precision guarantees<br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#floating-point-standard" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>CUDA Runtime API - Error Types</strong><br>
+              Complete list of CUDA error codes<br>
+              <a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cuda-runtime-api</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Nsight Compute Documentation</strong><br>
+              Kernel profiling and optimization guide<br>
+              <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/nsight-compute</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Nsight Systems Documentation</strong><br>
+              System-wide profiling and timeline analysis<br>
+              <a href="https://docs.nvidia.com/nsight-systems/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/nsight-systems</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>PyTorch Reproducibility Guide</strong><br>
+              Determinism settings and limitations<br>
+              <a href="https://pytorch.org/docs/stable/notes/randomness.html" target="_blank" rel="noopener" style="color: var(--accent-blue);">pytorch.org/docs</a>
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>cuBLAS Reproducibility</strong><br>
+              CUBLAS_WORKSPACE_CONFIG and deterministic modes<br>
+              <a href="https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cublas</a>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <h4>Papers</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Mixed Precision Training</strong><br>
+              Micikevicius et al., 2018. Loss scaling for FP16 training.<br>
+              <a href="https://arxiv.org/abs/1710.03740" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1710.03740</a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You can now systematically debug and profile GPU kernels.
+            Next, we'll apply these skills to implement common kernels like LayerNorm and embeddings.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="05-optimization.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Previous Chapter</div>
+            <div class="chapter-footer__link-title">Optimization</div>
+          </a>
+          <a href="07-common-kernels.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">Common Kernels</div>
+          </a>
+        </div>
+      </footer>
+
+      <div class="site-license">
+        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+      </div>
+    </main>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Error lookup data
+      const errorData = {
+        'illegal-address': {
+          name: 'cudaErrorIllegalAddress (700)',
+          desc: 'The kernel tried to access memory outside allocated regions.',
+          fix: '<strong>Common causes:</strong> Out-of-bounds array access, dereferencing freed memory, wrong buffer size. <strong>Fix:</strong> Add bounds checking (if idx < N), verify buffer allocations match kernel expectations.'
+        },
+        'launch-failed': {
+          name: 'cudaErrorLaunchFailure (719)',
+          desc: 'An exception occurred on the device during kernel execution.',
+          fix: '<strong>Common causes:</strong> Illegal instruction, unaligned memory access, stack overflow. <strong>Fix:</strong> Check for division by zero, ensure proper alignment, reduce recursion depth.'
+        },
+        'misaligned': {
+          name: 'cudaErrorMisalignedAddress (716)',
+          desc: 'A memory access was not properly aligned.',
+          fix: '<strong>Common causes:</strong> Casting pointers to types with stricter alignment, vectorized loads on unaligned data. <strong>Fix:</strong> Use __align__ attributes, ensure allocations are aligned.'
+        },
+        'oom': {
+          name: 'cudaErrorMemoryAllocation (2)',
+          desc: 'Failed to allocate device memory.',
+          fix: '<strong>Common causes:</strong> Not enough GPU memory, memory fragmentation, leak from previous runs. <strong>Fix:</strong> Reduce batch size, free unused tensors, restart Python to clear leaked memory.'
+        },
+        'invalid-config': {
+          name: 'cudaErrorInvalidConfiguration (9)',
+          desc: 'Invalid kernel launch configuration.',
+          fix: '<strong>Common causes:</strong> Block size > 1024 threads, too much shared memory requested, 0 blocks or threads. <strong>Fix:</strong> Check blockDim.x * blockDim.y * blockDim.z ≤ 1024, verify grid dimensions > 0.'
+        },
+        'assert': {
+          name: 'cudaErrorAssert (710)',
+          desc: 'Device-side assert triggered.',
+          fix: '<strong>Common causes:</strong> Explicit assert() in kernel failed. <strong>Fix:</strong> Check the assert condition. Compile with -DNDEBUG to disable asserts in production.'
+        },
+        'too-many-blocks': {
+          name: 'cudaErrorLaunchOutOfResources (701)',
+          desc: 'Too many resources requested for launch.',
+          fix: '<strong>Common causes:</strong> Too many registers per thread, too much shared memory per block limiting occupancy to 0. <strong>Fix:</strong> Use --maxrregcount to limit registers, reduce shared memory, decrease block size.'
+        }
+      };
+
+      const errorSelect = document.getElementById('error-select');
+      const errorResult = document.getElementById('error-result');
+
+      errorSelect.addEventListener('change', () => {
+        const key = errorSelect.value;
+        if (key && errorData[key]) {
+          const data = errorData[key];
+          errorResult.innerHTML = `
+            <div class="error-lookup__name">${data.name}</div>
+            <div class="error-lookup__desc">${data.desc}</div>
+            <div class="error-lookup__fix">${data.fix}</div>
+          `;
+        } else {
+          errorResult.innerHTML = '<p class="text-muted">Select an error code to see its explanation and common fixes.</p>';
+        }
+      });
+    </script>
+  </body>
+</html>
