@@ -525,7 +525,7 @@
     }
 
     &__sep {
-      color: var(--border-subtle);
+      color: var(--text-muted);
     }
 
     &__current {
