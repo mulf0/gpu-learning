@@ -268,6 +268,14 @@
       .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
       .callout.warn .callout-title { color: var(--accent-orange); }
 
+      .diagram {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xl);
+        padding: var(--space-xl);
+        margin: var(--space-lg) 0;
+      }
+
       .diagram-title {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
@@ -275,6 +283,23 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: var(--space-md);
+      }
+
+      .human-scale {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+        padding: 0.1em 0.5em;
+        border-radius: var(--radius-sm);
+        font-size: var(--text-sm);
+        color: var(--accent-green);
+        font-family: var(--font-mono);
+        white-space: nowrap;
+      }
+      .human-scale::before {
+        content: '≈';
+        opacity: 0.7;
       }
 
       .text-secondary { color: var(--text-secondary); }
