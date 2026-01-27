@@ -509,10 +509,11 @@
       gap: var(--space-xs);
       font-family: var(--font-mono);
       font-size: var(--text-sm);
+      color: var(--text-muted);
     }
 
     &__link {
-      color: var(--text-muted);
+      color: inherit;
       text-decoration: none;
       padding: var(--space-xs) var(--space-sm);
       border-radius: var(--radius-sm);
@@ -525,7 +526,7 @@
     }
 
     &__sep {
-      color: var(--text-muted);
+      color: inherit;
     }
 
     &__current {
