@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practice Notebooks - GPU Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      body {
+        display: block;
+      }
+
+      .notebooks-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-2xl) var(--space-xl);
+      }
+
+      /* Header */
+      .notebooks-header {
+        text-align: center;
+        padding: var(--space-2xl) 0;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: var(--space-2xl);
+      }
+
+      .notebooks-header__label {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent-orange);
+        margin-bottom: var(--space-md);
+      }
+
+      .notebooks-header__title {
+        font-size: var(--text-3xl);
+        font-weight: 300;
+        margin-bottom: var(--space-md);
+      }
+
+      .notebooks-header__desc {
+        font-size: var(--text-body);
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .notebooks-header__back {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-top: var(--space-lg);
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+      }
+
+      .notebooks-header__back:hover {
+        color: var(--accent-blue);
+      }
+
+      /* Part sections */
+      .notebooks-part {
+        margin-bottom: var(--space-3xl);
+      }
+
+      .notebooks-part__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .notebooks-part__number {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        color: var(--bg-primary);
+        background: var(--accent-blue);
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-sm);
+      }
+
+      .notebooks-part--2 .notebooks-part__number { background: var(--accent-green); }
+      .notebooks-part--3 .notebooks-part__number { background: var(--accent-purple); }
+      .notebooks-part--4 .notebooks-part__number { background: var(--accent-orange); }
+
+      .notebooks-part__title {
+        font-size: var(--text-xl);
+        font-weight: 500;
+      }
+
+      .notebooks-part__chapter {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        margin-left: auto;
+      }
+
+      /* Notebook list */
+      .notebooks-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      .notebook-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md) var(--space-lg);
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-fast);
+      }
+
+      .notebook-item:hover {
+        border-color: var(--border-active);
+        background: var(--bg-tertiary);
+      }
+
+      .notebook-item__number {
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+        width: 2rem;
+        flex-shrink: 0;
+      }
+
+      .notebook-item__info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .notebook-item__title {
+        font-size: var(--text-base);
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: var(--space-xs);
+      }
+
+      .notebook-item__desc {
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+        margin: 0;
+      }
+
+      .notebook-item__colab {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        flex-shrink: 0;
+      }
+
+      .notebook-item__colab:hover {
+        background: #f9ab00;
+        border-color: #f9ab00;
+        color: #000;
+      }
+
+      .notebook-item__colab svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Responsive */
+      @media (max-width: 600px) {
+        .notebook-item {
+          flex-wrap: wrap;
+        }
+
+        .notebook-item__colab {
+          width: 100%;
+          justify-content: center;
+          margin-top: var(--space-sm);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main class="notebooks-container" id="main-content">
+      <header class="notebooks-header">
+        <div class="notebooks-header__label">Hands-On Practice</div>
+        <h1 class="notebooks-header__title">Practice Notebooks</h1>
+        <p class="notebooks-header__desc">
+          29 Jupyter notebooks covering the complete GPU programming journey.
+          Run them in Google Colab with free GPU access.
+        </p>
+        <a href="index.html" class="notebooks-header__back">
+          <span>&larr;</span> Back to Course
+        </a>
+      </header>
+
+      <!-- Part 1: Foundations -->
+      <section class="notebooks-part notebooks-part--1">
+        <div class="notebooks-part__header">
+          <span class="notebooks-part__number">Part 1</span>
+          <h2 class="notebooks-part__title">Foundations: NumPy to Triton</h2>
+          <span class="notebooks-part__chapter">Chapters 1-3</span>
+        </div>
+        <div class="notebooks-list">
+          <div class="notebook-item">
+            <span class="notebook-item__number">00</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Environment Check</div>
+              <p class="notebook-item__desc">Verify GPU setup and dependencies</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/00_ready_check.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">01</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">NumPy Baseline</div>
+              <p class="notebook-item__desc">Establish CPU performance benchmarks</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/01_numpy_baseline.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">02</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">CuPy Introduction</div>
+              <p class="notebook-item__desc">Instant GPU speedup with drop-in NumPy replacement</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/02_cupy_intro.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">03</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">GPU Architecture</div>
+              <p class="notebook-item__desc">Understand SMs, warps, and the execution model</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/03_gpu_architecture.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">04</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">First Triton Kernel</div>
+              <p class="notebook-item__desc">Write your first GPU kernel with Triton</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/04_first_triton_kernel.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">05</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Memory Hierarchy</div>
+              <p class="notebook-item__desc">Profile and understand memory access patterns</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/05_memory_hierarchy.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">06</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Tiling Basics</div>
+              <p class="notebook-item__desc">Implement tiled memory access for better cache utilization</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/06_tiling_basics.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">07</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Fast Matrix Multiplication</div>
+              <p class="notebook-item__desc">Achieve 500+ GFLOPS with optimized matmul</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part1/07_fast_matmul.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Part 2: Optimization -->
+      <section class="notebooks-part notebooks-part--2">
+        <div class="notebooks-part__header">
+          <span class="notebooks-part__number">Part 2</span>
+          <h2 class="notebooks-part__title">Optimization Deep Dive</h2>
+          <span class="notebooks-part__chapter">Chapter 4</span>
+        </div>
+        <div class="notebooks-list">
+          <div class="notebook-item">
+            <span class="notebook-item__number">01</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Profiling with Nsight</div>
+              <p class="notebook-item__desc">Learn to use Nsight Compute for kernel analysis</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/01_profiling.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">02</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Memory Coalescing</div>
+              <p class="notebook-item__desc">Optimize global memory access patterns</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/02_coalescing.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">03</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Bank Conflicts</div>
+              <p class="notebook-item__desc">Eliminate shared memory bottlenecks</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/03_bank_conflicts.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">04</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Software Pipelining</div>
+              <p class="notebook-item__desc">Overlap compute and memory operations</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/04_pipelining.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">05</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">TMA (Hopper+)</div>
+              <p class="notebook-item__desc">Hardware-accelerated async data movement</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/05_tma.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">06</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Tensor Cores</div>
+              <p class="notebook-item__desc">Use MMA operations for matrix math</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/06_tensor_cores.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">07</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Optimized GEMM</div>
+              <p class="notebook-item__desc">Put it all together for peak performance</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part2/07_optimized_gemm.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Part 3: Attention -->
+      <section class="notebooks-part notebooks-part--3">
+        <div class="notebooks-part__header">
+          <span class="notebooks-part__number">Part 3</span>
+          <h2 class="notebooks-part__title">Attention Mechanisms</h2>
+          <span class="notebooks-part__chapter">Chapter 5</span>
+        </div>
+        <div class="notebooks-list">
+          <div class="notebook-item">
+            <span class="notebook-item__number">01</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Dot Product Attention</div>
+              <p class="notebook-item__desc">Implement basic Q K^T computation</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/01_dot_product.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">02</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">The Softmax Problem</div>
+              <p class="notebook-item__desc">Why naive softmax fails at scale</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/02_softmax_problem.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">03</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Stable Softmax</div>
+              <p class="notebook-item__desc">Numerical stability with max subtraction</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/03_stable_softmax.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">04</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Full Attention</div>
+              <p class="notebook-item__desc">Complete attention implementation</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/04_full_attention.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">05</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Online Softmax</div>
+              <p class="notebook-item__desc">Single-pass softmax algorithm</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/05_online_softmax.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">06</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Tiled Attention</div>
+              <p class="notebook-item__desc">Block-wise computation for memory efficiency</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/06_tiled_attention.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">07</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">FlashAttention</div>
+              <p class="notebook-item__desc">Production-grade fused attention kernel</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part3/07_flash_attention.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Part 4: Production -->
+      <section class="notebooks-part notebooks-part--4">
+        <div class="notebooks-part__header">
+          <span class="notebooks-part__number">Part 4</span>
+          <h2 class="notebooks-part__title">Production & Quantization</h2>
+          <span class="notebooks-part__chapter">Chapters 6-7</span>
+        </div>
+        <div class="notebooks-list">
+          <div class="notebook-item">
+            <span class="notebook-item__number">01</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">FP8 Conversion</div>
+              <p class="notebook-item__desc">Convert between floating point formats</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/01_fp8_conversion.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">02</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Quantization Fundamentals</div>
+              <p class="notebook-item__desc">Symmetric and asymmetric quantization</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/02_quantization_fundamentals.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">03</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">INT8 and INT4</div>
+              <p class="notebook-item__desc">Integer quantization for inference</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/03_int8_int4.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">04</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">NVFP4</div>
+              <p class="notebook-item__desc">NVIDIA's 4-bit floating point format</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/04_nvfp4.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">05</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">KV Cache Strategy</div>
+              <p class="notebook-item__desc">Efficient key-value cache management</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/05_kv_cache_strategy.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">06</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Fused Quantized Attention</div>
+              <p class="notebook-item__desc">Combine quantization with FlashAttention</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/06_fused_quantized_attention.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+          <div class="notebook-item">
+            <span class="notebook-item__number">07</span>
+            <div class="notebook-item__info">
+              <div class="notebook-item__title">Production Integration</div>
+              <p class="notebook-item__desc">Deploy optimized kernels in serving systems</p>
+            </div>
+            <a href="https://colab.research.google.com/github/mulf0/gpu-learning/blob/master/notebooks/part4/07_production_integration.ipynb"
+               target="_blank" rel="noopener" class="notebook-item__colab">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.9414 4.9757a7.033 7.033 0 0 0-4.9308 2.0646 7.033 7.033 0 0 0-.1232 9.8068l2.395-2.395a3.6455 3.6455 0 0 1 5.1497-5.1478l2.397-2.3989a7.033 7.033 0 0 0-4.8877-1.9297zM7.07 4.9855a7.033 7.033 0 0 0-4.8878 1.9316l2.3911 2.3911a3.6434 3.6434 0 0 1 5.0227.1271l1.7341-2.9737a7.033 7.033 0 0 0-4.2601-1.4761zm10.4413 6.4862l-1.7261 2.9617a3.6455 3.6455 0 0 1-5.0227-.1231l-2.395 2.3949a7.033 7.033 0 0 0 9.1438.1114 7.033 7.033 0 0 0-.0001-5.345z"/></svg>
+              Open in Colab
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

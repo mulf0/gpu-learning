@@ -501,7 +501,7 @@
   .chapter-container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 5rem var(--space-xl) var(--space-3xl);
+    padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
   }
 
   .chapter-header {
@@ -1082,7 +1082,7 @@
   }
 
   .chapter-container {
-    padding: 4rem var(--space-md) var(--space-2xl);
+    padding: var(--space-xl) var(--space-md) var(--space-2xl);
   }
 
   .chapter-header__title {
