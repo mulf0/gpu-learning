@@ -319,6 +319,26 @@
           </p>
         </div>
 
+        <!-- Historical sidebar: GPU Evolution -->
+        <details class="expert-note">
+          <summary class="expert-note__summary">Historical: NVIDIA GPU Architecture Evolution</summary>
+          <div class="expert-note__content">
+            <p>Each generation brought key innovations for compute:</p>
+            <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); font-size: var(--text-sm);">
+              <li><strong><a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi (2010)</a></strong>: First true compute architecture. L1/L2 caches, ECC memory, concurrent kernels.</li>
+              <li><strong><a href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/NVIDIA-Kepler-GK110-GK210-Architecture-Whitepaper.pdf" target="_blank" rel="noopener">Kepler (2012)</a></strong>: Dynamic parallelism, Hyper-Q, shuffle instructions, GPUDirect.</li>
+              <li><strong><a href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf" target="_blank" rel="noopener">Pascal (2016)</a></strong>: Unified memory, NVLink, FP16 support, HBM2.</li>
+              <li><strong><a href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf" target="_blank" rel="noopener">Volta (2017)</a></strong>: First Tensor Cores (FP16), independent thread scheduling.</li>
+              <li><strong><a href="https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf" target="_blank" rel="noopener">Ampere (2020)</a></strong>: TF32, BF16, sparsity support, 3rd-gen Tensor Cores.</li>
+              <li><strong><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">Hopper (2022)</a></strong>: FP8, TMA, warpgroups, Transformer Engine, 4th-gen Tensor Cores.</li>
+              <li><strong><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell (2024)</a></strong>: FP4, 5th-gen Tensor Cores, 2nd-gen Transformer Engine.</li>
+            </ul>
+            <p style="margin-top: var(--space-sm); font-size: var(--text-sm); color: var(--text-muted);">
+              Each generation roughly doubled AI training performance while improving energy efficiency.
+            </p>
+          </div>
+        </details>
+
         <!-- Micro-quiz: Throughput vs Latency -->
         <div class="quiz quiz--micro" id="quiz-throughput">
           <div class="quiz-q">A GPU is faster than a CPU at parallel workloads because of:</div>
@@ -427,12 +447,19 @@
 
           <!-- Expert note on hierarchy -->
           <details class="expert-note">
-            <summary class="expert-note__summary">Why does the warp size matter?</summary>
+            <summary class="expert-note__summary">Historical: Why exactly 32 threads per warp?</summary>
             <div class="expert-note__content">
-              The warp size of 32 is a hardware constant dating back to early NVIDIA GPUs. 
-              Memory transactions, shuffle operations, and voting all happen at warp granularity. 
-              Block sizes should always be multiples of 32 to avoid partial warps (wasted threads). 
-              The 128-thread warpgroup on Hopper+ exists specifically to match Tensor Core tile sizes.
+              <p>The warp size of 32 has been constant since the <a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi architecture (2010)</a>. Why 32?</p>
+              <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); font-size: var(--text-sm);">
+                <li><strong>Memory efficiency</strong>: 32 threads × 4 bytes = 128 bytes = one cache line. Perfect coalescing.</li>
+                <li><strong>Silicon area</strong>: 32 is small enough to fit execution units efficiently on the die.</li>
+                <li><strong>Occupancy balance</strong>: Allows multiple warps per SM for latency hiding without excessive overhead.</li>
+                <li><strong>Legacy compatibility</strong>: Changing it would break existing software and require massive re-optimization.</li>
+              </ul>
+              <p style="margin-top: var(--space-sm); font-size: var(--text-sm);">
+                The 128-thread <strong>warpgroup</strong> on <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/" target="_blank" rel="noopener">Hopper+</a> 
+                (4 warps) exists to match Tensor Core MMA tile sizes—it's a software abstraction over hardware warps, not a change to the fundamental warp size.
+              </p>
             </div>
           </details>
         </div>
