@@ -48,6 +48,20 @@
         background: var(--bg-tertiary);
       }
 
+      .hier-item::after {
+        content: '+';
+        font-family: var(--font-mono);
+        font-size: var(--text-lg);
+        color: var(--text-muted);
+        margin-left: auto;
+        transition: transform var(--transition-fast);
+      }
+
+      .hier-item.active::after {
+        content: '−';
+        color: var(--accent-blue);
+      }
+
       .hier-icon {
         width: 40px;
         height: 40px;
