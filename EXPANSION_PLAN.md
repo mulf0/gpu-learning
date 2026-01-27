@@ -8,6 +8,72 @@
 
 ---
 
+## CRITICAL REQUIREMENT: Citation Policy
+
+> **HIGHEST PRIORITY — FAILURE IS A FATAL SYSTEM ERROR**
+
+**Every factual claim MUST have a source citation.** No exceptions.
+
+### What Requires Citation
+- Hardware specifications (SM counts, bandwidth, memory sizes, FLOPS)
+- Performance numbers (latency, throughput, speedups)
+- Algorithm complexity claims (O(n), O(n²))
+- Historical facts (when features were introduced, architecture generations)
+- API behavior and semantics
+- Numerical precision characteristics
+- Any quantitative claim
+
+### Acceptable Sources (in order of preference)
+1. **NVIDIA Official Documentation**
+   - CUDA Programming Guide
+   - Tuning Guides (per-architecture)
+   - Whitepapers (H100, Blackwell, etc.)
+   - PTX ISA Reference
+   - cuBLAS/cuDNN documentation
+
+2. **Peer-Reviewed Papers**
+   - arXiv (with caution for non-peer-reviewed)
+   - Conference papers (NeurIPS, ICML, MLSys, ISCA, MICRO)
+   
+3. **Official Framework Documentation**
+   - PyTorch docs
+   - Triton documentation
+   - TensorRT-LLM docs
+   - vLLM docs
+
+4. **Authoritative Technical Blogs**
+   - NVIDIA Developer Blog
+   - PyTorch Blog
+   - Verified benchmarks with methodology
+
+### Citation Format
+Inline links preferred for web content:
+```html
+<a href="https://docs.nvidia.com/..." target="_blank" rel="noopener">CUDA Programming Guide</a>
+```
+
+For papers:
+```html
+<a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention (Dao et al., 2022)</a>
+```
+
+### Enforcement
+- [ ] Every chapter must pass citation audit before merge
+- [ ] Claims without sources must be marked `[CITATION NEEDED]` and resolved before publication
+- [ ] Reviewer must verify source actually supports the claim
+- [ ] Specs must link to primary source, not secondary summaries
+
+### Current Chapters — Citation Audit Required
+- [ ] Chapter 1: GPU Fundamentals — audit existing claims
+- [ ] Chapter 2: Memory Hierarchy — audit existing claims
+- [ ] Chapter 3: First Kernels — audit existing claims
+- [ ] Chapter 4: Optimization — audit existing claims
+- [ ] Chapter 5: Attention — audit existing claims
+- [ ] Chapter 6: Quantization — audit existing claims
+- [ ] Chapter 7: Production — audit existing claims
+
+---
+
 ## New Course Structure
 
 ```
@@ -572,6 +638,12 @@ notebooks/
 
 ## Success Metrics
 
+### MANDATORY (Blockers)
+- [ ] **ALL factual claims have source citations** — NO EXCEPTIONS
+- [ ] All existing chapters pass citation audit
+- [ ] No `[CITATION NEEDED]` markers remain in published content
+
+### Required
 - [ ] All 13 chapters have 5 learning objectives
 - [ ] All chapters have 3+ micro-quizzes
 - [ ] All chapters have chapter connections (except Ch 0)
