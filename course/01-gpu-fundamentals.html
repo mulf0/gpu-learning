@@ -913,24 +913,6 @@ Grid (your problem)
 
     <script src="../scripts/components.js"></script>
     <script>
-      // Hierarchy interaction
-      document.querySelectorAll('.hier-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const detailId = item.getAttribute('data-detail');
-          const detail = document.getElementById(detailId);
-
-          // Toggle active state
-          const wasActive = item.classList.contains('active');
-          document.querySelectorAll('.hier-item').forEach(i => i.classList.remove('active'));
-          document.querySelectorAll('.hier-detail').forEach(d => d.classList.remove('visible'));
-
-          if (!wasActive) {
-            item.classList.add('active');
-            detail.classList.add('visible');
-          }
-        });
-      });
-
       // Warp visualization
       const warpViz = document.getElementById('warp-viz');
       const warpStatus = document.getElementById('warp-status');

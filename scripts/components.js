@@ -68,15 +68,24 @@ function initSections() {
 // ============================================
 function initHierarchy() {
   document.querySelectorAll('.hier-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', (e) => {
+      // Don't toggle if clicking a link
+      if (e.target.closest('a')) return;
+      
       const id = item.dataset.detail;
+      const detail = document.getElementById(id);
       const wrap = item.closest('.hierarchy');
+      const isActive = item.classList.contains('active');
       
+      // Close all items first
       wrap.querySelectorAll('.hier-item').forEach(i => i.classList.remove('active'));
-      wrap.querySelectorAll('.hier-detail').forEach(d => d.classList.remove('show'));
+      wrap.querySelectorAll('.hier-detail').forEach(d => d.classList.remove('visible'));
       
-      item.classList.add('active');
-      document.getElementById(id)?.classList.add('show');
+      // Open this item if it wasn't already active (toggle behavior)
+      if (!isActive) {
+        item.classList.add('active');
+        detail?.classList.add('visible');
+      }
     });
   });
 }

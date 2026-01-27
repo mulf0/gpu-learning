@@ -240,49 +240,40 @@
         color: var(--accent-orange);
       }
 
-      /* Reference Section */
-      .reference {
-        padding: var(--space-2xl);
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        margin-bottom: var(--space-3xl);
-      }
-
-      .reference__header {
+      /* Callout (Notion-style) */
+      .callout {
         display: flex;
-        align-items: center;
         gap: var(--space-md);
-        margin-bottom: var(--space-lg);
+        padding: var(--space-lg);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-xl);
       }
 
-      .reference__icon {
+      .callout__icon {
         font-size: var(--text-xl);
+        line-height: 1.4;
+        flex-shrink: 0;
       }
 
-      .reference__title {
-        font-size: var(--text-body);
-        font-weight: 500;
-        color: var(--text-primary);
+      .callout__content {
+        flex: 1;
+        min-width: 0;
       }
 
-      .reference__desc {
+      .callout__text {
         font-size: var(--text-base);
         color: var(--text-secondary);
-        margin-bottom: var(--space-lg);
         line-height: 1.6;
+        margin: 0;
       }
 
-      .reference__link {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-xs);
+      .callout__text a {
         color: var(--accent-blue);
         text-decoration: none;
-        font-size: var(--text-base);
       }
 
-      .reference__link:hover {
+      .callout__text a:hover {
         text-decoration: underline;
       }
 
@@ -318,6 +309,18 @@
           through interactive lessons and hands-on notebooks.
         </p>
       </header>
+
+      <!-- Math Prerequisites Callout -->
+      <div class="callout">
+        <span class="callout__icon">&#128218;</span>
+        <div class="callout__content">
+          <p class="callout__text">
+            Not confident with linear algebra or floating point math?
+            <a href="math-prerequisites.html">Take the diagnostic quiz</a>
+            to identify gaps and find curated resources.
+          </p>
+        </div>
+      </div>
 
       <!-- Table of Contents -->
       <section class="toc">
@@ -466,36 +469,16 @@
         </div>
       </section>
 
-      <!-- Math Prerequisites Reference -->
-      <section class="reference">
-        <div class="reference__header">
-          <span class="reference__icon">&#128218;</span>
-          <span class="reference__title">Math Prerequisites</span>
+      <!-- Practice Notebooks Callout -->
+      <div class="callout">
+        <span class="callout__icon">&#128211;</span>
+        <div class="callout__content">
+          <p class="callout__text">
+            33 hands-on Jupyter notebooks with free GPU access.
+            <a href="notebooks.html">View all notebooks</a>
+          </p>
         </div>
-        <p class="reference__desc">
-          Not confident with linear algebra or floating point math? Take the
-          diagnostic quiz to identify gaps and find curated resources. This is a
-          reference—work through it as needed, not a required prerequisite.
-        </p>
-        <a href="math-prerequisites.html" class="reference__link">
-          Take the diagnostic quiz →
-        </a>
-      </section>
-
-      <!-- Practice Notebooks -->
-      <section class="reference">
-        <div class="reference__header">
-          <span class="reference__icon">&#128211;</span>
-          <span class="reference__title">Practice Notebooks</span>
-        </div>
-        <p class="reference__desc">
-          33 hands-on Jupyter notebooks covering the complete GPU programming
-          journey. Run them in Google Colab with free GPU access.
-        </p>
-        <a href="notebooks.html" class="reference__link">
-          View all notebooks &rarr;
-        </a>
-      </section>
+      </div>
 
       <!-- Footer -->
       <footer class="book-footer">
