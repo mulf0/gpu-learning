@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4d9fff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0a0a0f"/>
+  
+  <!-- GPU Grid (8x4) on left side -->
+  <g fill="url(#grad)" transform="translate(80, 165)">
+    <!-- Row 1 -->
+    <rect x="0" y="0" width="50" height="50" rx="8"/>
+    <rect x="65" y="0" width="50" height="50" rx="8"/>
+    <rect x="130" y="0" width="50" height="50" rx="8"/>
+    <rect x="195" y="0" width="50" height="50" rx="8"/>
+    <rect x="260" y="0" width="50" height="50" rx="8"/>
+    <rect x="325" y="0" width="50" height="50" rx="8"/>
+    <rect x="390" y="0" width="50" height="50" rx="8"/>
+    <rect x="455" y="0" width="50" height="50" rx="8"/>
+    
+    <!-- Row 2 -->
+    <rect x="0" y="65" width="50" height="50" rx="8"/>
+    <rect x="65" y="65" width="50" height="50" rx="8"/>
+    <rect x="130" y="65" width="50" height="50" rx="8"/>
+    <rect x="195" y="65" width="50" height="50" rx="8"/>
+    <rect x="260" y="65" width="50" height="50" rx="8"/>
+    <rect x="325" y="65" width="50" height="50" rx="8"/>
+    <rect x="390" y="65" width="50" height="50" rx="8"/>
+    <rect x="455" y="65" width="50" height="50" rx="8"/>
+    
+    <!-- Row 3 -->
+    <rect x="0" y="130" width="50" height="50" rx="8"/>
+    <rect x="65" y="130" width="50" height="50" rx="8"/>
+    <rect x="130" y="130" width="50" height="50" rx="8"/>
+    <rect x="195" y="130" width="50" height="50" rx="8"/>
+    <rect x="260" y="130" width="50" height="50" rx="8"/>
+    <rect x="325" y="130" width="50" height="50" rx="8"/>
+    <rect x="390" y="130" width="50" height="50" rx="8"/>
+    <rect x="455" y="130" width="50" height="50" rx="8"/>
+    
+    <!-- Row 4 -->
+    <rect x="0" y="195" width="50" height="50" rx="8"/>
+    <rect x="65" y="195" width="50" height="50" rx="8"/>
+    <rect x="130" y="195" width="50" height="50" rx="8"/>
+    <rect x="195" y="195" width="50" height="50" rx="8"/>
+    <rect x="260" y="195" width="50" height="50" rx="8"/>
+    <rect x="325" y="195" width="50" height="50" rx="8"/>
+    <rect x="390" y="195" width="50" height="50" rx="8"/>
+    <rect x="455" y="195" width="50" height="50" rx="8"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="620" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="600" fill="#e8e6e3">GPU Learning</text>
+  <text x="620" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#a8a8a8">From Fundamentals to Production Kernels</text>
+  <text x="620" y="420" font-family="monospace" font-size="20" fill="#4d9fff">gpu.mulf.net</text>
+</svg>
