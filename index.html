@@ -178,6 +178,26 @@
         background: var(--glow-purple);
         color: var(--accent-purple);
       }
+      .toc__num--8 {
+        background: var(--glow-orange);
+        color: var(--accent-orange);
+      }
+      .toc__num--9 {
+        background: var(--glow-blue);
+        color: var(--accent-blue);
+      }
+      .toc__num--10 {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+      .toc__num--11 {
+        background: var(--glow-purple);
+        color: var(--accent-purple);
+      }
+      .toc__num--13 {
+        background: var(--glow-orange);
+        color: var(--accent-orange);
+      }
 
       .toc__content {
         flex: 1;
@@ -291,7 +311,7 @@
         <div class="toc__header">Table of Contents</div>
         <div class="toc__list">
           <a href="course/00-parallel-mindset.html" class="toc__chapter">
-            <div class="toc__num" style="background: var(--accent-purple);">0</div>
+            <div class="toc__num" style="background: var(--glow-purple); color: var(--accent-purple);">0</div>
             <div class="toc__content">
               <div class="toc__title">The Parallel Mindset</div>
               <p class="toc__desc">
@@ -330,8 +350,18 @@
             </div>
           </a>
 
-          <a href="course/04-optimization.html" class="toc__chapter">
+          <a href="course/04-synchronization.html" class="toc__chapter">
             <div class="toc__num toc__num--4">4</div>
+            <div class="toc__content">
+              <div class="toc__title">Synchronization & Reductions</div>
+              <p class="toc__desc">
+                Barriers, warp shuffles, parallel reductions, atomics
+              </p>
+            </div>
+          </a>
+
+          <a href="course/05-optimization.html" class="toc__chapter">
+            <div class="toc__num toc__num--5">5</div>
             <div class="toc__content">
               <div class="toc__title">Optimization</div>
               <p class="toc__desc">
@@ -341,29 +371,27 @@
           </a>
 
           <a href="course/06-debugging.html" class="toc__chapter">
-            <div class="toc__num toc__num--5">5</div>
+            <div class="toc__num toc__num--6">6</div>
             <div class="toc__content">
               <div class="toc__title">Debugging & Profiling</div>
               <p class="toc__desc">
                 Error messages, flowcharts, NaN hunting, Nsight tools
               </p>
             </div>
-            <span class="toc__badge">NEW</span>
           </a>
 
           <a href="course/07-common-kernels.html" class="toc__chapter">
-            <div class="toc__num toc__num--6">6</div>
+            <div class="toc__num toc__num--7">7</div>
             <div class="toc__content">
               <div class="toc__title">Common Kernels</div>
               <p class="toc__desc">
                 Fusion, LayerNorm, RMSNorm, embeddings, fused Adam
               </p>
             </div>
-            <span class="toc__badge">NEW</span>
           </a>
 
-          <a href="course/05-attention.html" class="toc__chapter">
-            <div class="toc__num toc__num--5">5</div>
+          <a href="course/08-attention.html" class="toc__chapter">
+            <div class="toc__num toc__num--8">8</div>
             <div class="toc__content">
               <div class="toc__title">Attention</div>
               <p class="toc__desc">
@@ -372,8 +400,8 @@
             </div>
           </a>
 
-          <a href="course/06-quantization.html" class="toc__chapter">
-            <div class="toc__num toc__num--6">6</div>
+          <a href="course/09-quantization.html" class="toc__chapter">
+            <div class="toc__num toc__num--9">9</div>
             <div class="toc__content">
               <div class="toc__title">Quantization</div>
               <p class="toc__desc">
@@ -382,8 +410,30 @@
             </div>
           </a>
 
-          <a href="course/07-production.html" class="toc__chapter">
-            <div class="toc__num toc__num--7">7</div>
+          <a href="course/10-training.html" class="toc__chapter">
+            <div class="toc__num toc__num--10">10</div>
+            <div class="toc__content">
+              <div class="toc__title">Training Kernels</div>
+              <p class="toc__desc">
+                Backward passes, mixed precision, checkpointing, gradient accumulation
+              </p>
+            </div>
+            <span class="toc__badge">NEW</span>
+          </a>
+
+          <a href="course/11-multi-gpu.html" class="toc__chapter">
+            <div class="toc__num toc__num--11">11</div>
+            <div class="toc__content">
+              <div class="toc__title">Multi-GPU Programming</div>
+              <p class="toc__desc">
+                NCCL, data/tensor/pipeline parallelism, ZeRO optimizer
+              </p>
+            </div>
+            <span class="toc__badge">NEW</span>
+          </a>
+
+          <a href="course/13-production.html" class="toc__chapter">
+            <div class="toc__num toc__num--13">13</div>
             <div class="toc__content">
               <div class="toc__title">Production</div>
               <p class="toc__desc">

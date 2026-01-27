@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chapter 7: Production - GPU Learning</title>
+    <title>Chapter 13: Production - GPU Learning</title>
     <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -181,7 +181,7 @@
     <main class="chapter-container" id="main-content">
       <!-- Chapter Header -->
       <header class="chapter-header">
-        <div class="chapter-header__label">Chapter 7</div>
+        <div class="chapter-header__label">Chapter 13</div>
         <h1 class="chapter-header__title">Production</h1>
         <p class="chapter-header__desc">
           Deploy efficient LLM inference at scale. KV cache strategies, PagedAttention,
@@ -193,7 +193,7 @@
       <div class="chapter-connection">
         <div class="chapter-connection__label">Everything Converges Here</div>
         GPU fundamentals (Ch1) determine how your server utilizes hardware. Memory hierarchy (Ch2) 
-        explains why KV cache is the bottleneck. Attention (Ch5) and quantization (Ch6) are the core 
+        explains why KV cache is the bottleneck. Attention (Ch8) and quantization (Ch9) are the core 
         computations you're serving. This chapter is about <em>orchestrating all of it at scale</em>.
       </div>
 
@@ -216,8 +216,8 @@
           <div class="prereq-callout__title">Prerequisites</div>
           <p class="prereq-callout__text">
             This chapter builds on attention and quantization concepts.
-            <a href="05-attention.html">Chapter 5: Attention</a> |
-            <a href="06-quantization.html">Chapter 6: Quantization</a>
+            <a href="08-attention.html">Chapter 8: Attention</a> |
+            <a href="09-quantization.html">Chapter 9: Quantization</a>
           </p>
         </div>
       </div>
@@ -739,9 +739,9 @@ curl http://localhost:8000/v1/completions \
         </div>
 
         <div class="chapter-footer__nav">
-          <a href="06-quantization.html" class="chapter-footer__link chapter-footer__link--prev">
+          <a href="11-multi-gpu.html" class="chapter-footer__link chapter-footer__link--prev">
             <div class="chapter-footer__link-label">Previous Chapter</div>
-            <div class="chapter-footer__link-title">Quantization</div>
+            <div class="chapter-footer__link-title">Multi-GPU Programming</div>
           </a>
           <a href="../index.html" class="chapter-footer__link chapter-footer__link--next">
             <div class="chapter-footer__link-label">Course Complete</div>

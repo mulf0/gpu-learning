@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chapter 5: Attention - GPU Learning</title>
+    <title>Chapter 8: Attention - GPU Learning</title>
     <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -163,7 +163,7 @@
     <main class="chapter-container" id="main-content">
       <!-- Chapter Header -->
       <header class="chapter-header">
-        <div class="chapter-header__label">Chapter 5</div>
+        <div class="chapter-header__label">Chapter 8</div>
         <h1 class="chapter-header__title">Attention</h1>
         <p class="chapter-header__desc">
           The math behind attention kernels. From dot products to softmax to
@@ -173,8 +173,8 @@
 
       <!-- Chapter Connection -->
       <div class="chapter-connection">
-        <div class="chapter-connection__label">Building on Chapter 4</div>
-        Chapter 4's tiling wasn't just about matrix multiply—it's a universal optimization pattern. 
+        <div class="chapter-connection__label">Building on Chapter 7</div>
+        Chapter 7's normalization kernels showed how fusing operations saves memory bandwidth.
         Attention is where this pattern becomes <em>essential</em>. Without tiling, attention on long 
         sequences would require terabytes of memory. With tiling (FlashAttention), it fits in shared memory.
       </div>
@@ -698,11 +698,11 @@
         </div>
 
         <div class="chapter-footer__nav">
-          <a href="04-optimization.html" class="chapter-footer__link chapter-footer__link--prev">
+          <a href="07-common-kernels.html" class="chapter-footer__link chapter-footer__link--prev">
             <div class="chapter-footer__link-label">Previous Chapter</div>
-            <div class="chapter-footer__link-title">Optimization</div>
+            <div class="chapter-footer__link-title">Common Kernels</div>
           </a>
-          <a href="06-quantization.html" class="chapter-footer__link chapter-footer__link--next">
+          <a href="09-quantization.html" class="chapter-footer__link chapter-footer__link--next">
             <div class="chapter-footer__link-label">Next Chapter</div>
             <div class="chapter-footer__link-title">Quantization</div>
           </a>
