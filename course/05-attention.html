@@ -14,6 +14,7 @@
     <style>
       body { display: block; }
 
+      /* Vector input rows */
       .vector-row {
         display: flex;
         align-items: center;
@@ -31,22 +32,127 @@
         gap: var(--space-sm);
       }
 
-      .callout {
+      /* Result display */
+      .result {
+        background: var(--bg-tertiary);
         border-radius: var(--radius-lg);
-        padding: 1rem 1.25rem;
-        margin: var(--space-lg) 0;
-        border-left: 4px solid;
+        padding: var(--space-lg);
+        margin-top: var(--space-lg);
+        text-align: center;
       }
-      .callout-title {
+      .result__label {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-sm);
+      }
+      .result__value {
+        font-family: var(--font-mono);
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--accent-blue);
+      }
+      .result__formula {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: var(--space-sm);
+      }
+
+      /* Bar chart for softmax visualization */
+      .bar-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.75rem;
+        height: 150px;
+        padding: var(--space-md);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+      }
+      .bar-chart__item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        height: 100%;
+        justify-content: flex-end;
+      }
+      .bar-chart__bar {
+        width: 100%;
+        max-width: 60px;
+        background: linear-gradient(180deg, var(--accent-purple), var(--accent-blue));
+        border-radius: 6px 6px 0 0;
+        min-height: 4px;
+        transition: height var(--transition-normal);
+      }
+      .bar-chart__value {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: var(--space-sm);
+      }
+
+      /* State grid for online softmax */
+      .state-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-md);
+      }
+      .state-box {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md);
+        text-align: center;
+      }
+      .state-box__label {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-xs);
+      }
+      .state-box__value {
+        font-family: var(--font-mono);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--accent-cyan);
+      }
+
+      /* Stream display */
+      .stream {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
         font-family: var(--font-mono);
         font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        min-height: 3rem;
+        overflow-x: auto;
+        white-space: nowrap;
       }
-      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
-      .callout.info .callout-title { color: var(--accent-blue); }
-      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
-      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      /* FP format diagram */
+      .fp-formats { display: flex; flex-direction: column; gap: var(--space-md); }
+      .fp-row { display: flex; flex-direction: column; gap: var(--space-xs); }
+      .fp-head { display: flex; justify-content: space-between; align-items: baseline; }
+      .fp-name { font-weight: 600; font-size: 0.9rem; color: var(--accent-blue); }
+      .fp-range { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); }
+      .fp-bits { display: flex; gap: 2px; }
+      .fp-bit {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+      .fp-s { flex: 1; background: var(--accent-red); color: white; }
+      .fp-e { background: var(--accent-blue); color: white; }
+      .fp-m { background: var(--accent-green); color: var(--bg-primary); }
     </style>
   </head>
   <body>
