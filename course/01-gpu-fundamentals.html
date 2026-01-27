@@ -404,11 +404,12 @@
               <div class="hier-icon bg-purple">Warp</div>
               <div class="hier-info">
                 <h5><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 Threads in Lockstep</a></h5>
-                <p>The atomic scheduling unit (SIMT) <span class="human-scale">like a marching band playing in unison</span></p>
+                <p>The atomic scheduling unit (SIMT)</p>
               </div>
             </div>
             <div class="hier-detail" id="d-warp">
-              <strong>This is the most important concept.</strong> All <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 threads in a warp</a>
+              <strong>This is the most important concept.</strong> Think of it like a marching band playing in unison—all 
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 threads in a warp</a>
               execute the same instruction simultaneously. Divergent branches serialize execution.
               Always think in warps, not individual threads.
             </div>
