@@ -577,19 +577,10 @@
     &__label {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
+      color: var(--accent-purple);
       letter-spacing: 0.15em;
       text-transform: uppercase;
       margin-bottom: var(--space-sm);
-
-      a {
-        color: var(--accent-purple);
-        text-decoration: none;
-        transition: color var(--transition-fast);
-
-        &:hover {
-          color: var(--accent-blue);
-        }
-      }
     }
 
     &__title {
