@@ -293,8 +293,8 @@
 - [ ] Verify B200 SM count (~192 vs exact number) - not in public specs
 - [x] Verify B200 memory bandwidth (~8 TB/s source) - confirmed from GB200 NVL72 specs
 - [x] Verify FP8 E4M3 max value = 448 matches arXiv paper - math verified
-- [ ] Verify NVFP4 block size = 16 from official source
-- [!] L2 cache size: H100=50MB but files say ~60MB (check if B200 context)
+- [x] Verify NVFP4 block size = 16 from official source - cited Blackwell architecture
+- [x] L2 cache size: Changed to "50-60MB" with link to tensor core page (varies by GPU)
 
 ### 9.2 Links to Verify
 - [x] All arXiv links resolve correctly
@@ -303,10 +303,10 @@
 - [x] OCP MX Spec PDF link works (16-page PDF accessible)
 
 ### 9.3 Citations to Add
-- [ ] Machine epsilon values need IEEE 754 reference
-- [ ] Register bandwidth (~20 TB/s) needs source or removal
-- [ ] "~1% accuracy loss" claim needs citation
-- [ ] ">80% peak FLOPS" claim needs specific benchmark reference
+- [x] Machine epsilon values - mathematical derivations (2^-mantissa_bits), no citation needed
+- [ ] Register bandwidth (~20 TB/s) needs source or removal - marked as approximate
+- [x] "~1% accuracy loss" claim - softened to "minimal accuracy loss" with qualifier
+- [x] ">80% peak FLOPS" claim - no longer present in restructured files (was heuristic)
 
 ---
 
@@ -340,6 +340,26 @@ For external links:
 | 2026-01-26 | Claude | External resources | 9 | 1 - matrixmultiplication.xyz (FIXED) |
 | 2026-01-26 | Claude | Wikipedia links | 4 | 0 - All verified |
 | 2026-01-26 | Claude | Hopper specs | 5 | 1 - L2 cache 50MB vs ~60MB |
+| 2026-01-27 | Claude | Citation fixes | 5 | 0 - Fixed L2 cache, NVFP4 accuracy, NVFP4 block size |
+
+---
+
+## 12. File Structure Update (2026-01-27)
+
+The original audit referenced files that have since been restructured:
+
+| Old File | New Location |
+|----------|--------------|
+| kernel-course.html | Split into course/01-07-*.html |
+| gpu-architecture.html | course/01-gpu-fundamentals.html |
+| memory-hierarchy.html | course/02-memory.html |
+| attention-math.html | course/05-attention.html |
+| math-foundations.html | course/06-quantization.html (partially) |
+
+**Key changes made 2026-01-27:**
+1. `course/05-attention.html:550` - Removed unsourced "~1% accuracy loss" claim, replaced with "minimal accuracy loss when using per-block scaling"
+2. `course/02-memory.html:486` - Changed L2 cache from "~60MB" to "50-60MB" with link
+3. `course/06-quantization.html:738` - Clarified NVFP4 uses E4M3 scale factors
 
 ---
 

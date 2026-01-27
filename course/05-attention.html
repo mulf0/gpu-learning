@@ -547,7 +547,9 @@
         <p>
           <strong>Why NVFP4 works:</strong> Neural network values cluster
           tightly. A per-block scaling factor (stored in FP8) shifts the
-          representable range to where your values actually are. You get <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener">4x memory reduction vs FP16 with ~1% accuracy loss</a>.
+          representable range to where your values actually are. You get 
+          <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">4x memory reduction vs FP16</a> 
+          with minimal accuracy loss when using per-block scaling (exact impact varies by model and calibration).
         </p>
 
         <div class="quiz" id="fp-quiz">
