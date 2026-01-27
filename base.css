@@ -531,8 +531,8 @@
   }
 
   .chapter-nav__current {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
+    font-size: var(--text-base);
+    color: var(--accent-blue);
   }
 
   .chapter-container {
