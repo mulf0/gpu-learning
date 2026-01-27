@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chapter 0: The Parallel Mindset - GPU Learning</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      body {
+        display: block;
+      }
+
+      /* Amdahl's Law Calculator */
+      .amdahl-calc {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+      }
+
+      .amdahl-calc__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .amdahl-calc__row:last-child {
+        border-bottom: none;
+        padding-top: var(--space-md);
+        font-weight: 600;
+      }
+
+      .amdahl-calc__label {
+        color: var(--text-secondary);
+      }
+
+      .amdahl-calc__value {
+        font-family: var(--font-mono);
+        color: var(--text-primary);
+      }
+
+      .amdahl-calc__slider {
+        width: 200px;
+      }
+
+      .speedup-bar {
+        height: 32px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        margin-top: var(--space-md);
+        position: relative;
+      }
+
+      .speedup-bar__fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+        transition: width var(--transition-normal);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: var(--space-sm);
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        color: white;
+        font-weight: 600;
+      }
+
+      .speedup-bar__limit {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--accent-orange);
+      }
+
+      .speedup-bar__limit-label {
+        position: absolute;
+        top: -20px;
+        font-size: var(--text-xs);
+        color: var(--accent-orange);
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+
+      /* Pattern cards */
+      .pattern-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+      }
+
+      .pattern-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        transition: all var(--transition-fast);
+      }
+
+      .pattern-card:hover {
+        border-color: var(--accent-blue);
+      }
+
+      .pattern-card__icon {
+        font-size: var(--text-2xl);
+        margin-bottom: var(--space-sm);
+      }
+
+      .pattern-card__title {
+        font-weight: 600;
+        margin-bottom: var(--space-xs);
+      }
+
+      .pattern-card__desc {
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
+        margin-bottom: var(--space-sm);
+      }
+
+      .pattern-card__examples {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+
+      /* SIMD visualization */
+      .simd-viz {
+        display: flex;
+        gap: var(--space-lg);
+        margin: var(--space-lg) 0;
+        flex-wrap: wrap;
+      }
+
+      .simd-viz__col {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .simd-viz__title {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-sm);
+      }
+
+      .simd-viz__lanes {
+        display: flex;
+        gap: 2px;
+        flex-wrap: wrap;
+      }
+
+      .simd-viz__lane {
+        width: 20px;
+        height: 20px;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xs);
+        font-family: var(--font-mono);
+        color: white;
+        transition: all var(--transition-fast);
+      }
+
+      .simd-viz__lane--cpu {
+        background: var(--accent-purple);
+      }
+
+      .simd-viz__lane--gpu {
+        background: var(--accent-blue);
+        opacity: 0.7;
+      }
+
+      .simd-viz__lane--gpu.active {
+        opacity: 1;
+      }
+
+      /* Callout overrides */
+      .callout {
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin: var(--space-lg) 0;
+        border-left: 4px solid;
+      }
+      .callout-title {
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
+      .callout.info .callout-title { color: var(--accent-blue); }
+      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
+      .callout.warn .callout-title { color: var(--accent-orange); }
+
+      .text-secondary { color: var(--text-secondary); }
+      .text-small { font-size: var(--text-sm); }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main class="chapter-container" id="main-content">
+      <!-- Chapter Header -->
+      <header class="chapter-header">
+        <div class="chapter-header__label">Chapter 0</div>
+        <h1 class="chapter-header__title">The Parallel Mindset</h1>
+        <p class="chapter-header__desc">
+          Before diving into GPU hardware, we need to rewire our thinking.
+          Sequential programming intuition will mislead you. This chapter builds
+          the mental model for thinking in parallel.
+        </p>
+      </header>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Explain why parallelism is fundamentally different from sequential programming</li>
+          <li class="learning-objectives__item">Apply Amdahl's Law to estimate parallel speedup limits</li>
+          <li class="learning-objectives__item">Identify embarrassingly parallel vs communication-bound problems</li>
+          <li class="learning-objectives__item">Describe the mental model shift from "one fast thing" to "many slow things"</li>
+          <li class="learning-objectives__item">Recognize SIMD patterns in CPU code as a bridge to GPU SIMT</li>
+        </ol>
+      </div>
+
+      <!-- Section 1: Why Parallelism is Hard -->
+      <section class="section" id="section-0">
+        <div class="section__number">01 - THE CHALLENGE</div>
+        <h2 class="section__title">Why Parallelism is Hard</h2>
+
+        <p>
+          You've written sequential code for years. Your intuition says: "make the thing faster."
+          But parallel programming requires a different question: "how do I divide this work?"
+        </p>
+
+        <p>
+          Sequential thinking leads to <strong>wrong</strong> parallel code. Consider summing an array:
+        </p>
+
+        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-sm); margin: var(--space-lg) 0;"><code><span class="comment"># Sequential (correct, simple)</span>
+total = 0
+for x in array:
+    total += x  <span class="comment"># Each step depends on the previous</span>
+
+<span class="comment"># Naive parallel (WRONG - race condition!)</span>
+total = 0
+parallel_for x in array:
+    total += x  <span class="comment"># Multiple threads read/write total</span></code></pre>
+
+        <p>
+          The naive parallel version has a <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions" target="_blank" rel="noopener">race condition</a>: 
+          multiple threads read <code>total</code>, add their value, and write back—overwriting each other's work.
+        </p>
+
+        <div class="callout warn">
+          <div class="callout-title">The Core Difficulty</div>
+          <p class="mb-0">
+            Parallel programming requires thinking about <strong>what can happen simultaneously</strong>.
+            Your code must be correct regardless of execution order. This is fundamentally different
+            from sequential programming where order is guaranteed.
+          </p>
+        </div>
+
+        <p>
+          Common parallel hazards include:
+        </p>
+        <ul style="margin: var(--space-md) 0; padding-left: var(--space-lg);">
+          <li><strong>Race conditions</strong>: Multiple threads access shared data, at least one writes</li>
+          <li><strong>Deadlocks</strong>: Threads wait for each other in a cycle, forever</li>
+          <li><strong>Data dependencies</strong>: Step N needs the result of step N-1</li>
+        </ul>
+
+        <p>
+          The good news: GPU programming has patterns that avoid these hazards.
+          The bad news: you need to learn to recognize which patterns apply to your problem.
+        </p>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-race">
+          <div class="quiz-q">A race condition occurs when:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Threads execute too quickly</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Multiple threads access shared data with at least one write</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The GPU runs out of memory</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 2: Amdahl's Law -->
+      <section class="section" id="section-1">
+        <div class="section__number">02 - AMDAHL'S LAW</div>
+        <h2 class="section__title">The Speedup Limit</h2>
+
+        <p>
+          <a href="https://en.wikipedia.org/wiki/Amdahl%27s_law" target="_blank" rel="noopener">Amdahl's Law</a>
+          tells us the maximum speedup from parallelization. If part of your program is inherently sequential,
+          it limits how fast the whole program can go—no matter how many processors you throw at it.
+        </p>
+
+        <div class="card">
+          <h4>The Formula</h4>
+          <p style="font-family: var(--font-mono); font-size: var(--text-lg); text-align: center; margin: var(--space-md) 0;">
+            Speedup = 1 / (S + P/N)
+          </p>
+          <p class="text-secondary text-small">
+            Where <strong>S</strong> = sequential fraction, <strong>P</strong> = parallel fraction (S + P = 1),
+            <strong>N</strong> = number of processors
+          </p>
+        </div>
+
+        <p>
+          The devastating insight: as N → ∞, speedup approaches <strong>1/S</strong>.
+          If 10% of your code is sequential, maximum speedup is 10x. Period.
+        </p>
+
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card__header">
+            <div class="card__icon card__icon--blue">Interactive: Amdahl's Law Calculator</div>
+          </div>
+
+          <div class="amdahl-calc">
+            <div class="amdahl-calc__row">
+              <span class="amdahl-calc__label">Sequential fraction (S)</span>
+              <span class="amdahl-calc__value">
+                <input type="range" id="amdahl-s" min="1" max="50" value="10" class="amdahl-calc__slider">
+                <span id="amdahl-s-val">10%</span>
+              </span>
+            </div>
+            <div class="amdahl-calc__row">
+              <span class="amdahl-calc__label">Number of processors (N)</span>
+              <span class="amdahl-calc__value">
+                <input type="range" id="amdahl-n" min="1" max="1000" value="100" class="amdahl-calc__slider">
+                <span id="amdahl-n-val">100</span>
+              </span>
+            </div>
+            <div class="amdahl-calc__row">
+              <span class="amdahl-calc__label">Theoretical speedup</span>
+              <span class="amdahl-calc__value text-green" id="amdahl-speedup">9.17x</span>
+            </div>
+            <div class="amdahl-calc__row">
+              <span class="amdahl-calc__label">Maximum possible (1/S)</span>
+              <span class="amdahl-calc__value text-orange" id="amdahl-max">10.00x</span>
+            </div>
+          </div>
+
+          <div class="speedup-bar">
+            <div class="speedup-bar__fill" id="speedup-fill" style="width: 91.7%">9.17x</div>
+            <div class="speedup-bar__limit" id="speedup-limit" style="left: 100%">
+              <span class="speedup-bar__limit-label">Max: 10x</span>
+            </div>
+          </div>
+        </div>
+
+        <details class="expert-note">
+          <summary class="expert-note__summary">What about Gustafson's Law?</summary>
+          <div class="expert-note__content">
+            <a href="https://en.wikipedia.org/wiki/Gustafson%27s_law" target="_blank" rel="noopener">Gustafson's Law</a>
+            offers a more optimistic view: as we add processors, we often scale the problem size too.
+            Instead of fixed work divided among more processors, we do more work in the same time.
+            For GPU workloads (training larger models, processing more data), Gustafson is often more relevant.
+            But Amdahl reminds us: sequential bottlenecks always hurt.
+          </div>
+        </details>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-amdahl">
+          <div class="quiz-q">If 5% of your code is sequential, the maximum speedup is:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>5x</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>20x</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>95x</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 3: Categories of Parallelism -->
+      <section class="section" id="section-2">
+        <div class="section__number">03 - PARALLEL PATTERNS</div>
+        <h2 class="section__title">Categories of Parallelism</h2>
+
+        <p>
+          Not all problems parallelize equally. Recognizing which category your problem falls into
+          determines your implementation strategy.
+        </p>
+
+        <div class="pattern-grid">
+          <div class="pattern-card">
+            <div class="pattern-card__icon" style="color: var(--accent-green);">&#9632;&#9632;&#9632;</div>
+            <div class="pattern-card__title">Embarrassingly Parallel</div>
+            <div class="pattern-card__desc">
+              Each element is independent. No communication needed between parallel units.
+              <strong>This is the GPU sweet spot.</strong>
+            </div>
+            <div class="pattern-card__examples">
+              Examples: Element-wise ops, image processing, Monte Carlo, matrix-vector multiply
+            </div>
+          </div>
+
+          <div class="pattern-card">
+            <div class="pattern-card__icon" style="color: var(--accent-blue);">&#8595;&#8595;&#8595;</div>
+            <div class="pattern-card__title">Reduction</div>
+            <div class="pattern-card__desc">
+              Combine many values into one (or few). Requires careful synchronization but well-understood patterns exist.
+            </div>
+            <div class="pattern-card__examples">
+              Examples: Sum, max, min, histogram, dot product, softmax denominator
+            </div>
+          </div>
+
+          <div class="pattern-card">
+            <div class="pattern-card__icon" style="color: var(--accent-purple);">&#9638;&#9638;&#9638;</div>
+            <div class="pattern-card__title">Stencil / Neighbor</div>
+            <div class="pattern-card__desc">
+              Each output depends on nearby inputs. Predictable communication pattern, maps well to GPU shared memory.
+            </div>
+            <div class="pattern-card__examples">
+              Examples: Convolution, blur, edge detection, finite difference methods
+            </div>
+          </div>
+
+          <div class="pattern-card">
+            <div class="pattern-card__icon" style="color: var(--accent-orange);">&#10070;&#10070;&#10070;</div>
+            <div class="pattern-card__title">Irregular / Sparse</div>
+            <div class="pattern-card__desc">
+              Unpredictable access patterns. Hardest to optimize—often memory-bound with poor cache utilization.
+            </div>
+            <div class="pattern-card__examples">
+              Examples: Graph traversal, sparse matrix ops, tree algorithms
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">Pattern Recognition Skill</div>
+          <p class="mb-0">
+            When you see a problem, ask: "Is each output independent? Does it reduce? Does it access neighbors?"
+            This determines which GPU optimization techniques apply.
+          </p>
+        </div>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-pattern">
+          <div class="quiz-q">Computing sigmoid(x) for every element in a tensor is:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Embarrassingly parallel</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Reduction</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Stencil</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 4: From SIMD to SIMT -->
+      <section class="section" id="section-3">
+        <div class="section__number">04 - SIMD TO SIMT</div>
+        <h2 class="section__title">From CPU Vectors to GPU Warps</h2>
+
+        <p>
+          If you've used NumPy, you already understand parallel thinking at a basic level.
+          <code>a + b</code> on arrays doesn't loop—it operates on all elements simultaneously.
+          This is <a href="https://en.wikipedia.org/wiki/Single_instruction,_multiple_data" target="_blank" rel="noopener">SIMD</a>
+          (Single Instruction, Multiple Data).
+        </p>
+
+        <p>
+          Modern CPUs have SIMD units like <a href="https://en.wikipedia.org/wiki/AVX-512" target="_blank" rel="noopener">AVX-512</a>
+          that process 8-16 elements at once. GPUs take this further with
+          <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">SIMT</a>
+          (Single Instruction, Multiple Threads): <strong>32 threads execute in lockstep</strong>.
+        </p>
+
+        <div class="simd-viz">
+          <div class="simd-viz__col">
+            <div class="simd-viz__title">CPU SIMD (AVX-512): 8 lanes</div>
+            <div class="simd-viz__lanes" id="cpu-lanes">
+              <!-- 8 CPU SIMD lanes -->
+            </div>
+            <p class="text-muted text-small" style="margin-top: var(--space-sm);">
+              8 floats processed per instruction
+            </p>
+          </div>
+          <div class="simd-viz__col">
+            <div class="simd-viz__title">GPU SIMT (Warp): 32 threads</div>
+            <div class="simd-viz__lanes" id="gpu-lanes">
+              <!-- 32 GPU warp threads -->
+            </div>
+            <p class="text-muted text-small" style="margin-top: var(--space-sm);">
+              32 threads execute same instruction (+ thousands more warps)
+            </p>
+          </div>
+        </div>
+
+        <p>
+          The key difference: a GPU doesn't have 32 lanes—it has <strong>thousands of warps</strong>,
+          each with 32 threads. A <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">B200 can have ~200,000+ threads in flight</a>.
+        </p>
+
+        <div class="card">
+          <h4>NumPy as Training Wheels</h4>
+          <pre style="background: var(--bg-tertiary); padding: var(--space-md); border-radius: var(--radius-sm); font-size: var(--text-sm);"><code><span class="comment"># NumPy: implicit parallelism (CPU SIMD under the hood)</span>
+result = np.exp(x) + np.log(y)  <span class="comment"># Operates on all elements</span>
+
+<span class="comment"># GPU thinking: explicit parallelism</span>
+<span class="comment"># "What does ONE thread do to ONE element?"</span>
+<span class="comment"># Then run that 1 million times in parallel</span></code></pre>
+        </div>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-simt">
+          <div class="quiz-q">How many threads execute in lockstep in a GPU warp?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>8</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>16</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>32</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Section 5: Mental Model Shift -->
+      <section class="section" id="section-4">
+        <div class="section__number">05 - THE MENTAL SHIFT</div>
+        <h2 class="section__title">Thinking in Parallel</h2>
+
+        <p>
+          The hardest part of GPU programming isn't the syntax—it's the mental model.
+          You must stop thinking about <em>the computation</em> and start thinking about
+          <em>how to divide the computation</em>.
+        </p>
+
+        <div class="card">
+          <h4>The Thought Experiment</h4>
+          <p>
+            When approaching a problem, ask: <strong>"What if 10,000 copies of me worked on this?"</strong>
+          </p>
+          <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
+            <li>What would each copy need to know? (input data, index)</li>
+            <li>What would each copy produce? (one output element? a partial result?)</li>
+            <li>Would any copies need to talk to each other? (synchronization)</li>
+            <li>Would any copies fight over the same resource? (race conditions)</li>
+          </ul>
+        </div>
+
+        <div class="grid grid-2" style="margin-top: var(--space-lg);">
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-orange);">Sequential Thinking</h4>
+            <ul style="font-size: var(--text-sm); margin: var(--space-sm) 0; padding-left: var(--space-lg);">
+              <li>"Process item 1, then item 2..."</li>
+              <li>"Loop through the array"</li>
+              <li>"Accumulate into a variable"</li>
+              <li>Focus on the <em>algorithm</em></li>
+            </ul>
+          </div>
+          <div class="card" style="margin: 0;">
+            <h4 style="color: var(--accent-green);">Parallel Thinking</h4>
+            <ul style="font-size: var(--text-sm); margin: var(--space-sm) 0; padding-left: var(--space-lg);">
+              <li>"Each thread handles item[thread_id]"</li>
+              <li>"All elements processed simultaneously"</li>
+              <li>"Reduce partial results at the end"</li>
+              <li>Focus on <em>data flow</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-title">The Data-Centric View</div>
+          <p class="mb-0">
+            In GPU programming, you don't write "a loop that processes data."
+            You write "what happens to one piece of data" and let the hardware run it everywhere.
+            <strong>Think about the data, not the loop.</strong>
+          </p>
+        </div>
+
+        <p>
+          This mental shift takes practice. The good news: once it clicks, you'll see
+          parallelization opportunities everywhere—even in code you thought was inherently sequential.
+        </p>
+
+        <!-- Micro-quiz -->
+        <div class="quiz quiz--micro" id="quiz-mental">
+          <div class="quiz-q">When writing a GPU kernel, you should think about:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The order elements are processed</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>What ONE thread does to ONE element</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>How to minimize the number of threads</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+      </section>
+
+      <hr class="chunk-divider">
+
+      <!-- Practice Section -->
+      <section class="section" id="practice">
+        <div class="section__number">PRACTICE</div>
+        <h2 class="section__title">Hands-On Labs</h2>
+
+        <a href="../notebooks.html" class="notebook-link">
+          <div class="notebook-link__icon">&#128211;</div>
+          <div class="notebook-link__content">
+            <div class="notebook-link__title">Part 0 Notebooks</div>
+            <div class="notebook-link__desc">4 labs: Sequential vs parallel, Amdahl's Law, parallel patterns, NumPy vectorization</div>
+          </div>
+        </a>
+      </section>
+
+      <!-- References -->
+      <section class="section" id="references">
+        <div class="section__number">REFERENCES</div>
+        <h2 class="section__title">Further Reading</h2>
+
+        <div class="card">
+          <h4>Key Concepts</h4>
+          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Amdahl's Law</strong><br>
+              <a href="https://en.wikipedia.org/wiki/Amdahl%27s_law" target="_blank" rel="noopener" style="color: var(--accent-blue);">Wikipedia: Amdahl's Law</a>
+              — Original 1967 formulation and implications
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Gustafson's Law</strong><br>
+              <a href="https://en.wikipedia.org/wiki/Gustafson%27s_law" target="_blank" rel="noopener" style="color: var(--accent-blue);">Wikipedia: Gustafson's Law</a>
+              — The scaled speedup alternative
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>SIMT Architecture</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener" style="color: var(--accent-blue);">CUDA Programming Guide: SIMT</a>
+              — NVIDIA's official explanation of GPU execution model
+            </li>
+            <li style="margin-bottom: var(--space-sm);">
+              <strong>Race Conditions</strong><br>
+              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions" target="_blank" rel="noopener" style="color: var(--accent-blue);">CUDA Programming Guide: Synchronization</a>
+              — How to avoid race conditions in GPU code
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Chapter Footer -->
+      <footer class="chapter-footer">
+        <div class="chapter-footer__flow">
+          <p class="chapter-footer__flow-text">
+            You now have the mental framework for parallel thinking.
+            Next, we'll see how NVIDIA GPUs actually implement this with their hardware architecture.
+          </p>
+        </div>
+
+        <div class="chapter-footer__nav">
+          <a href="../index.html" class="chapter-footer__link chapter-footer__link--prev">
+            <div class="chapter-footer__link-label">Course Home</div>
+            <div class="chapter-footer__link-title">GPU Learning</div>
+          </a>
+          <a href="01-gpu-fundamentals.html" class="chapter-footer__link chapter-footer__link--next">
+            <div class="chapter-footer__link-label">Next Chapter</div>
+            <div class="chapter-footer__link-title">GPU Fundamentals</div>
+          </a>
+        </div>
+      </footer>
+
+      <div class="site-license">
+        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+      </div>
+    </main>
+
+    <script src="../scripts/components.js"></script>
+    <script>
+      // Amdahl's Law Calculator
+      const amdahlS = document.getElementById('amdahl-s');
+      const amdahlN = document.getElementById('amdahl-n');
+      const amdahlSVal = document.getElementById('amdahl-s-val');
+      const amdahlNVal = document.getElementById('amdahl-n-val');
+      const amdahlSpeedup = document.getElementById('amdahl-speedup');
+      const amdahlMax = document.getElementById('amdahl-max');
+      const speedupFill = document.getElementById('speedup-fill');
+      const speedupLimit = document.getElementById('speedup-limit');
+
+      function updateAmdahl() {
+        const s = parseInt(amdahlS.value) / 100;
+        const p = 1 - s;
+        const n = parseInt(amdahlN.value);
+        
+        const speedup = 1 / (s + p / n);
+        const maxSpeedup = 1 / s;
+        
+        amdahlSVal.textContent = (s * 100).toFixed(0) + '%';
+        amdahlNVal.textContent = n;
+        amdahlSpeedup.textContent = speedup.toFixed(2) + 'x';
+        amdahlMax.textContent = maxSpeedup.toFixed(2) + 'x';
+        
+        // Update bar (scale to max 100x for visualization)
+        const barMax = Math.min(maxSpeedup, 100);
+        const fillWidth = (speedup / barMax) * 100;
+        speedupFill.style.width = fillWidth + '%';
+        speedupFill.textContent = speedup.toFixed(2) + 'x';
+        
+        // Update limit marker
+        speedupLimit.style.left = '100%';
+        speedupLimit.querySelector('.speedup-bar__limit-label').textContent = 'Max: ' + maxSpeedup.toFixed(1) + 'x';
+      }
+
+      amdahlS.addEventListener('input', updateAmdahl);
+      amdahlN.addEventListener('input', updateAmdahl);
+      updateAmdahl();
+
+      // SIMD visualization
+      const cpuLanes = document.getElementById('cpu-lanes');
+      const gpuLanes = document.getElementById('gpu-lanes');
+
+      // Create CPU SIMD lanes (8)
+      for (let i = 0; i < 8; i++) {
+        const lane = document.createElement('div');
+        lane.className = 'simd-viz__lane simd-viz__lane--cpu';
+        lane.textContent = i;
+        cpuLanes.appendChild(lane);
+      }
+
+      // Create GPU warp threads (32)
+      for (let i = 0; i < 32; i++) {
+        const lane = document.createElement('div');
+        lane.className = 'simd-viz__lane simd-viz__lane--gpu';
+        lane.textContent = i;
+        gpuLanes.appendChild(lane);
+      }
+
+      // Animate GPU lanes
+      const gpuThreads = gpuLanes.querySelectorAll('.simd-viz__lane');
+      let activeIndex = 0;
+      
+      function animateGPU() {
+        gpuThreads.forEach((t, i) => {
+          t.classList.toggle('active', i === activeIndex);
+        });
+        activeIndex = (activeIndex + 1) % 32;
+      }
+
+      // Cycle through threads to show they're all executing
+      setInterval(() => {
+        gpuThreads.forEach(t => t.classList.add('active'));
+        setTimeout(() => {
+          gpuThreads.forEach(t => t.classList.remove('active'));
+        }, 500);
+      }, 2000);
+    </script>
+  </body>
+</html>
