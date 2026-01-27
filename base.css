@@ -509,8 +509,8 @@
     align-items: center;
     gap: var(--space-xs);
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    color: var(--text-muted);
+    font-size: var(--text-base);
+    color: var(--accent-blue);
   }
 
   .chapter-nav__link {
@@ -523,7 +523,7 @@
 
   .chapter-nav__link:hover {
     color: var(--text-primary);
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
   }
 
   .chapter-nav__sep {
