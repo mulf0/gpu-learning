@@ -319,20 +319,19 @@
           </p>
         </div>
 
-        <!-- Historical sidebar: GPU Evolution -->
-        <div class="callout historical">
-          <div class="callout-title">NVIDIA Architecture Evolution</div>
+        <!-- Historical sidebar: GPU Evolution (floats right) -->
+        <aside class="sidebar">
+          <div class="sidebar__title">GPU Architecture Timeline</div>
           <ul>
-            <li><strong><a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi (2010)</a></strong>: First compute architecture. L1/L2 caches, ECC, concurrent kernels.</li>
-            <li><strong><a href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/NVIDIA-Kepler-GK110-GK210-Architecture-Whitepaper.pdf" target="_blank" rel="noopener">Kepler (2012)</a></strong>: Dynamic parallelism, shuffle instructions, GPUDirect.</li>
-            <li><strong><a href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf" target="_blank" rel="noopener">Pascal (2016)</a></strong>: Unified memory, NVLink, FP16, HBM2.</li>
-            <li><strong><a href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf" target="_blank" rel="noopener">Volta (2017)</a></strong>: First Tensor Cores, independent thread scheduling.</li>
-            <li><strong><a href="https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf" target="_blank" rel="noopener">Ampere (2020)</a></strong>: TF32, BF16, sparsity, 3rd-gen Tensor Cores.</li>
-            <li><strong><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">Hopper (2022)</a></strong>: FP8, TMA, warpgroups, Transformer Engine.</li>
-            <li><strong><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell (2024)</a></strong>: FP4, 5th-gen Tensor Cores.</li>
+            <li><a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener"><strong>Fermi (2010)</strong></a> — L1/L2 caches, ECC</li>
+            <li><a href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/NVIDIA-Kepler-GK110-GK210-Architecture-Whitepaper.pdf" target="_blank" rel="noopener"><strong>Kepler (2012)</strong></a> — Shuffles, GPUDirect</li>
+            <li><a href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf" target="_blank" rel="noopener"><strong>Pascal (2016)</strong></a> — NVLink, HBM2</li>
+            <li><a href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf" target="_blank" rel="noopener"><strong>Volta (2017)</strong></a> — First Tensor Cores</li>
+            <li><a href="https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf" target="_blank" rel="noopener"><strong>Ampere (2020)</strong></a> — TF32, sparsity</li>
+            <li><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener"><strong>Hopper (2022)</strong></a> — FP8, TMA</li>
+            <li><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener"><strong>Blackwell (2024)</strong></a> — FP4</li>
           </ul>
-          <p class="text-muted text-small mb-0">Each generation roughly doubled AI training performance.</p>
-        </div>
+        </aside>
 
         <!-- Micro-quiz: Throughput vs Latency -->
         <div class="quiz quiz--micro" id="quiz-throughput">
@@ -440,21 +439,17 @@
             </div>
           </div>
 
-          <!-- Historical sidebar: Why 32? -->
-          <div class="callout historical">
-            <div class="callout-title">Why Exactly 32 Threads per Warp?</div>
+          <!-- Historical sidebar: Why 32? (floats right) -->
+          <aside class="sidebar">
+            <div class="sidebar__title">Why 32 Threads?</div>
             <p>Constant since <a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi (2010)</a>:</p>
             <ul>
-              <li><strong>Memory efficiency</strong>: 32 threads × 4 bytes = 128 bytes = one cache line</li>
-              <li><strong>Silicon area</strong>: Small enough to fit execution units efficiently</li>
-              <li><strong>Occupancy</strong>: Multiple warps per SM enables latency hiding</li>
-              <li><strong>Legacy</strong>: Changing it would break all existing CUDA software</li>
+              <li><strong>Memory</strong>: 32×4 = 128 bytes = 1 cache line</li>
+              <li><strong>Silicon</strong>: Fits execution units efficiently</li>
+              <li><strong>Latency hiding</strong>: Multiple warps per SM</li>
+              <li><strong>Legacy</strong>: Can't change without breaking everything</li>
             </ul>
-            <p class="text-muted text-small mb-0">
-              The 128-thread <strong>warpgroup</strong> on <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/" target="_blank" rel="noopener">Hopper+</a> 
-              is a software abstraction over 4 hardware warps for Tensor Core tile sizes.
-            </p>
-          </div>
+          </aside>
         </div>
 
       </section>
