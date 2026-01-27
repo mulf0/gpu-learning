@@ -131,13 +131,34 @@
         flex-shrink: 0;
       }
 
-      .toc__num--1 { background: var(--glow-blue); color: var(--accent-blue); }
-      .toc__num--2 { background: var(--glow-green); color: var(--accent-green); }
-      .toc__num--3 { background: var(--glow-purple); color: var(--accent-purple); }
-      .toc__num--4 { background: var(--glow-orange); color: var(--accent-orange); }
-      .toc__num--5 { background: var(--glow-blue); color: var(--accent-blue); }
-      .toc__num--6 { background: var(--glow-green); color: var(--accent-green); }
-      .toc__num--7 { background: var(--glow-purple); color: var(--accent-purple); }
+      .toc__num--1 {
+        background: var(--glow-blue);
+        color: var(--accent-blue);
+      }
+      .toc__num--2 {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+      .toc__num--3 {
+        background: var(--glow-purple);
+        color: var(--accent-purple);
+      }
+      .toc__num--4 {
+        background: var(--glow-orange);
+        color: var(--accent-orange);
+      }
+      .toc__num--5 {
+        background: var(--glow-blue);
+        color: var(--accent-blue);
+      }
+      .toc__num--6 {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+      .toc__num--7 {
+        background: var(--glow-purple);
+        color: var(--accent-purple);
+      }
 
       .toc__content {
         flex: 1;
@@ -296,14 +317,14 @@
       <!-- Hero -->
       <header class="book-hero" id="main-content">
         <div class="book-hero__label">Interactive Course</div>
-        <h1 class="book-hero__title">GPU Programming &<br>Kernel Development</h1>
+        <h1 class="book-hero__title">
+          GPU Programming &<br />Kernel Development
+        </h1>
         <p class="book-hero__desc">
-          From Python to production-grade CUDA kernels. Learn GPU architecture, memory optimization,
-          Triton, Tensor Cores, and quantization through interactive lessons and hands-on notebooks.
+          From Python to production-grade CUDA kernels. Learn GPU architecture,
+          memory optimization, Triton, Tensor Cores, and quantization through
+          interactive lessons and hands-on notebooks.
         </p>
-        <a href="course/01-gpu-fundamentals.html" class="book-hero__cta">
-          Start Chapter 1 →
-        </a>
       </header>
 
       <!-- Table of Contents -->
@@ -314,7 +335,9 @@
             <div class="toc__num toc__num--1">1</div>
             <div class="toc__content">
               <div class="toc__title">GPU Fundamentals</div>
-              <p class="toc__desc">SMs, warps, blocks, and the execution hierarchy</p>
+              <p class="toc__desc">
+                SMs, warps, blocks, and the execution hierarchy
+              </p>
             </div>
           </a>
 
@@ -322,7 +345,9 @@
             <div class="toc__num toc__num--2">2</div>
             <div class="toc__content">
               <div class="toc__title">Memory Hierarchy</div>
-              <p class="toc__desc">Registers, SMEM, L2, HBM—latency, bandwidth, coalescing</p>
+              <p class="toc__desc">
+                Registers, SMEM, L2, HBM—latency, bandwidth, coalescing
+              </p>
             </div>
           </a>
 
@@ -330,7 +355,9 @@
             <div class="toc__num toc__num--3">3</div>
             <div class="toc__content">
               <div class="toc__title">First Kernels</div>
-              <p class="toc__desc">Triton basics, index arithmetic, tiling for data reuse</p>
+              <p class="toc__desc">
+                Triton basics, index arithmetic, tiling for data reuse
+              </p>
             </div>
           </a>
 
@@ -338,7 +365,9 @@
             <div class="toc__num toc__num--4">4</div>
             <div class="toc__content">
               <div class="toc__title">Optimization</div>
-              <p class="toc__desc">Profiling, bank conflicts, Tensor Cores, TMA</p>
+              <p class="toc__desc">
+                Profiling, bank conflicts, Tensor Cores, TMA
+              </p>
             </div>
           </a>
 
@@ -346,7 +375,9 @@
             <div class="toc__num toc__num--5">5</div>
             <div class="toc__content">
               <div class="toc__title">Attention</div>
-              <p class="toc__desc">Dot products, softmax, online algorithms, FlashAttention</p>
+              <p class="toc__desc">
+                Dot products, softmax, online algorithms, FlashAttention
+              </p>
             </div>
           </a>
 
@@ -354,7 +385,9 @@
             <div class="toc__num toc__num--6">6</div>
             <div class="toc__content">
               <div class="toc__title">Quantization</div>
-              <p class="toc__desc">Floating point formats, INT8/INT4, FP8, numerical stability</p>
+              <p class="toc__desc">
+                Floating point formats, INT8/INT4, FP8, numerical stability
+              </p>
             </div>
           </a>
 
@@ -362,7 +395,9 @@
             <div class="toc__num toc__num--7">7</div>
             <div class="toc__content">
               <div class="toc__title">Production</div>
-              <p class="toc__desc">KV cache strategies, TensorRT-LLM, vLLM integration</p>
+              <p class="toc__desc">
+                KV cache strategies, TensorRT-LLM, vLLM integration
+              </p>
             </div>
           </a>
         </div>
@@ -375,9 +410,9 @@
           <span class="reference__title">Math Prerequisites</span>
         </div>
         <p class="reference__desc">
-          Not confident with linear algebra or floating point math? Take the diagnostic quiz
-          to identify gaps and find curated resources. This is a reference—work through it
-          as needed, not a required prerequisite.
+          Not confident with linear algebra or floating point math? Take the
+          diagnostic quiz to identify gaps and find curated resources. This is a
+          reference—work through it as needed, not a required prerequisite.
         </p>
         <a href="math-prerequisites.html" class="reference__link">
           Take the diagnostic quiz →
@@ -415,8 +450,10 @@
       <footer class="book-footer">
         <p>
           Built for engineers who want to understand GPU programming deeply.
-          <br>
-          <a href="https://github.com/your-repo" target="_blank" rel="noopener">Source on GitHub</a>
+          <br />
+          <a href="https://github.com/your-repo" target="_blank" rel="noopener"
+            >Source on GitHub</a
+          >
         </p>
       </footer>
     </div>
