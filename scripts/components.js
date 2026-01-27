@@ -376,11 +376,99 @@ class FPBitToggle {
 }
 
 // ============================================
+// Collapsible (generic toggle)
+// ============================================
+class Collapsible {
+  constructor(element) {
+    this.el = typeof element === 'string' ? document.querySelector(element) : element;
+    if (!this.el) return;
+    
+    this.trigger = this.el.querySelector('.collapsible__trigger');
+    this.trigger?.addEventListener('click', () => this.toggle());
+  }
+  
+  toggle() {
+    this.el.classList.toggle('collapsible--open');
+  }
+  
+  open() {
+    this.el.classList.add('collapsible--open');
+  }
+  
+  close() {
+    this.el.classList.remove('collapsible--open');
+  }
+  
+  static initAll(selector = '.collapsible') {
+    document.querySelectorAll(selector).forEach(el => new Collapsible(el));
+  }
+}
+
+// ============================================
+// Section Progress (scroll-based)
+// ============================================
+class SectionProgress {
+  constructor(options = {}) {
+    this.container = document.querySelector(options.container || '.chapter-container');
+    this.progressEl = document.querySelector(options.progress || '.section-progress__fill');
+    this.textEl = document.querySelector(options.text || '.section-progress__text');
+    
+    if (!this.container || !this.progressEl) return;
+    
+    this.sections = this.container.querySelectorAll('.section[id]');
+    this.totalSections = this.sections.length;
+    
+    if (this.totalSections === 0) return;
+    
+    this.init();
+  }
+  
+  init() {
+    window.addEventListener('scroll', () => this.update(), { passive: true });
+    this.update();
+  }
+  
+  update() {
+    const scrollTop = window.scrollY;
+    const containerTop = this.container.offsetTop;
+    const containerHeight = this.container.scrollHeight - window.innerHeight;
+    
+    const progress = Math.min(100, Math.max(0, 
+      ((scrollTop - containerTop) / containerHeight) * 100
+    ));
+    
+    this.progressEl.style.width = progress + '%';
+    
+    if (this.textEl) {
+      const completed = Math.floor((progress / 100) * this.totalSections);
+      this.textEl.textContent = completed + '/' + this.totalSections + ' sections';
+    }
+  }
+}
+
+// ============================================
+// Auto-init pedagogy components
+// ============================================
+function initPedagogy() {
+  Collapsible.initAll();
+  
+  // Section progress (only if element exists)
+  if (document.querySelector('.section-progress')) {
+    new SectionProgress();
+  }
+}
+
+// Add to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initPedagogy);
+
+// ============================================
 // Export for use
 // ============================================
 window.GPULearning = {
   LiveComputation,
   SoftmaxViz,
   OnlineSoftmaxSim,
-  FPBitToggle
+  FPBitToggle,
+  Collapsible,
+  SectionProgress
 };

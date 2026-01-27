@@ -176,6 +176,26 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapter 4</div>
+        Chapter 4's tiling wasn't just about matrix multiply—it's a universal optimization pattern. 
+        Attention is where this pattern becomes <em>essential</em>. Without tiling, attention on long 
+        sequences would require terabytes of memory. With tiling (FlashAttention), it fits in shared memory.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Implement standard scaled dot-product attention</li>
+          <li class="learning-objectives__item">Explain why naive attention is O(n²) in memory</li>
+          <li class="learning-objectives__item">Describe how FlashAttention achieves O(n) memory</li>
+          <li class="learning-objectives__item">Implement online softmax for numerical stability</li>
+          <li class="learning-objectives__item">Apply tiling strategies to attention computation</li>
+        </ol>
+      </div>
+
       <!-- Prereq callout -->
       <div class="prereq-callout">
         <div class="prereq-callout__icon">&#128218;</div>
@@ -244,7 +264,29 @@
           one query. This is why <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">attention is the bottleneck</a>.
         </p>
 
+        <!-- Micro-quiz: Attention shapes -->
+        <div class="quiz quiz--micro" id="quiz-shapes">
+          <div class="quiz-q">Q and K have shape [seq_len, d]. Shape of QK^T?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>[d, d]</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>[seq_len, seq_len]</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>[seq_len, d]</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: Softmax -->
       <section class="section" id="section-1">
@@ -426,7 +468,29 @@
     
     <span style="color: var(--accent-purple)">return</span> m_new, l_new</code></pre>
 
+        <!-- Micro-quiz: Online softmax -->
+        <div class="quiz quiz--micro" id="quiz-online">
+          <div class="quiz-q">Online softmax maintains:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Running max only</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Running sum only</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Both running max and sum of exp</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 4: Floating Point Formats -->
       <section class="section" id="section-3">

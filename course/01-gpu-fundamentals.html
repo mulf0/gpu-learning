@@ -260,6 +260,18 @@
         </p>
       </header>
 
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Explain why GPUs optimize for throughput over latency</li>
+          <li class="learning-objectives__item">Describe the SM → Warp → Thread hierarchy</li>
+          <li class="learning-objectives__item">Calculate theoretical occupancy given resource constraints</li>
+          <li class="learning-objectives__item">Identify warp divergence in code and explain its performance impact</li>
+          <li class="learning-objectives__item">Interpret basic GPU specifications (SM count, memory bandwidth)</li>
+        </ol>
+      </div>
+
       <!-- Section 1: The Execution Model -->
       <section class="section" id="section-0">
         <div class="section__number">01 - THE BIG PICTURE</div>
@@ -295,7 +307,11 @@
             <div class="spec-card__label"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Boost Clock*</a></div>
           </div>
         </div>
-        <p class="text-muted text-small" style="margin-top: var(--space-sm);">
+        <p class="text-secondary text-small" style="margin-top: var(--space-sm);">
+          <span class="human-scale">192 SMs = 192 mini-processors running thousands of threads each</span><br>
+          <span class="human-scale">8 TB/s = every book ever written in under 2 seconds</span>
+        </p>
+        <p class="text-muted text-small">
           *B200 specifications from <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">NVIDIA Blackwell Architecture</a>. Verify against official datasheets for production use.
         </p>
 
@@ -308,7 +324,29 @@
           </p>
         </div>
 
+        <!-- Micro-quiz: Throughput vs Latency -->
+        <div class="quiz quiz--micro" id="quiz-throughput">
+          <div class="quiz-q">A GPU is faster than a CPU at parallel workloads because of:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Higher clock speed</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>More parallel execution units</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Larger cache per core</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: The Hierarchy -->
       <section class="section" id="section-1">
@@ -356,7 +394,7 @@
               <div class="hier-icon bg-purple">Warp</div>
               <div class="hier-info">
                 <h5><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 Threads in Lockstep</a></h5>
-                <p>The atomic scheduling unit (SIMT)</p>
+                <p>The atomic scheduling unit (SIMT) <span class="human-scale">like a marching band playing in unison</span></p>
               </div>
             </div>
             <div class="hier-detail" id="d-warp">
@@ -391,6 +429,17 @@
               communicate via shared memory and synchronize with __syncthreads().
             </div>
           </div>
+
+          <!-- Expert note on hierarchy -->
+          <details class="expert-note">
+            <summary class="expert-note__summary">Why does the warp size matter?</summary>
+            <div class="expert-note__content">
+              The warp size of 32 is a hardware constant dating back to early NVIDIA GPUs. 
+              Memory transactions, shuffle operations, and voting all happen at warp granularity. 
+              Block sizes should always be multiples of 32 to avoid partial warps (wasted threads). 
+              The 128-thread warpgroup on Hopper+ exists specifically to match Tensor Core tile sizes.
+            </div>
+          </details>
         </div>
 
       </section>
@@ -467,7 +516,29 @@
           <div class="quiz-fb"></div>
         </div>
 
+        <!-- Micro-quiz: Calculate warps -->
+        <div class="quiz quiz--micro" id="quiz-warps-calc">
+          <div class="quiz-q">If you launch 256 threads per block, how many warps is that?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>4 warps</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>8 warps (256 / 32 = 8)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>16 warps</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 4: Blocks and Grids -->
       <section class="section" id="section-3">
@@ -539,6 +610,8 @@ Grid (your problem)
 
       </section>
 
+      <hr class="chunk-divider">
+
       <!-- Section 5: Occupancy -->
       <section class="section" id="section-4">
         <div class="section__number">05 - OCCUPANCY</div>
@@ -609,6 +682,17 @@ Grid (your problem)
           <p class="text-muted text-small mt-md mb-0">
             Simplified model based on <a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">Hopper SM</a> (64 max warps, 256KB registers, 228KB shared memory).
           </p>
+
+          <!-- Expert note on occupancy -->
+          <details class="expert-note">
+            <summary class="expert-note__summary">When is low occupancy actually better?</summary>
+            <div class="expert-note__content">
+              Compute-bound kernels with high instruction-level parallelism (ILP) often perform 
+              better at 50% occupancy with more registers per thread. More registers = fewer spills 
+              to local memory, more values kept in fast storage. Use <code>--maxrregcount</code> in 
+              nvcc or occupancy calculators to experiment. Always profile with real workloads.
+            </div>
+          </details>
         </div>
 
         <div class="callout info">
@@ -620,7 +704,29 @@ Grid (your problem)
           </p>
         </div>
 
+        <!-- Micro-quiz: Occupancy limiters -->
+        <div class="quiz quiz--micro" id="quiz-occupancy">
+          <div class="quiz-q">Which resource does NOT directly limit occupancy?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Registers per thread</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Shared memory per block</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Global memory size</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Practice Notebooks -->
       <section class="section" id="practice">

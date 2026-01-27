@@ -269,6 +269,26 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapters 2-5</div>
+        You've optimized compute (Ch4) and memory access patterns (Ch2-5). Quantization attacks the 
+        problem from a different angle: <em>reducing the data itself</em>. Every concept from earlier 
+        chapters applies—bandwidth limits, memory hierarchy, tiling—but now with 2x or 4x more effective bandwidth.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Explain the memory/accuracy tradeoff in quantization</li>
+          <li class="learning-objectives__item">Convert between floating point formats (FP32, FP16, FP8)</li>
+          <li class="learning-objectives__item">Implement symmetric and asymmetric quantization</li>
+          <li class="learning-objectives__item">Choose appropriate quantization strategies for different workloads</li>
+          <li class="learning-objectives__item">Identify when quantization will/won't help performance</li>
+        </ol>
+      </div>
+
       <!-- Prereq callout -->
       <div class="prereq-callout">
         <div class="prereq-callout__icon">&#128218;</div>
@@ -466,7 +486,29 @@
             Always check for these in numerical code.
           </p>
         </div>
+
+        <!-- Micro-quiz: FP8 -->
+        <div class="quiz quiz--micro" id="quiz-fp8">
+          <div class="quiz-q">FP8 E4M3 vs E5M2: E4M3 has:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>More range</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>More precision (3 mantissa bits)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Same as E5M2</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: Numerical Stability -->
       <section class="section" id="numerical-stability">
@@ -815,6 +857,26 @@ c = a - b  <span style="color: var(--text-muted)">// Expected: 0.0000001</span>
             Full quantization (W8A8, FP8) helps compute-bound workloads (large batches, short sequences).
             Profile your workload to choose the right strategy.
           </p>
+        </div>
+
+        <!-- Micro-quiz: When quantization helps -->
+        <div class="quiz quiz--micro" id="quiz-when">
+          <div class="quiz-q">Quantization helps MOST when:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Compute-bound (large batches)</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Memory-bound (bandwidth limited)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Neither - always helps equally</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
         </div>
 
         <h3>Citations</h3>

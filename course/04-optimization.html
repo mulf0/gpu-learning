@@ -219,6 +219,26 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapter 3</div>
+        You can write working kernels now. But <em>working</em> isn't enough—you need <em>fast</em>. 
+        Chapter 2's memory hierarchy becomes your optimization target. Chapter 3's kernel structure 
+        becomes your canvas for applying tiling and access pattern fixes.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Use Nsight Compute to identify kernel bottlenecks</li>
+          <li class="learning-objectives__item">Apply tiling to improve cache utilization</li>
+          <li class="learning-objectives__item">Optimize memory access patterns for coalescing</li>
+          <li class="learning-objectives__item">Balance occupancy against per-thread resources</li>
+          <li class="learning-objectives__item">Achieve >50% of theoretical memory bandwidth</li>
+        </ol>
+      </div>
+
       <!-- Prereq callout -->
       <div class="prereq-callout">
         <div class="prereq-callout__icon">&#128218;</div>
@@ -304,7 +324,29 @@ ncu --set full -o profile python my_kernel.py
             heroic effort and architecture-specific tricks. Ship it and move on.
           </p>
         </div>
+
+        <!-- Micro-quiz: Profiling -->
+        <div class="quiz quiz--micro" id="quiz-profile">
+          <div class="quiz-q">Most important metric for memory-bound kernels:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Occupancy</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Memory throughput (% of peak)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Compute throughput</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: Bank Conflicts -->
       <section class="section" id="bank-conflicts">
@@ -453,7 +495,29 @@ smem[threadIdx.x * 32]
             MMA shapes (16, 32, etc.). Misaligned tiles fall back to slower CUDA core execution.
           </p>
         </div>
+
+        <!-- Micro-quiz: Tiling -->
+        <div class="quiz quiz--micro" id="quiz-tiling">
+          <div class="quiz-q">Tiling improves performance by:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Using more threads</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Reusing data in fast memory (SMEM)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Reducing computation</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 4: TMA -->
       <section class="section" id="tma">

@@ -245,6 +245,27 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapters 1-2</div>
+        Chapters 1-2 gave you the mental model: thousands of threads executing in warps, memory access 
+        patterns determining performance. Now you'll write actual code. Every line maps directly to those 
+        concepts—<em>thread indices become array offsets</em>, block sizes affect occupancy, access 
+        patterns determine coalescing.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Write a basic Triton kernel with proper grid/block configuration</li>
+          <li class="learning-objectives__item">Use tl.load and tl.store with appropriate masking</li>
+          <li class="learning-objectives__item">Implement element-wise operations (add, multiply, activation functions)</li>
+          <li class="learning-objectives__item">Debug common kernel errors (out-of-bounds, wrong output)</li>
+          <li class="learning-objectives__item">Profile kernel performance using basic metrics</li>
+        </ol>
+      </div>
+
       <!-- Prereq callout -->
       <div class="prereq-callout">
         <div class="prereq-callout__icon">&#128218;</div>
@@ -346,6 +367,8 @@ gflops = <span class="number">2</span> * <span class="number">1024</span>**<span
         </p>
       </section>
 
+      <hr class="chunk-divider">
+
       <!-- Section 3: First Kernel -->
       <section class="section" id="first-kernel">
         <div class="section__number">03 — YOUR FIRST KERNEL</div>
@@ -422,7 +445,40 @@ grid = (n // <span class="number">256</span>,)  <span class="comment"># Number o
           </div>
           <div class="quiz-fb"></div>
         </div>
+
+        <!-- Micro-quiz: @triton.jit decorator -->
+        <div class="quiz quiz--micro" id="quiz-jit">
+          <div class="quiz-q">The @triton.jit decorator:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Runs the function on CPU</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Compiles the function for GPU execution</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Optimizes Python bytecode</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <!-- Expert note on masking -->
+        <details class="expert-note">
+          <summary class="expert-note__summary">Why do we need masks in tl.load?</summary>
+          <div class="expert-note__content">
+            Masks prevent out-of-bounds memory access. When your array size isn't a multiple of 
+            BLOCK_SIZE, the last block would read beyond the array. Without masking, this causes 
+            undefined behavior (usually crashes). Always use <code>mask = offsets < n</code> 
+            and pass it to both <code>tl.load</code> and <code>tl.store</code>.
+          </div>
+        </details>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 4: Memory -->
       <section class="section" id="memory-bottleneck">
@@ -531,7 +587,29 @@ grid = (n // <span class="number">256</span>,)  <span class="comment"># Number o
           </div>
           <div class="quiz-fb"></div>
         </div>
+
+        <!-- Micro-quiz: Debugging -->
+        <div class="quiz quiz--micro" id="quiz-debug">
+          <div class="quiz-q">Your kernel outputs all zeros. Most likely cause?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>GPU ran out of memory</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Wrong pointer/offset calculation</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Block size too large</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 5: Tiling -->
       <section class="section" id="tiling">
@@ -588,7 +666,20 @@ grid = (n // <span class="number">256</span>,)  <span class="comment"># Number o
             </p>
           </div>
         </div>
+
+        <!-- Expert note on tile sizes -->
+        <details class="expert-note">
+          <summary class="expert-note__summary">How do you choose the right BLOCK_SIZE?</summary>
+          <div class="expert-note__content">
+            BLOCK_SIZE affects occupancy and memory usage. Common choices: 64, 128, 256, 512. 
+            Too small = not enough work per block, poor latency hiding. Too large = not enough 
+            blocks to fill the GPU, register pressure. For matmul tiles, 64x64 or 128x128 are 
+            typical starting points. Always benchmark—optimal size depends on kernel and GPU.
+          </div>
+        </details>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 6: Practice -->
       <section class="section" id="practice">

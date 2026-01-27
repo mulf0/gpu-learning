@@ -344,6 +344,26 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Building on Chapter 1</div>
+        In Chapter 1, you learned that warps execute 32 threads in lockstep. This seemingly simple fact 
+        has profound implications for memory access. When 32 threads read memory simultaneously, 
+        <em>where</em> they read from determines whether you get 8 TB/s or 500 GB/s.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">List the GPU memory types in order of speed and size</li>
+          <li class="learning-objectives__item">Explain why memory bandwidth is often the bottleneck</li>
+          <li class="learning-objectives__item">Demonstrate coalesced vs uncoalesced memory access patterns</li>
+          <li class="learning-objectives__item">Identify and fix shared memory bank conflicts</li>
+          <li class="learning-objectives__item">Calculate effective memory bandwidth for a given access pattern</li>
+        </ol>
+      </div>
+
       <!-- Section 1: Why Memory Matters -->
       <section class="section" id="section-0">
         <div class="section__number">01 - THE BOTTLENECK</div>
@@ -384,7 +404,29 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           </p>
         </div>
 
+        <!-- Micro-quiz: Memory vs Compute bound -->
+        <div class="quiz quiz--micro" id="quiz-bound">
+          <div class="quiz-q">Which memory type is fastest?</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Global memory (HBM)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Shared memory</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Registers</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: The Hierarchy -->
       <section class="section" id="section-1">
@@ -404,7 +446,7 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
                 <span class="mem-tier__name">Registers</span>
                 <span class="mem-tier__stats"><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">256KB/SM</a> | ~1 cycle | ~20 TB/s</span>
               </div>
-              <p class="mem-tier__desc">Per-thread private storage. Fastest possible access.</p>
+              <p class="mem-tier__desc">Per-thread private storage. <span class="human-scale">instant, like your own name</span></p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
                 <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
@@ -426,7 +468,7 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
                 <span class="mem-tier__name">Shared Memory (SMEM)</span>
                 <span class="mem-tier__stats"><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">228KB/SM</a> | ~20 cycles | ~20 TB/s</span>
               </div>
-              <p class="mem-tier__desc">Block-level scratchpad. Programmer-managed.</p>
+              <p class="mem-tier__desc">Block-level scratchpad. <span class="human-scale">quick glance at a sticky note</span></p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
                 <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
@@ -470,7 +512,7 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
                 <span class="mem-tier__name">HBM (Global Memory)</span>
                 <span class="mem-tier__stats"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">192GB | ~400 cycles | ~8 TB/s</a></span>
               </div>
-              <p class="mem-tier__desc">Main GPU memory. High capacity, high latency.</p>
+              <p class="mem-tier__desc">Main GPU memory. <span class="human-scale">walk to filing cabinet in another room</span></p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
                 <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
@@ -506,7 +548,20 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           </p>
         </div>
 
+        <!-- Expert note on memory hierarchy -->
+        <details class="expert-note">
+          <summary class="expert-note__summary">Why is the 128-byte cache line important?</summary>
+          <div class="expert-note__content">
+            When you request even 4 bytes from global memory, the hardware fetches an entire 128-byte 
+            cache line. This is why coalescing matters: 32 threads reading 4 bytes each = 128 bytes = 
+            1 cache line. But 32 threads reading scattered 4-byte values = potentially 32 cache lines 
+            (4KB!) for 128 bytes of useful data. That's 32x wasted bandwidth.
+          </div>
+        </details>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 3: Coalescing -->
       <section class="section" id="section-2">
@@ -600,7 +655,29 @@ data[threadIdx.x * 32]
           <div class="quiz-fb"></div>
         </div>
 
+        <!-- Micro-quiz: Coalescing -->
+        <div class="quiz quiz--micro" id="quiz-coalesce">
+          <div class="quiz-q">Coalesced memory access means:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>All threads access the same address</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Adjacent threads access adjacent addresses</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Threads access memory in random order</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 4: Bank Conflicts -->
       <section class="section" id="section-3">
@@ -685,7 +762,29 @@ smem[threadIdx.x * 32]
           <div class="quiz-fb"></div>
         </div>
 
+        <!-- Micro-quiz: Bank conflicts -->
+        <div class="quiz quiz--micro" id="quiz-bank">
+          <div class="quiz-q">A 2-way bank conflict means the access takes:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Half as long</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Twice as long (serialized)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>The same time</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 5: TMA -->
       <section class="section" id="section-4">
@@ -772,6 +871,8 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
 
       </section>
 
+      <hr class="chunk-divider">
+
       <!-- Section 6: Optimization -->
       <section class="section" id="section-5">
         <div class="section__number">06 - OPTIMIZATION</div>
@@ -857,7 +958,20 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
           </p>
         </div>
 
+        <!-- Expert note on optimization -->
+        <details class="expert-note">
+          <summary class="expert-note__summary">What if register spilling occurs?</summary>
+          <div class="expert-note__content">
+            When a kernel uses too many registers, the compiler "spills" excess values to local memory 
+            (which is actually in global memory, just private to each thread). This is slow! Signs of 
+            spilling: look for <code>lmem</code> in <code>ncu</code> output. Fix by: reducing live values, 
+            using <code>__launch_bounds__</code>, or accepting lower occupancy for more registers.
+          </div>
+        </details>
+
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Practice Notebooks -->
       <section class="section" id="practice">

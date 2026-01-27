@@ -194,6 +194,26 @@
         </p>
       </header>
 
+      <!-- Chapter Connection -->
+      <div class="chapter-connection">
+        <div class="chapter-connection__label">Everything Converges Here</div>
+        GPU fundamentals (Ch1) determine how your server utilizes hardware. Memory hierarchy (Ch2) 
+        explains why KV cache is the bottleneck. Attention (Ch5) and quantization (Ch6) are the core 
+        computations you're serving. This chapter is about <em>orchestrating all of it at scale</em>.
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="learning-objectives">
+        <div class="learning-objectives__title">What You'll Learn</div>
+        <ol class="learning-objectives__list">
+          <li class="learning-objectives__item">Explain continuous batching and its benefits</li>
+          <li class="learning-objectives__item">Describe KV cache management strategies</li>
+          <li class="learning-objectives__item">Identify bottlenecks in inference serving systems</li>
+          <li class="learning-objectives__item">Choose between inference frameworks (vLLM, TensorRT-LLM)</li>
+          <li class="learning-objectives__item">Design a system meeting latency and throughput requirements</li>
+        </ol>
+      </div>
+
       <!-- Prereq callout -->
       <div class="prereq-callout">
         <div class="prereq-callout__icon">&#128218;</div>
@@ -254,7 +274,29 @@
             This is why KV cache optimization is critical for production deployment.
           </p>
         </div>
+
+        <!-- Micro-quiz: Batching -->
+        <div class="quiz quiz--micro" id="quiz-batch">
+          <div class="quiz-q">Batching improves throughput because:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Faster memory access</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Better GPU utilization (amortized overhead)</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Simpler code</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 2: PagedAttention -->
       <section class="section" id="paged-attention">
@@ -474,7 +516,29 @@ outputs = llm.generate(
             on NVIDIA hardware.
           </p>
         </div>
+
+        <!-- Micro-quiz: Framework choice -->
+        <div class="quiz quiz--micro" id="quiz-framework">
+          <div class="quiz-q">TensorRT-LLM is best for:</div>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Flexibility and rapid iteration</span>
+            </div>
+            <div class="quiz-opt" data-correct="true" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Maximum performance on NVIDIA GPUs</span>
+            </div>
+            <div class="quiz-opt" data-correct="false" tabindex="0">
+              <div class="quiz-mark"></div>
+              <span>Easy setup without compilation</span>
+            </div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
       </section>
+
+      <hr class="chunk-divider">
 
       <!-- Section 5: vLLM -->
       <section class="section" id="vllm">
