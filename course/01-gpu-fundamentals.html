@@ -53,19 +53,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: var(--text-lg);
         flex-shrink: 0;
       }
 
       .hier-info h5 {
         margin: 0 0 var(--space-xs);
-        font-size: 0.95rem;
+        font-size: var(--text-base);
         font-weight: 500;
       }
 
       .hier-info p {
         margin: 0;
-        font-size: 0.8rem;
+        font-size: var(--text-xs);
         color: var(--text-muted);
       }
 
@@ -76,7 +76,7 @@
         background: var(--bg-tertiary);
         border-left: 3px solid var(--accent-blue);
         border-radius: 0 var(--radius-md) var(--radius-md) 0;
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
         color: var(--text-secondary);
         animation: fadeIn 0.2s ease;
       }
@@ -107,13 +107,13 @@
 
       .spec-card__value {
         font-family: var(--font-mono);
-        font-size: 1.5rem;
+        font-size: var(--text-xl);
         font-weight: 600;
         color: var(--accent-blue);
       }
 
       .spec-card__label {
-        font-size: 0.8rem;
+        font-size: var(--text-xs);
         color: var(--text-muted);
         margin-top: var(--space-xs);
       }
@@ -204,7 +204,7 @@
         justify-content: flex-end;
         padding-right: var(--space-sm);
         font-family: var(--font-mono);
-        font-size: 0.8rem;
+        font-size: var(--text-xs);
         color: white;
       }
 
@@ -217,7 +217,7 @@
       }
       .callout-title {
         font-family: var(--font-mono);
-        font-size: 0.85rem;
+        font-size: var(--text-sm);
         font-weight: 600;
         margin-bottom: 0.5rem;
       }
@@ -228,7 +228,7 @@
 
       .diagram-title {
         font-family: var(--font-mono);
-        font-size: 0.8rem;
+        font-size: var(--text-xs);
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -707,7 +707,7 @@ Grid (your problem)
 
         <div class="card" style="margin-top: var(--space-lg);">
           <h4>Key Specifications with Sources</h4>
-          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+          <table style="width: 100%; font-size: var(--text-sm); border-collapse: collapse;">
             <tr style="border-bottom: 1px solid var(--border-subtle);">
               <th style="text-align: left; padding: var(--space-sm);">Specification</th>
               <th style="text-align: left; padding: var(--space-sm);">Value</th>

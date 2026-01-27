@@ -77,7 +77,8 @@
     --text-lg: 1.25rem;     /* 20px - emphasis, h4 */
     --text-xl: 1.5rem;      /* 24px - h3, section titles */
     --text-2xl: 1.75rem;    /* 28px - h2 */
-    --text-3xl: 2.25rem;    /* 36px - h1, hero */
+    --text-3xl: 2.25rem;    /* 36px - h1 */
+    --text-4xl: 3rem;       /* 48px - hero display */
 
     /* Radius */
     --radius-sm: 4px;
