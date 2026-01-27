@@ -344,6 +344,38 @@
 
       .callout-title, .callout__title { color: var(--accent-green); }
     }
+
+    /* Historical sidebar variant */
+    &.historical, &--historical {
+      background: color-mix(in srgb, var(--accent-purple) 10%, var(--bg-card));
+      border-color: var(--accent-purple);
+      border-left-width: 5px;
+
+      .callout-title, .callout__title {
+        color: var(--accent-purple);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: var(--space-sm);
+
+        &::before {
+          content: '📜 ';
+        }
+      }
+
+      ul, ol {
+        margin: var(--space-sm) 0;
+        padding-left: var(--space-lg);
+        font-size: var(--text-sm);
+
+        li { margin-bottom: var(--space-xs); }
+      }
+
+      a {
+        color: var(--accent-purple);
+        &:hover { color: var(--text-primary); }
+      }
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
