@@ -933,6 +933,10 @@
     padding: var(--space-sm) var(--space-md);
   }
 
+  .chapter-nav__current {
+    display: none;
+  }
+
   .chapter-container {
     padding: var(--space-xl) var(--space-md) var(--space-2xl);
   }
@@ -952,5 +956,31 @@
 
   .grid-2, .grid-3 {
     grid-template-columns: 1fr;
+  }
+
+  /* Hide interactive elements on mobile */
+  :is(
+    .interactive,
+    .warp-demo,
+    .thread-viz,
+    .occupancy-calc,
+    .amdahl-calc,
+    .simd-viz,
+    .bank-viz,
+    .coal-viz,
+    .bw-calc,
+    .shuffle-viz,
+    .reduction-viz,
+    .atomic-viz,
+    .fp-interactive,
+    .nan-viz,
+    .quant-viz,
+    .checkpoint-viz,
+    .zero-viz,
+    .nccl-viz,
+    .kv-viz,
+    .stability-demo
+  ) {
+    display: none;
   }
 }
