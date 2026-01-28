@@ -40,127 +40,7 @@
     />
     <link rel="stylesheet" href="../base.css" />
     <style>
-      body { display: block; }
-
-      /* Code blocks */
-      .code-block {
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: var(--space-md);
-        overflow-x: auto;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: var(--text-sm);
-        line-height: 1.5;
-        margin: var(--space-md) 0;
-      }
-      .code-block code {
-        color: var(--text-primary);
-      }
-      .code-block .comment { color: var(--text-muted); }
-      .code-block .keyword { color: var(--accent-purple); }
-      .code-block .string { color: var(--accent-green); }
-      .code-block .number { color: var(--accent-orange); }
-      .code-block .function { color: var(--accent-blue); }
-
-      /* Interactive containers */
-      .interactive {
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        padding: var(--space-lg);
-        margin: var(--space-lg) 0;
-      }
-      .interactive__title {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        font-weight: 600;
-        margin-bottom: var(--space-md);
-        color: var(--accent-purple);
-      }
-      .interactive__title::before {
-        content: '';
-        width: 8px;
-        height: 8px;
-        background: var(--accent-purple);
-        border-radius: 50%;
-      }
-
-      /* Thread visualization */
-      .thread-viz {
-        display: grid;
-        grid-template-columns: repeat(16, 1fr);
-        gap: 3px;
-        margin: var(--space-md) 0;
-      }
-      .thread-viz__thread {
-        aspect-ratio: 1;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-sm);
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-      }
-      .thread-viz__thread.active {
-        background: var(--accent-blue);
-        color: white;
-      }
-      .thread-viz__thread.diverged {
-        background: var(--accent-orange);
-        color: white;
-      }
-
-      /* Coalescing visualization */
-      .coal-viz {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-md);
-      }
-      .coal-viz__row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-      }
-      .coal-viz__label {
-        width: 80px;
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-      }
-      .coal-viz__cells {
-        display: flex;
-        gap: 2px;
-        flex: 1;
-        flex-wrap: wrap;
-      }
-      .coal-viz__cell {
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-sm);
-        font-size: var(--text-xs);
-        transition: all 0.2s;
-      }
-      .coal-viz__cell.active { background: var(--accent-blue); color: white; }
-      .coal-viz__cell.accessed { background: var(--accent-green); color: white; }
-      .coal-viz__cell.conflict { background: var(--accent-orange); color: white; }
-
-      /* Result display */
-      .result-box {
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: var(--space-md);
-        font-size: var(--text-sm);
-        color: var(--text-secondary);
-        margin-top: var(--space-md);
-      }
-
-      /* Memory bars */
+      /* Page-specific styles */
       .mem-bars {
         display: flex;
         flex-direction: column;
@@ -198,33 +78,10 @@
         color: white;
         font-weight: 500;
       }
-      .bg-green { background: var(--accent-green); }
-      .bg-blue { background: var(--accent-blue); }
-      .bg-purple { background: var(--accent-purple); }
-      .bg-orange { background: var(--accent-orange); }
-
-      /* Callout boxes */
-      .callout {
-        border-radius: var(--radius-lg);
-        padding: 1rem 1.25rem;
-        margin: var(--space-lg) 0;
-        border-left: 4px solid;
-      }
-      .callout-title {
-        font-family: var(--font-mono);
-        font-size: var(--text-sm);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
-      .callout.info .callout-title { color: var(--accent-blue); }
-      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
-      .callout.warn .callout-title { color: var(--accent-orange); }
-
-      .text-muted { color: var(--text-muted); }
-      .text-small { font-size: var(--text-sm); }
-      .mb-0 { margin-bottom: 0; }
-      .mt-lg { margin-top: var(--space-lg); }
+      .mem-bar-fill.bg-green { background: var(--accent-green); }
+      .mem-bar-fill.bg-blue { background: var(--accent-blue); }
+      .mem-bar-fill.bg-purple { background: var(--accent-purple); }
+      .mem-bar-fill.bg-orange { background: var(--accent-orange); }
 
       .insight {
         display: flex;
@@ -249,22 +106,6 @@
       .insight h4 {
         color: var(--accent-green);
         margin: 0 0 var(--space-xs);
-      }
-
-      .diagram {
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-xl);
-        padding: var(--space-xl);
-        margin: var(--space-lg) 0;
-      }
-      .diagram-title {
-        font-family: var(--font-mono);
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: var(--space-md);
       }
     </style>
   </head>

@@ -40,9 +40,7 @@
     />
     <link rel="stylesheet" href="../base.css" />
     <style>
-      body { display: block; }
-
-      /* Priority list */
+      /* Page-specific styles */
       .priority-list {
         display: flex;
         flex-direction: column;
@@ -84,41 +82,6 @@
         color: var(--text-secondary);
       }
 
-      /* Bank visualization */
-      .bank-viz {
-        display: flex;
-        gap: var(--space-xs);
-        margin: var(--space-md) 0;
-        overflow-x: auto;
-        padding-bottom: var(--space-sm);
-        flex-wrap: wrap;
-      }
-      .bank-viz__bank {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        min-width: 36px;
-      }
-      .bank-viz__label {
-        font-size: var(--text-xs);
-        text-align: center;
-        color: var(--text-muted);
-        padding: var(--space-xs);
-      }
-      .bank-viz__slot {
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-sm);
-        font-size: var(--text-xs);
-        transition: all 0.2s;
-      }
-      .bank-viz__slot.accessed { background: var(--accent-green); color: white; }
-      .bank-viz__slot.conflict { background: var(--accent-orange); color: white; }
-
-      /* TMA flow */
       .tma-flow {
         display: flex;
         align-items: center;
@@ -139,90 +102,6 @@
       .tma-flow__arrow {
         font-size: var(--text-xl);
         color: var(--text-muted);
-      }
-
-      /* Code blocks */
-      .code-block {
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: var(--space-md);
-        overflow-x: auto;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: var(--text-sm);
-        line-height: 1.5;
-        margin: var(--space-md) 0;
-      }
-      .code-block code {
-        color: var(--text-primary);
-      }
-      .code-block .comment { color: var(--text-muted); }
-      .code-block .keyword { color: var(--accent-purple); }
-      .code-block .string { color: var(--accent-green); }
-      .code-block .number { color: var(--accent-orange); }
-      .code-block .function { color: var(--accent-blue); }
-
-      /* Interactive containers */
-      .interactive {
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        padding: var(--space-lg);
-        margin: var(--space-lg) 0;
-      }
-      .interactive__title {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        font-weight: 600;
-        margin-bottom: var(--space-md);
-        color: var(--accent-purple);
-      }
-      .interactive__title::before {
-        content: '';
-        width: 8px;
-        height: 8px;
-        background: var(--accent-purple);
-        border-radius: 50%;
-      }
-
-      /* Result box */
-      .result-box {
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: var(--space-md);
-        font-size: var(--text-sm);
-        color: var(--text-secondary);
-        margin-top: var(--space-md);
-      }
-
-      /* Callout boxes */
-      .callout {
-        border-radius: var(--radius-lg);
-        padding: 1rem 1.25rem;
-        margin: var(--space-lg) 0;
-        border-left: 4px solid;
-      }
-      .callout-title {
-        font-family: var(--font-mono);
-        font-size: var(--text-sm);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-      .callout.info { background: var(--glow-blue); border-color: var(--accent-blue); }
-      .callout.info .callout-title { color: var(--accent-blue); }
-      .callout.warn { background: var(--glow-orange); border-color: var(--accent-orange); }
-      .callout.warn .callout-title { color: var(--accent-orange); }
-
-      .text-muted { color: var(--text-muted); }
-      .text-small { font-size: var(--text-sm); }
-      .mb-0 { margin-bottom: 0; }
-      .mt-lg { margin-top: var(--space-lg); }
-
-      /* Grid layout */
-      .grid-2 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--space-md);
       }
     </style>
   </head>

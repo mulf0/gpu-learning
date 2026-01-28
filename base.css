@@ -874,6 +874,262 @@
     }
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     Human Scale Badge (approximate values)
+     ───────────────────────────────────────────────────────────────────────── */
+  .human-scale {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+    padding: 0.1em 0.5em;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    margin-block-end: var(--space-sm);
+
+    &::before {
+      content: '≈';
+      opacity: 0.7;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Diagram Container
+     ───────────────────────────────────────────────────────────────────────── */
+  .diagram {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    margin: var(--space-lg) 0;
+  }
+
+  .diagram-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-md);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Code Block with Syntax Highlighting
+     ───────────────────────────────────────────────────────────────────────── */
+  .code-block {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    margin: var(--space-md) 0;
+
+    code { color: var(--text-primary); }
+    .comment { color: var(--text-muted); }
+    .keyword { color: var(--accent-purple); }
+    .string { color: var(--accent-green); }
+    .number { color: var(--accent-orange); }
+    .function { color: var(--accent-blue); }
+    .type { color: var(--accent-cyan); }
+    .directive { color: var(--accent-orange); }
+    .decorator { color: var(--accent-cyan); }
+
+    &__header {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+      font-weight: 600;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Compare Panels (side-by-side code/content comparison)
+     ───────────────────────────────────────────────────────────────────────── */
+  .compare-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin: var(--space-lg) 0;
+
+    @media (max-width: 700px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .compare-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+
+    &__header {
+      padding: var(--space-sm) var(--space-md);
+      font-weight: 600;
+      font-size: var(--text-sm);
+
+      &--slow, &--baseline { background: var(--glow-orange); color: var(--accent-orange); }
+      &--fast, &--optimized { background: var(--glow-green); color: var(--accent-green); }
+    }
+
+    &__content {
+      padding: var(--space-md);
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Interactive Container
+     ───────────────────────────────────────────────────────────────────────── */
+  .interactive {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin: var(--space-lg) 0;
+
+    &__title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+      color: var(--accent-purple);
+
+      &::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--accent-purple);
+        border-radius: 50%;
+      }
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Result Box (for viz outputs)
+     ───────────────────────────────────────────────────────────────────────── */
+  .result-box {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-md);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Thread Visualization
+     ───────────────────────────────────────────────────────────────────────── */
+  .thread-viz {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 3px;
+    margin: var(--space-md) 0;
+
+    &__thread {
+      aspect-ratio: 1;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+
+      &.active { background: var(--accent-blue); color: white; }
+      &.diverged { background: var(--accent-orange); color: white; }
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Bank Visualization (shared memory banks)
+     ───────────────────────────────────────────────────────────────────────── */
+  .bank-viz {
+    display: flex;
+    gap: var(--space-xs);
+    margin: var(--space-md) 0;
+    overflow-x: auto;
+    padding-bottom: var(--space-sm);
+    flex-wrap: wrap;
+
+    &__bank {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 36px;
+    }
+
+    &__label {
+      font-size: var(--text-xs);
+      text-align: center;
+      color: var(--text-muted);
+      padding: var(--space-xs);
+    }
+
+    &__slot {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      transition: all 0.2s;
+
+      &.accessed { background: var(--accent-green); color: white; }
+      &.conflict { background: var(--accent-orange); color: white; }
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Coalescing Visualization
+     ───────────────────────────────────────────────────────────────────────── */
+  .coal-viz {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    &__label {
+      width: 80px;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
+
+    &__cells {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    &__cell {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      transition: all 0.2s;
+
+      &.active { background: var(--accent-blue); color: white; }
+      &.accessed { background: var(--accent-green); color: white; }
+      &.conflict { background: var(--accent-orange); color: white; }
+    }
+  }
+
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -937,6 +1193,9 @@
     display: none;
   }
 
+  .human-scale {
+    white-space: normal;
+  }
   .chapter-container {
     padding: var(--space-xl) var(--space-md) var(--space-2xl);
   }
