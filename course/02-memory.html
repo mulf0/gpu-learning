@@ -10,9 +10,15 @@
     />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://gpu.mulf.net/course/02-memory.html" />
+    <meta
+      property="og:url"
+      content="https://gpu.mulf.net/course/02-memory.html"
+    />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Chapter 2: Memory Hierarchy - GPU Learning" />
+    <meta
+      property="og:title"
+      content="Chapter 2: Memory Hierarchy - GPU Learning"
+    />
     <meta
       property="og:description"
       content="Learn GPU programming from architecture to production systems. Master memory hierarchy from registers to HBM and coalesced access patterns."
@@ -22,25 +28,37 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="gpu.mulf.net" />
-    <meta property="twitter:url" content="https://gpu.mulf.net/course/02-memory.html" />
-    <meta name="twitter:title" content="Chapter 2: Memory Hierarchy - GPU Learning" />
+    <meta
+      property="twitter:url"
+      content="https://gpu.mulf.net/course/02-memory.html"
+    />
+    <meta
+      name="twitter:title"
+      content="Chapter 2: Memory Hierarchy - GPU Learning"
+    />
     <meta
       name="twitter:description"
       content="Learn GPU programming from architecture to production systems. Master memory hierarchy from registers to HBM and coalesced access patterns."
     />
     <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png" />
 
-        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../base.css" fetchpriority="high" />
     <style>
       body {
         display: block;
@@ -281,7 +299,11 @@
 
       .bw-calc__fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--accent-orange), var(--accent-green));
+        background: linear-gradient(
+          90deg,
+          var(--accent-orange),
+          var(--accent-green)
+        );
         transition: width var(--transition-normal);
         display: flex;
         align-items: center;
@@ -330,7 +352,6 @@
         background: var(--accent-blue);
         color: white;
       }
-
     </style>
   </head>
   <body>
@@ -342,28 +363,41 @@
         <div class="chapter-header__label">Chapter 2</div>
         <h1 class="chapter-header__title">Memory Hierarchy</h1>
         <p class="chapter-header__desc">
-          GPU performance lives or dies by memory access patterns. Master the hierarchy
-          from registers to HBM and learn the techniques that separate 10% from 80% hardware utilization.
+          GPU performance lives or dies by memory access patterns. Master the
+          hierarchy from registers to HBM and learn the techniques that separate
+          10% from 80% hardware utilization.
         </p>
       </header>
 
       <!-- Chapter Connection -->
       <div class="chapter-connection">
         <div class="chapter-connection__label">Building on Chapter 1</div>
-        In Chapter 1, you learned that warps execute 32 threads in lockstep. This seemingly simple fact 
-        has profound implications for memory access. When 32 threads read memory simultaneously, 
-        <em>where</em> they read from determines whether you get 8 TB/s or 500 GB/s.
+        In Chapter 1, you learned that warps execute 32 threads in lockstep.
+        This seemingly simple fact has profound implications for memory access.
+        When 32 threads read memory simultaneously,
+        <em>where</em> they read from determines whether you get 8 TB/s or 500
+        GB/s.
       </div>
 
       <!-- Learning Objectives -->
       <div class="learning-objectives">
         <div class="learning-objectives__title">What You'll Learn</div>
         <ol class="learning-objectives__list">
-          <li class="learning-objectives__item">List the GPU memory types in order of speed and size</li>
-          <li class="learning-objectives__item">Explain why memory bandwidth is often the bottleneck</li>
-          <li class="learning-objectives__item">Demonstrate coalesced vs uncoalesced memory access patterns</li>
-          <li class="learning-objectives__item">Identify and fix shared memory bank conflicts</li>
-          <li class="learning-objectives__item">Calculate effective memory bandwidth for a given access pattern</li>
+          <li class="learning-objectives__item">
+            List the GPU memory types in order of speed and size
+          </li>
+          <li class="learning-objectives__item">
+            Explain why memory bandwidth is often the bottleneck
+          </li>
+          <li class="learning-objectives__item">
+            Demonstrate coalesced vs uncoalesced memory access patterns
+          </li>
+          <li class="learning-objectives__item">
+            Identify and fix shared memory bank conflicts
+          </li>
+          <li class="learning-objectives__item">
+            Calculate effective memory bandwidth for a given access pattern
+          </li>
         </ol>
       </div>
 
@@ -373,13 +407,19 @@
         <h2 class="section__title">Memory-Bound Reality</h2>
 
         <p>
-          Modern GPUs have enormous compute capacity. A <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">B200 delivers ~2.5 PFLOPS of FP8 compute</a>.
-          But that compute is useless if you can't feed it data fast enough.
+          Modern GPUs have enormous compute capacity. A
+          <a
+            href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+            target="_blank"
+            rel="noopener"
+            >B200 delivers ~2.5 PFLOPS of FP8 compute</a
+          >. But that compute is useless if you can't feed it data fast enough.
         </p>
 
         <p>
-          <strong>Most GPU workloads are memory-bound</strong>, not compute-bound. The arithmetic
-          intensity (FLOPS per byte) of your kernel determines which regime you're in.
+          <strong>Most GPU workloads are memory-bound</strong>, not
+          compute-bound. The arithmetic intensity (FLOPS per byte) of your
+          kernel determines which regime you're in.
         </p>
 
         <div class="card">
@@ -388,22 +428,47 @@
             <strong>AI = FLOPS / Bytes transferred</strong>
           </p>
           <p>
-            For a <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">B200 with ~8 TB/s bandwidth</a> and ~2500 TFLOPS (FP16):
+            For a
+            <a
+              href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+              target="_blank"
+              rel="noopener"
+              >B200 with ~8 TB/s bandwidth</a
+            >
+            and ~2500 TFLOPS (FP16):
           </p>
-          <pre style="background: var(--bg-tertiary); padding: var(--space-md); border-radius: var(--radius-sm); margin: var(--space-md) 0;"><code><a href="https://en.wikipedia.org/wiki/Roofline_model" target="_blank" rel="noopener" style="color: inherit;">Ridge point</a> = 2500 TFLOPS / 8 TB/s = 312.5 FLOPS/byte
+          <pre
+            style="
+              background: var(--bg-tertiary);
+              padding: var(--space-md);
+              border-radius: var(--radius-sm);
+              margin: var(--space-md) 0;
+            "
+          ><code><a href="https://en.wikipedia.org/wiki/Roofline_model" target="_blank" rel="noopener" style="color: inherit;">Ridge point</a> = 2500 TFLOPS / 8 TB/s = 312.5 FLOPS/byte
 
 Below 312.5: Memory-bound (bandwidth limited)
 Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           <p class="mb-0 text-muted">
-            <a href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html" target="_blank" rel="noopener">GEMM has high AI (~hundreds)</a>. Element-wise ops have low AI (~1-2).
+            <a
+              href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+              target="_blank"
+              rel="noopener"
+              >GEMM has high AI (~hundreds)</a
+            >. Element-wise ops have low AI (~1-2).
           </p>
         </div>
 
         <div class="callout warn">
           <div class="callout-title">The Real Challenge</div>
           <p class="mb-0">
-            Peak bandwidth is theoretical. Achieving even 80% requires perfect access patterns.
-            <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener">Random access can drop effective bandwidth by 10-100x</a>.
+            Peak bandwidth is theoretical. Achieving even 80% requires perfect
+            access patterns.
+            <a
+              href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations"
+              target="_blank"
+              rel="noopener"
+              >Random access can drop effective bandwidth by 10-100x</a
+            >.
           </p>
         </div>
 
@@ -426,10 +491,9 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 2: The Hierarchy -->
       <section class="section" id="section-1">
@@ -437,8 +501,9 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
         <h2 class="section__title">Four Levels of Memory</h2>
 
         <p>
-          GPU memory forms a hierarchy trading capacity for speed. Each level has
-          distinct characteristics and use cases. Click each tier to learn more.
+          GPU memory forms a hierarchy trading capacity for speed. Each level
+          has distinct characteristics and use cases. Click each tier to learn
+          more.
         </p>
 
         <div class="card" id="mem-hierarchy">
@@ -447,19 +512,45 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
             <div class="mem-tier__content">
               <div class="mem-tier__header">
                 <span class="mem-tier__name">Registers</span>
-                <span class="mem-tier__stats"><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">256KB/SM</a> | ~1 cycle | ~20 TB/s</span>
+                <span class="mem-tier__stats"
+                  ><a
+                    href="https://resources.nvidia.com/en-us-tensor-core"
+                    target="_blank"
+                    rel="noopener"
+                    >256KB/SM</a
+                  >
+                  | ~1 cycle | ~20 TB/s</span
+                >
               </div>
-              <p class="mem-tier__desc">Per-thread private storage. <span class="human-scale">instant, like your own name</span></p>
+              <p class="mem-tier__desc">
+                Per-thread private storage.
+                <span class="human-scale">instant, like your own name</span>
+              </p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
-                <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
-                  <li>Each thread has private registers (<a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities" target="_blank" rel="noopener">up to 255 per thread</a>)</li>
+                <ul
+                  style="
+                    margin: var(--space-sm) 0;
+                    padding-left: var(--space-lg);
+                  "
+                >
+                  <li>
+                    Each thread has private registers (<a
+                      href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities"
+                      target="_blank"
+                      rel="noopener"
+                      >up to 255 per thread</a
+                    >)
+                  </li>
                   <li>Very low latency (~1 cycle read-after-write)</li>
                   <li>Compiler-managed allocation</li>
                   <li>Register pressure limits occupancy</li>
                 </ul>
-                <p><strong>Usage:</strong> Loop variables, intermediate results, frequently accessed values.
-                   The compiler will spill to local memory (slow!) if you use too many.</p>
+                <p>
+                  <strong>Usage:</strong> Loop variables, intermediate results,
+                  frequently accessed values. The compiler will spill to local
+                  memory (slow!) if you use too many.
+                </p>
               </div>
             </div>
           </div>
@@ -469,19 +560,47 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
             <div class="mem-tier__content">
               <div class="mem-tier__header">
                 <span class="mem-tier__name">Shared Memory (SMEM)</span>
-                <span class="mem-tier__stats"><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">228KB/SM</a> | ~20 cycles | ~20 TB/s</span>
+                <span class="mem-tier__stats"
+                  ><a
+                    href="https://resources.nvidia.com/en-us-tensor-core"
+                    target="_blank"
+                    rel="noopener"
+                    >228KB/SM</a
+                  >
+                  | ~20 cycles | ~20 TB/s</span
+                >
               </div>
-              <p class="mem-tier__desc">Block-level scratchpad. <span class="human-scale">quick glance at a sticky note</span></p>
+              <p class="mem-tier__desc">
+                Block-level scratchpad.
+                <span class="human-scale">quick glance at a sticky note</span>
+              </p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
-                <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
+                <ul
+                  style="
+                    margin: var(--space-sm) 0;
+                    padding-left: var(--space-lg);
+                  "
+                >
                   <li>Shared among all threads in a block</li>
                   <li>On-chip SRAM with very low latency</li>
-                  <li>Organized into <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener">32 banks</a> (bank conflicts possible)</li>
+                  <li>
+                    Organized into
+                    <a
+                      href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x"
+                      target="_blank"
+                      rel="noopener"
+                      >32 banks</a
+                    >
+                    (bank conflicts possible)
+                  </li>
                   <li>Configurable L1/SMEM split on some architectures</li>
                 </ul>
-                <p><strong>Usage:</strong> Inter-thread communication, tiled algorithms, reused data.
-                   Essential for efficient matrix multiplication.</p>
+                <p>
+                  <strong>Usage:</strong> Inter-thread communication, tiled
+                  algorithms, reused data. Essential for efficient matrix
+                  multiplication.
+                </p>
               </div>
             </div>
           </div>
@@ -491,19 +610,35 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
             <div class="mem-tier__content">
               <div class="mem-tier__header">
                 <span class="mem-tier__name">L2 Cache</span>
-                <span class="mem-tier__stats"><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">50-60MB</a> | ~200 cycles | ~10 TB/s</span>
+                <span class="mem-tier__stats"
+                  ><a
+                    href="https://resources.nvidia.com/en-us-tensor-core"
+                    target="_blank"
+                    rel="noopener"
+                    >50-60MB</a
+                  >
+                  | ~200 cycles | ~10 TB/s</span
+                >
               </div>
               <p class="mem-tier__desc">Chip-wide cache. Hardware-managed.</p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
-                <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
+                <ul
+                  style="
+                    margin: var(--space-sm) 0;
+                    padding-left: var(--space-lg);
+                  "
+                >
                   <li>Shared across all SMs on the GPU</li>
                   <li>Automatic caching of global memory</li>
                   <li>Can use persistence hints (cudaAccessPolicyWindow)</li>
                   <li>Helps with irregular access patterns</li>
                 </ul>
-                <p><strong>Usage:</strong> Automatic caching. Can hint persistence for working sets
-                   that fit. Effective for data reused across blocks.</p>
+                <p>
+                  <strong>Usage:</strong> Automatic caching. Can hint
+                  persistence for working sets that fit. Effective for data
+                  reused across blocks.
+                </p>
               </div>
             </div>
           </div>
@@ -513,19 +648,54 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
             <div class="mem-tier__content">
               <div class="mem-tier__header">
                 <span class="mem-tier__name">HBM (Global Memory)</span>
-                <span class="mem-tier__stats"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">192GB | ~400 cycles | ~8 TB/s</a></span>
+                <span class="mem-tier__stats"
+                  ><a
+                    href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                    target="_blank"
+                    rel="noopener"
+                    >192GB | ~400 cycles | ~8 TB/s</a
+                  ></span
+                >
               </div>
-              <p class="mem-tier__desc">Main GPU memory. <span class="human-scale">walk to filing cabinet in another room</span></p>
+              <p class="mem-tier__desc">
+                Main GPU memory.
+                <span class="human-scale"
+                  >walk to filing cabinet in another room</span
+                >
+              </p>
               <div class="mem-tier__detail">
                 <p><strong>Characteristics:</strong></p>
-                <ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg);">
-                  <li><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">HBM3e with ~8 TB/s peak bandwidth (B200)</a></li>
-                  <li>Accessed via <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses" target="_blank" rel="noopener">128-byte cache lines</a></li>
+                <ul
+                  style="
+                    margin: var(--space-sm) 0;
+                    padding-left: var(--space-lg);
+                  "
+                >
+                  <li>
+                    <a
+                      href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                      target="_blank"
+                      rel="noopener"
+                      >HBM3e with ~8 TB/s peak bandwidth (B200)</a
+                    >
+                  </li>
+                  <li>
+                    Accessed via
+                    <a
+                      href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses"
+                      target="_blank"
+                      rel="noopener"
+                      >128-byte cache lines</a
+                    >
+                  </li>
                   <li>Coalescing critical for performance</li>
                   <li>Latency hidden by warp scheduling</li>
                 </ul>
-                <p><strong>Usage:</strong> Input/output tensors, large datasets. Access patterns
-                   determine whether you get 10% or 90% of peak bandwidth.</p>
+                <p>
+                  <strong>Usage:</strong> Input/output tensors, large datasets.
+                  Access patterns determine whether you get 10% or 90% of peak
+                  bandwidth.
+                </p>
               </div>
             </div>
           </div>
@@ -534,37 +704,66 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
         <div class="callout info">
           <div class="callout-title">The Latency Gap</div>
           <p class="mb-0">
-            Register access: ~1 cycle. HBM access: ~400 cycles. This enormous gap (hundreds of cycles)
-            is why <strong>data reuse</strong> dominates GPU optimization. Every byte loaded from HBM
-            should be used as many times as possible before eviction.
+            Register access: ~1 cycle. HBM access: ~400 cycles. This enormous
+            gap (hundreds of cycles) is why
+            <strong>data reuse</strong> dominates GPU optimization. Every byte
+            loaded from HBM should be used as many times as possible before
+            eviction.
           </p>
         </div>
 
-        <div class="callout" style="background: var(--bg-tertiary); border-left-color: var(--text-muted);">
-          <div class="callout-title" style="color: var(--text-secondary);">Note on Latency Figures</div>
-          <p class="mb-0" style="font-size: var(--text-sm); color: var(--text-secondary);">
-            Cycle counts shown above are <strong>approximate</strong> and vary by architecture, workload,
-            and memory access patterns. Actual latency depends on factors like cache hits, bank conflicts,
-            and memory coalescing. For precise measurements, refer to
-            <a href="https://arxiv.org/abs/1804.06826" target="_blank" rel="noopener">Jia et al.'s GPU microbenchmarking</a>
-            or use <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener">Nsight Compute</a> profiling.
+        <div
+          class="callout"
+          style="
+            background: var(--bg-tertiary);
+            border-left-color: var(--text-muted);
+          "
+        >
+          <div class="callout-title" style="color: var(--text-secondary)">
+            Note on Latency Figures
+          </div>
+          <p
+            class="mb-0"
+            style="font-size: var(--text-sm); color: var(--text-secondary)"
+          >
+            Cycle counts shown above are <strong>approximate</strong> and vary
+            by architecture, workload, and memory access patterns. Actual
+            latency depends on factors like cache hits, bank conflicts, and
+            memory coalescing. For precise measurements, refer to
+            <a
+              href="https://arxiv.org/abs/1804.06826"
+              target="_blank"
+              rel="noopener"
+              >Jia et al.'s GPU microbenchmarking</a
+            >
+            or use
+            <a
+              href="https://docs.nvidia.com/nsight-compute/"
+              target="_blank"
+              rel="noopener"
+              >Nsight Compute</a
+            >
+            profiling.
           </p>
         </div>
 
         <!-- Expert note on memory hierarchy -->
         <details class="expert-note">
-          <summary class="expert-note__summary">Why is the 128-byte cache line important?</summary>
+          <summary class="expert-note__summary">
+            Why is the 128-byte cache line important?
+          </summary>
           <div class="expert-note__content">
-            When you request even 4 bytes from global memory, the hardware fetches an entire 128-byte 
-            cache line. This is why coalescing matters: 32 threads reading 4 bytes each = 128 bytes = 
-            1 cache line. But 32 threads reading scattered 4-byte values = potentially 32 cache lines 
-            (4KB!) for 128 bytes of useful data. That's 32x wasted bandwidth.
+            When you request even 4 bytes from global memory, the hardware
+            fetches an entire 128-byte cache line. This is why coalescing
+            matters: 32 threads reading 4 bytes each = 128 bytes = 1 cache line.
+            But 32 threads reading scattered 4-byte values = potentially 32
+            cache lines (4KB!) for 128 bytes of useful data. That's 32x wasted
+            bandwidth.
           </div>
         </details>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 3: Coalescing -->
       <section class="section" id="section-2">
@@ -572,9 +771,10 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
         <h2 class="section__title">Memory Access Patterns</h2>
 
         <p>
-          When threads in a warp access global memory, the hardware combines (coalesces)
-          their requests into as few transactions as possible. Proper coalescing is the
-          single most important optimization for memory-bound kernels.
+          When threads in a warp access global memory, the hardware combines
+          (coalesces) their requests into as few transactions as possible.
+          Proper coalescing is the single most important optimization for
+          memory-bound kernels.
         </p>
 
         <!-- Prereq callout for index arithmetic -->
@@ -584,14 +784,18 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
             <div class="prereq-callout__title">Prerequisite Check</div>
             <p class="prereq-callout__text">
               Understanding thread indexing is key. Need a refresher?
-              <a href="../math-prerequisites.html#index-arithmetic">See Prerequisites: Index Arithmetic</a>
+              <a href="../math-prerequisites.html#index-arithmetic"
+                >See Prerequisites: Index Arithmetic</a
+              >
             </p>
           </div>
         </div>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--blue">Interactive: Coalescing Patterns</div>
+            <div class="card__icon card__icon--blue">
+              Interactive: Coalescing Patterns
+            </div>
           </div>
 
           <div class="coal-viz" id="coal-viz">
@@ -607,8 +811,16 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
                 <!-- 16 memory locations -->
               </div>
             </div>
-            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
-              <button class="btn btn--primary" id="coal-good">Coalesced Access</button>
+            <div
+              style="
+                display: flex;
+                gap: var(--space-sm);
+                margin-top: var(--space-md);
+              "
+            >
+              <button class="btn btn--primary" id="coal-good">
+                Coalesced Access
+              </button>
               <button class="btn" id="coal-strided">Strided Access</button>
               <button class="btn" id="coal-random">Random Access</button>
             </div>
@@ -618,17 +830,31 @@ Above 312.5: Compute-bound (can saturate ALUs)</code></pre>
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-top: var(--space-lg);">
-          <div class="card" style="margin: 0;">
-            <h4 style="color: var(--accent-green);">Good: Coalesced</h4>
-            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code>// Thread i accesses element i
+        <div class="grid grid-2" style="margin-top: var(--space-lg)">
+          <div class="card" style="margin: 0">
+            <h4 style="color: var(--accent-green)">Good: Coalesced</h4>
+            <pre
+              style="
+                background: var(--bg-tertiary);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+                font-size: var(--text-xs);
+              "
+            ><code>// Thread i accesses element i
 data[threadIdx.x]
 
 // 1 transaction for 32 threads</code></pre>
           </div>
-          <div class="card" style="margin: 0;">
-            <h4 style="color: var(--accent-orange);">Bad: Strided</h4>
-            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code>// Thread i accesses element i*32
+          <div class="card" style="margin: 0">
+            <h4 style="color: var(--accent-orange)">Bad: Strided</h4>
+            <pre
+              style="
+                background: var(--bg-tertiary);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+                font-size: var(--text-xs);
+              "
+            ><code>// Thread i accesses element i*32
 data[threadIdx.x * 32]
 
 // 32 transactions! (worst case)</code></pre>
@@ -636,7 +862,10 @@ data[threadIdx.x * 32]
         </div>
 
         <div class="quiz" id="coal-quiz">
-          <div class="quiz-q">For a warp accessing 32 consecutive float values starting at a 128-byte aligned address, how many memory transactions occur?</div>
+          <div class="quiz-q">
+            For a warp accessing 32 consecutive float values starting at a
+            128-byte aligned address, how many memory transactions occur?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="true" tabindex="0">
               <div class="quiz-mark"></div>
@@ -677,10 +906,9 @@ data[threadIdx.x * 32]
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 4: Bank Conflicts -->
       <section class="section" id="section-3">
@@ -688,9 +916,15 @@ data[threadIdx.x * 32]
         <h2 class="section__title">Shared Memory Banks</h2>
 
         <p>
-          Shared memory is divided into <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener">32 banks</a>. Each bank can serve one address per cycle.
-          When multiple threads in a warp access different addresses in the same bank,
-          accesses serialize—this is a <strong>bank conflict</strong>.
+          Shared memory is divided into
+          <a
+            href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x"
+            target="_blank"
+            rel="noopener"
+            >32 banks</a
+          >. Each bank can serve one address per cycle. When multiple threads in
+          a warp access different addresses in the same bank, accesses serialize
+          this is a <strong>bank conflict</strong>.
         </p>
 
         <div class="card">
@@ -699,15 +933,29 @@ data[threadIdx.x * 32]
           </div>
 
           <p class="text-secondary text-small">
-            Consecutive 4-byte words map to consecutive banks. <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x" target="_blank" rel="noopener">Bank = (address / 4) % 32</a>.
+            Consecutive 4-byte words map to consecutive banks.
+            <a
+              href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-5-x"
+              target="_blank"
+              rel="noopener"
+              >Bank = (address / 4) % 32</a
+            >.
           </p>
 
           <div class="bank-viz" id="bank-viz">
             <!-- 8 banks shown (simplified from 32) -->
           </div>
 
-          <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
-            <button class="btn btn--primary" id="bank-no-conflict">No Conflict</button>
+          <div
+            style="
+              display: flex;
+              gap: var(--space-sm);
+              margin-top: var(--space-md);
+            "
+          >
+            <button class="btn btn--primary" id="bank-no-conflict">
+              No Conflict
+            </button>
             <button class="btn" id="bank-2way">2-way Conflict</button>
             <button class="btn" id="bank-broadcast">Broadcast (OK)</button>
           </div>
@@ -717,17 +965,31 @@ data[threadIdx.x * 32]
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-top: var(--space-lg);">
-          <div class="card" style="margin: 0;">
-            <h4 style="color: var(--accent-green);">Conflict-Free</h4>
-            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code>// Each thread hits different bank
+        <div class="grid grid-2" style="margin-top: var(--space-lg)">
+          <div class="card" style="margin: 0">
+            <h4 style="color: var(--accent-green)">Conflict-Free</h4>
+            <pre
+              style="
+                background: var(--bg-tertiary);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+                font-size: var(--text-xs);
+              "
+            ><code>// Each thread hits different bank
 smem[threadIdx.x]
 
 // All 32 accesses parallel</code></pre>
           </div>
-          <div class="card" style="margin: 0;">
-            <h4 style="color: var(--accent-orange);">N-way Conflict</h4>
-            <pre style="background: var(--bg-tertiary); padding: var(--space-sm); border-radius: var(--radius-sm); font-size: var(--text-xs);"><code>// Stride of 32 = same bank!
+          <div class="card" style="margin: 0">
+            <h4 style="color: var(--accent-orange)">N-way Conflict</h4>
+            <pre
+              style="
+                background: var(--bg-tertiary);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+                font-size: var(--text-xs);
+              "
+            ><code>// Stride of 32 = same bank!
 smem[threadIdx.x * 32]
 
 // Serialized: 32x slower</code></pre>
@@ -737,13 +999,16 @@ smem[threadIdx.x * 32]
         <div class="callout info">
           <div class="callout-title">Broadcast Exception</div>
           <p class="mb-0">
-            If multiple threads read the <strong>same address</strong>, it's a broadcast—no conflict.
-            Conflicts only occur when threads access <strong>different addresses</strong> in the same bank.
+            If multiple threads read the <strong>same address</strong>, it's a
+            broadcast no conflict. Conflicts only occur when threads access
+            <strong>different addresses</strong> in the same bank.
           </p>
         </div>
 
         <div class="quiz" id="bank-quiz">
-          <div class="quiz-q">What stride causes maximum bank conflicts (32-way)?</div>
+          <div class="quiz-q">
+            What stride causes maximum bank conflicts (32-way)?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -767,7 +1032,9 @@ smem[threadIdx.x * 32]
 
         <!-- Micro-quiz: Bank conflicts -->
         <div class="quiz quiz--micro" id="quiz-bank">
-          <div class="quiz-q">A 2-way bank conflict means the access takes:</div>
+          <div class="quiz-q">
+            A 2-way bank conflict means the access takes:
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -784,10 +1051,9 @@ smem[threadIdx.x * 32]
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 5: TMA -->
       <section class="section" id="section-4">
@@ -795,60 +1061,166 @@ smem[threadIdx.x * 32]
         <h2 class="section__title">Tensor Memory Accelerator</h2>
 
         <p>
-          <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Hopper introduced TMA</a>—dedicated hardware for bulk data movement between HBM and
-          shared memory. TMA offloads address computation from SMs, enabling asynchronous
-          tile transfers.
+          <a
+            href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html"
+            target="_blank"
+            rel="noopener"
+            >Hopper introduced TMA</a
+          >
+          dedicated hardware for bulk data movement between HBM and shared
+          memory. TMA offloads address computation from SMs, enabling
+          asynchronous tile transfers.
         </p>
 
         <div class="tma-flow">
           <div class="tma-flow__box tma-flow__box--hbm">
-            <strong>HBM</strong><br>
-            <span style="font-size: var(--text-xs);">Global tensors</span>
+            <strong>HBM</strong><br />
+            <span style="font-size: var(--text-xs)">Global tensors</span>
           </div>
           <div class="tma-flow__arrow">→</div>
           <div class="tma-flow__box tma-flow__box--tma">
-            <strong>TMA Unit</strong><br>
-            <span style="font-size: var(--text-xs);">Address gen + transfer</span>
+            <strong>TMA Unit</strong><br />
+            <span style="font-size: var(--text-xs)"
+              >Address gen + transfer</span
+            >
           </div>
           <div class="tma-flow__arrow">→</div>
           <div class="tma-flow__box tma-flow__box--smem">
-            <strong>SMEM</strong><br>
-            <span style="font-size: var(--text-xs);">Ready for compute</span>
+            <strong>SMEM</strong><br />
+            <span style="font-size: var(--text-xs)">Ready for compute</span>
           </div>
         </div>
 
         <div class="card">
           <h4>TMA vs Manual Loads</h4>
-          <table style="width: 100%; font-size: var(--text-sm);">
+          <table style="width: 100%; font-size: var(--text-sm)">
             <tr>
-              <th style="text-align: left; padding: var(--space-sm);">Aspect</th>
-              <th style="text-align: left; padding: var(--space-sm);">Manual (LDG/STG)</th>
-              <th style="text-align: left; padding: var(--space-sm);">TMA</th>
+              <th style="text-align: left; padding: var(--space-sm)">Aspect</th>
+              <th style="text-align: left; padding: var(--space-sm)">
+                Manual (LDG/STG)
+              </th>
+              <th style="text-align: left; padding: var(--space-sm)">TMA</th>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Address computation</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">SM cycles</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">TMA unit (free)</td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Address computation
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                SM cycles
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                  color: var(--accent-green);
+                "
+              >
+                TMA unit (free)
+              </td>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Tile dimensions</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Manual indexing</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Descriptor-based</td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Tile dimensions
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Manual indexing
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                  color: var(--accent-green);
+                "
+              >
+                Descriptor-based
+              </td>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Multicast</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Not available</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Built-in to multiple SMs</td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Multicast
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Not available
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                  color: var(--accent-green);
+                "
+              >
+                Built-in to multiple SMs
+              </td>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">Async</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle);">cp.async</td>
-              <td style="padding: var(--space-sm); border-top: 1px solid var(--border-subtle); color: var(--accent-green);">Native, with barriers</td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                Async
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                "
+              >
+                cp.async
+              </td>
+              <td
+                style="
+                  padding: var(--space-sm);
+                  border-top: 1px solid var(--border-subtle);
+                  color: var(--accent-green);
+                "
+              >
+                Native, with barriers
+              </td>
             </tr>
           </table>
         </div>
 
-        <pre style="background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); font-size: var(--text-xs); margin: var(--space-lg) 0;"><code>// TMA descriptor setup (host side)
+        <pre
+          style="
+            background: var(--bg-secondary);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            margin: var(--space-lg) 0;
+          "
+        ><code>// TMA descriptor setup (host side)
 CUtensorMap tensor_map;
 cuTensorMapEncodeTiled(&tensor_map,
     CU_TENSOR_MAP_DATA_TYPE_FLOAT16,
@@ -866,15 +1238,14 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
         <div class="callout info">
           <div class="callout-title">When to Use TMA</div>
           <p class="mb-0">
-            TMA shines for structured tile access patterns (GEMM, convolution, attention).
-            For irregular access, manual loads may still be necessary. CuTe abstracts TMA
-            through its copy operations.
+            TMA shines for structured tile access patterns (GEMM, convolution,
+            attention). For irregular access, manual loads may still be
+            necessary. CuTe abstracts TMA through its copy operations.
           </p>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 6: Optimization -->
       <section class="section" id="section-5">
@@ -882,41 +1253,75 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
         <h2 class="section__title">Putting It Together</h2>
 
         <p>
-          Memory optimization follows a hierarchy of impact. Address these in order:
+          Memory optimization follows a hierarchy of impact. Address these in
+          order:
         </p>
 
         <div class="card">
           <h4>Optimization Priority</h4>
-          <ol style="margin: 0; padding-left: var(--space-lg);">
-            <li style="margin-bottom: var(--space-md);">
-              <strong><a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory" target="_blank" rel="noopener">Coalescing (10-100x impact)</a></strong><br>
-              <span class="text-secondary">Ensure warps access contiguous memory. Transpose data if needed.</span>
+          <ol style="margin: 0; padding-left: var(--space-lg)">
+            <li style="margin-bottom: var(--space-md)">
+              <strong
+                ><a
+                  href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory"
+                  target="_blank"
+                  rel="noopener"
+                  >Coalescing (10-100x impact)</a
+                ></strong
+              ><br />
+              <span class="text-secondary"
+                >Ensure warps access contiguous memory. Transpose data if
+                needed.</span
+              >
             </li>
-            <li style="margin-bottom: var(--space-md);">
-              <strong><a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory" target="_blank" rel="noopener">Data Reuse via SMEM (2-10x impact)</a></strong><br>
-              <span class="text-secondary">Tile algorithms to maximize reuse. Classic: GEMM tiling.</span>
+            <li style="margin-bottom: var(--space-md)">
+              <strong
+                ><a
+                  href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory"
+                  target="_blank"
+                  rel="noopener"
+                  >Data Reuse via SMEM (2-10x impact)</a
+                ></strong
+              ><br />
+              <span class="text-secondary"
+                >Tile algorithms to maximize reuse. Classic: GEMM tiling.</span
+              >
             </li>
-            <li style="margin-bottom: var(--space-md);">
-              <strong><a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory-bank-conflicts" target="_blank" rel="noopener">Bank Conflict Elimination (1.1-2x impact)</a></strong><br>
-              <span class="text-secondary">Pad shared memory arrays or use conflict-free access patterns.</span>
+            <li style="margin-bottom: var(--space-md)">
+              <strong
+                ><a
+                  href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory-bank-conflicts"
+                  target="_blank"
+                  rel="noopener"
+                  >Bank Conflict Elimination (1.1-2x impact)</a
+                ></strong
+              ><br />
+              <span class="text-secondary"
+                >Pad shared memory arrays or use conflict-free access
+                patterns.</span
+              >
             </li>
-            <li style="margin-bottom: var(--space-md);">
-              <strong>Occupancy Tuning (1.1-1.5x impact)</strong><br>
-              <span class="text-secondary">Balance register/SMEM usage against parallelism.</span>
+            <li style="margin-bottom: var(--space-md)">
+              <strong>Occupancy Tuning (1.1-1.5x impact)</strong><br />
+              <span class="text-secondary"
+                >Balance register/SMEM usage against parallelism.</span
+              >
             </li>
           </ol>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <div class="card__header">
-            <div class="card__icon card__icon--green">Bandwidth Efficiency Calculator</div>
+            <div class="card__icon card__icon--green">
+              Bandwidth Efficiency Calculator
+            </div>
           </div>
 
           <div class="bw-calc">
             <div class="bw-calc__row">
               <span class="bw-calc__label">Data Transferred</span>
               <span class="bw-calc__value">
-                <select id="bw-data" class="input" style="width: auto;">
+                <select id="bw-data" class="input" style="width: auto">
                   <option value="1">1 GB</option>
                   <option value="10" selected>10 GB</option>
                   <option value="100">100 GB</option>
@@ -926,7 +1331,7 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
             <div class="bw-calc__row">
               <span class="bw-calc__label">Transfer Time</span>
               <span class="bw-calc__value">
-                <select id="bw-time" class="input" style="width: auto;">
+                <select id="bw-time" class="input" style="width: auto">
                   <option value="1">1 ms</option>
                   <option value="2" selected>2 ms</option>
                   <option value="5">5 ms</option>
@@ -944,37 +1349,45 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
             </div>
             <div class="bw-calc__row">
               <span class="bw-calc__label">Efficiency</span>
-              <span class="bw-calc__value text-green" id="bw-efficiency">62.5%</span>
+              <span class="bw-calc__value text-green" id="bw-efficiency"
+                >62.5%</span
+              >
             </div>
           </div>
 
           <div class="bw-calc__bar">
-            <div class="bw-calc__fill" id="bw-bar" style="width: 62.5%">62.5%</div>
+            <div class="bw-calc__fill" id="bw-bar" style="width: 62.5%">
+              62.5%
+            </div>
           </div>
         </div>
 
         <div class="callout warn">
           <div class="callout-title">Profile, Don't Guess</div>
           <p class="mb-0">
-            Use <code>ncu</code> (Nsight Compute) to measure actual memory throughput, cache hit rates,
-            and bank conflicts. Theoretical analysis guides optimization; profiling validates it.
+            Use <code>ncu</code> (Nsight Compute) to measure actual memory
+            throughput, cache hit rates, and bank conflicts. Theoretical
+            analysis guides optimization; profiling validates it.
           </p>
         </div>
 
         <!-- Expert note on optimization -->
         <details class="expert-note">
-          <summary class="expert-note__summary">What if register spilling occurs?</summary>
+          <summary class="expert-note__summary">
+            What if register spilling occurs?
+          </summary>
           <div class="expert-note__content">
-            When a kernel uses too many registers, the compiler "spills" excess values to local memory 
-            (which is actually in global memory, just private to each thread). This is slow! Signs of 
-            spilling: look for <code>lmem</code> in <code>ncu</code> output. Fix by: reducing live values, 
-            using <code>__launch_bounds__</code>, or accepting lower occupancy for more registers.
+            When a kernel uses too many registers, the compiler "spills" excess
+            values to local memory (which is actually in global memory, just
+            private to each thread). This is slow! Signs of spilling: look for
+            <code>lmem</code> in <code>ncu</code> output. Fix by: reducing live
+            values, using <code>__launch_bounds__</code>, or accepting lower
+            occupancy for more registers.
           </div>
         </details>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Practice Notebooks -->
       <section class="section" id="practice">
@@ -985,7 +1398,9 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
           <div class="notebook-link__icon">&#128211;</div>
           <div class="notebook-link__content">
             <div class="notebook-link__title">Part 2 Notebooks</div>
-            <div class="notebook-link__desc">7 labs: Profiling, coalescing, bank conflicts, tensor cores</div>
+            <div class="notebook-link__desc">
+              7 labs: Profiling, coalescing, bank conflicts, tensor cores
+            </div>
           </div>
         </a>
       </section>
@@ -998,109 +1413,184 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
         <!-- Video Resources -->
         <div class="card">
           <h4>Video Resources</h4>
-          <p class="text-secondary text-small" style="margin-bottom: var(--space-md);">
+          <p
+            class="text-secondary text-small"
+            style="margin-bottom: var(--space-md)"
+          >
             Deep dives into GPU memory optimization.
           </p>
-          
-          <div style="margin-bottom: var(--space-lg);">
+
+          <div style="margin-bottom: var(--space-lg)">
             <strong>Introduction to CUDA Programming</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Comprehensive introduction to NVIDIA's GPU parallel programming architecture including memory hierarchy.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Comprehensive introduction to NVIDIA's GPU parallel programming
+              architecture including memory hierarchy.
             </p>
-            <a href="https://www.youtube.com/watch?v=IzU4AVcMFys" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+            <a
+              href="https://www.youtube.com/watch?v=IzU4AVcMFys"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+            >
               Watch on YouTube
             </a>
           </div>
 
-          <div style="margin-bottom: var(--space-md);">
+          <div style="margin-bottom: var(--space-md)">
             <strong>Understanding GPU Memory (CoffeeBeforeArch)</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Practical walkthrough of coalescing, bank conflicts, and memory access patterns.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Practical walkthrough of coalescing, bank conflicts, and memory
+              access patterns.
             </p>
-            <a href="https://www.youtube.com/watch?v=3xfyiWhtvZw" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+            <a
+              href="https://www.youtube.com/watch?v=3xfyiWhtvZw"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+            >
               Watch on YouTube
             </a>
           </div>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <h4>Primary Documentation</h4>
-          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA CUDA C++ Programming Guide</strong><br>
-              Chapter 5: Memory Hierarchy - Registers, Shared Memory, Global Memory<br>
-              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-hierarchy" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cuda-c-programming-guide</a>
+          <ol
+            style="
+              margin: 0;
+              padding-left: var(--space-lg);
+              color: var(--text-secondary);
+            "
+          >
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA CUDA C++ Programming Guide</strong><br />
+              Chapter 5: Memory Hierarchy - Registers, Shared Memory, Global
+              Memory<br />
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-hierarchy"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >docs.nvidia.com/cuda/cuda-c-programming-guide</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA CUDA C++ Best Practices Guide</strong><br>
-              Memory Optimizations: Coalescing, Bank Conflicts, Caching<br>
-              <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cuda-c-best-practices-guide</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA CUDA C++ Best Practices Guide</strong><br />
+              Memory Optimizations: Coalescing, Bank Conflicts, Caching<br />
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >docs.nvidia.com/cuda/cuda-c-best-practices-guide</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA Hopper Architecture Whitepaper</strong><br>
-              TMA (Tensor Memory Accelerator), Asynchronous Copy, Distributed Shared Memory<br>
-              <a href="https://resources.nvidia.com/en-us-hopper-architecture" target="_blank" rel="noopener" style="color: var(--accent-blue);">resources.nvidia.com/en-us-hopper-architecture</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA Hopper Architecture Whitepaper</strong><br />
+              TMA (Tensor Memory Accelerator), Asynchronous Copy, Distributed
+              Shared Memory<br />
+              <a
+                href="https://resources.nvidia.com/en-us-hopper-architecture"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >resources.nvidia.com/en-us-hopper-architecture</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA GB200 NVL72 Specifications</strong><br>
-              HBM3e bandwidth: 576 TB/s total (72 GPUs) = ~8 TB/s per GPU<br>
-              <a href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/" target="_blank" rel="noopener" style="color: var(--accent-blue);">nvidia.com/data-center/gb200-nvl72</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA GB200 NVL72 Specifications</strong><br />
+              HBM3e bandwidth: 576 TB/s total (72 GPUs) = ~8 TB/s per GPU<br />
+              <a
+                href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >nvidia.com/data-center/gb200-nvl72</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA Nsight Compute Documentation</strong><br>
-              Memory throughput analysis, profiling, bottleneck identification<br>
-              <a href="https://docs.nvidia.com/nsight-compute/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/nsight-compute</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA Nsight Compute Documentation</strong><br />
+              Memory throughput analysis, profiling, bottleneck
+              identification<br />
+              <a
+                href="https://docs.nvidia.com/nsight-compute/"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >docs.nvidia.com/nsight-compute</a
+              >
             </li>
           </ol>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <h4>Key Specifications with Sources</h4>
-          <table style="width: 100%; font-size: var(--text-sm); border-collapse: collapse;">
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <th style="text-align: left; padding: var(--space-sm);">Specification</th>
-              <th style="text-align: left; padding: var(--space-sm);">Value</th>
-              <th style="text-align: left; padding: var(--space-sm);">Source</th>
+          <table
+            style="
+              width: 100%;
+              font-size: var(--text-sm);
+              border-collapse: collapse;
+            "
+          >
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <th style="text-align: left; padding: var(--space-sm)">
+                Specification
+              </th>
+              <th style="text-align: left; padding: var(--space-sm)">Value</th>
+              <th style="text-align: left; padding: var(--space-sm)">Source</th>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Shared memory banks</td>
-              <td style="padding: var(--space-sm);">32</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">CUDA Programming Guide, Ch. 5</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Shared memory banks</td>
+              <td style="padding: var(--space-sm)">32</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                CUDA Programming Guide, Ch. 5
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Cache line size</td>
-              <td style="padding: var(--space-sm);">128 bytes</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">CUDA Best Practices Guide</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Cache line size</td>
+              <td style="padding: var(--space-sm)">128 bytes</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                CUDA Best Practices Guide
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Max registers per thread</td>
-              <td style="padding: var(--space-sm);">255</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">CUDA Programming Guide</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Max registers per thread</td>
+              <td style="padding: var(--space-sm)">255</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                CUDA Programming Guide
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">B200 HBM3e bandwidth</td>
-              <td style="padding: var(--space-sm);">~8 TB/s per GPU</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">GB200 NVL72 Specifications</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">B200 HBM3e bandwidth</td>
+              <td style="padding: var(--space-sm)">~8 TB/s per GPU</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                GB200 NVL72 Specifications
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">H100 shared memory</td>
-              <td style="padding: var(--space-sm);">Up to 228KB/SM</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">H100 Datasheet</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">H100 shared memory</td>
+              <td style="padding: var(--space-sm)">Up to 228KB/SM</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                H100 Datasheet
+              </td>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm);">Memory latency (HBM)</td>
-              <td style="padding: var(--space-sm);">~400-800 cycles</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">Varies by access pattern</td>
+              <td style="padding: var(--space-sm)">Memory latency (HBM)</td>
+              <td style="padding: var(--space-sm)">~400-800 cycles</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                Varies by access pattern
+              </td>
             </tr>
           </table>
         </div>
 
-        <div class="callout warn" style="margin-top: var(--space-lg);">
+        <div class="callout warn" style="margin-top: var(--space-lg)">
           <div class="callout-title">About Latency Numbers</div>
           <p class="mb-0">
-            Memory latency figures are <strong>approximations</strong>. Actual latencies depend on 
-            access patterns, cache behavior, memory contention, and specific workloads. 
-            Always use <code>ncu</code> (Nsight Compute) to profile your actual kernels.
+            Memory latency figures are <strong>approximations</strong>. Actual
+            latencies depend on access patterns, cache behavior, memory
+            contention, and specific workloads. Always use
+            <code>ncu</code> (Nsight Compute) to profile your actual kernels.
           </p>
         </div>
       </section>
@@ -1108,7 +1598,9 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
       <!-- Chapter navigation -->
       <nav class="chapter-nav">
         <div class="chapter-nav__controls">
-          <a href="01-gpu-fundamentals.html" class="chapter-nav__link">&lt; Prev</a>
+          <a href="01-gpu-fundamentals.html" class="chapter-nav__link"
+            >&lt; Prev</a
+          >
           <span class="chapter-nav__sep">|</span>
           <a href="../index.html" class="chapter-nav__link">Home</a>
           <span class="chapter-nav__sep">|</span>
@@ -1118,104 +1610,117 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
       </nav>
 
       <div class="site-license">
-        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        All material licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en"
+          target="_blank"
+          rel="noopener"
+          >CC BY-NC-SA 4.0</a
+        >
       </div>
     </main>
 
     <script src="../scripts/components.js"></script>
     <script>
       // Memory tier expansion
-      document.querySelectorAll('.mem-tier').forEach(tier => {
-        tier.addEventListener('click', () => {
-          const wasActive = tier.classList.contains('active');
-          document.querySelectorAll('.mem-tier').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll(".mem-tier").forEach((tier) => {
+        tier.addEventListener("click", () => {
+          const wasActive = tier.classList.contains("active");
+          document
+            .querySelectorAll(".mem-tier")
+            .forEach((t) => t.classList.remove("active"));
           if (!wasActive) {
-            tier.classList.add('active');
+            tier.classList.add("active");
           }
         });
       });
 
       // Coalescing visualization
-      const coalThreads = document.getElementById('coal-threads');
-      const coalMemory = document.getElementById('coal-memory');
-      const coalResult = document.getElementById('coal-result');
+      const coalThreads = document.getElementById("coal-threads");
+      const coalMemory = document.getElementById("coal-memory");
+      const coalResult = document.getElementById("coal-result");
 
       // Create visualization elements
       for (let i = 0; i < 16; i++) {
-        const thread = document.createElement('div');
-        thread.className = 'coal-viz__cell coal-viz__cell--thread';
+        const thread = document.createElement("div");
+        thread.className = "coal-viz__cell coal-viz__cell--thread";
         thread.textContent = i;
         coalThreads.appendChild(thread);
 
-        const mem = document.createElement('div');
-        mem.className = 'coal-viz__cell coal-viz__cell--mem';
+        const mem = document.createElement("div");
+        mem.className = "coal-viz__cell coal-viz__cell--mem";
         mem.textContent = i;
         coalMemory.appendChild(mem);
       }
 
-      const threads = coalThreads.querySelectorAll('.coal-viz__cell');
-      const memCells = coalMemory.querySelectorAll('.coal-viz__cell');
+      const threads = coalThreads.querySelectorAll(".coal-viz__cell");
+      const memCells = coalMemory.querySelectorAll(".coal-viz__cell");
 
       function resetCoalViz() {
-        threads.forEach(t => t.classList.remove('active'));
-        memCells.forEach(m => {
-          m.classList.remove('accessed', 'conflict');
+        threads.forEach((t) => t.classList.remove("active"));
+        memCells.forEach((m) => {
+          m.classList.remove("accessed", "conflict");
         });
       }
 
-      document.getElementById('coal-good').addEventListener('click', () => {
+      document.getElementById("coal-good").addEventListener("click", () => {
         resetCoalViz();
         threads.forEach((t, i) => {
           setTimeout(() => {
-            t.classList.add('active');
-            memCells[i].classList.add('accessed');
+            t.classList.add("active");
+            memCells[i].classList.add("accessed");
           }, i * 30);
         });
-        coalResult.innerHTML = '<strong style="color: var(--accent-green)">1 transaction</strong> — All 16 threads access consecutive addresses. Hardware coalesces into a single memory transaction. Maximum bandwidth.';
+        coalResult.innerHTML =
+          '<strong style="color: var(--accent-green)">1 transaction</strong>   All 16 threads access consecutive addresses. Hardware coalesces into a single memory transaction. Maximum bandwidth.';
       });
 
-      document.getElementById('coal-strided').addEventListener('click', () => {
+      document.getElementById("coal-strided").addEventListener("click", () => {
         resetCoalViz();
         threads.forEach((t, i) => {
           setTimeout(() => {
-            t.classList.add('active');
+            t.classList.add("active");
             // Strided: every other element
             const targetIdx = (i * 2) % 16;
-            memCells[targetIdx].classList.add('conflict');
+            memCells[targetIdx].classList.add("conflict");
           }, i * 30);
         });
-        coalResult.innerHTML = '<strong style="color: var(--accent-orange)">Multiple transactions</strong> — Strided access pattern. Threads skip elements, wasting bandwidth. Half the addresses in each cache line are unused.';
+        coalResult.innerHTML =
+          '<strong style="color: var(--accent-orange)">Multiple transactions</strong>   Strided access pattern. Threads skip elements, wasting bandwidth. Half the addresses in each cache line are unused.';
       });
 
-      document.getElementById('coal-random').addEventListener('click', () => {
+      document.getElementById("coal-random").addEventListener("click", () => {
         resetCoalViz();
-        const randomOrder = [7, 2, 14, 5, 11, 0, 9, 4, 13, 1, 8, 15, 3, 10, 6, 12];
+        const randomOrder = [
+          7, 2, 14, 5, 11, 0, 9, 4, 13, 1, 8, 15, 3, 10, 6, 12,
+        ];
         threads.forEach((t, i) => {
           setTimeout(() => {
-            t.classList.add('active');
-            memCells[randomOrder[i]].classList.add('conflict');
+            t.classList.add("active");
+            memCells[randomOrder[i]].classList.add("conflict");
           }, i * 30);
         });
-        coalResult.innerHTML = '<strong style="color: var(--accent-orange)">Up to 16 transactions</strong> — Random access. Each thread may hit a different cache line. Worst case for bandwidth utilization.';
+        coalResult.innerHTML =
+          '<strong style="color: var(--accent-orange)">Up to 16 transactions</strong>   Random access. Each thread may hit a different cache line. Worst case for bandwidth utilization.';
       });
 
       // Bank conflict visualization
-      const bankViz = document.getElementById('bank-viz');
-      const bankResult = document.getElementById('bank-result');
+      const bankViz = document.getElementById("bank-viz");
+      const bankResult = document.getElementById("bank-result");
 
       // Create 8 banks with 4 slots each (simplified)
       for (let b = 0; b < 8; b++) {
-        const bank = document.createElement('div');
-        bank.className = 'bank-viz__bank';
+        const bank = document.createElement("div");
+        bank.className = "bank-viz__bank";
 
-        const label = document.createElement('div');
-        label.className = 'bank-viz__label';
+        const label = document.createElement("div");
+        label.className = "bank-viz__label";
         label.textContent = `B${b}`;
         bank.appendChild(label);
 
         for (let s = 0; s < 4; s++) {
-          const slot = document.createElement('div');
-          slot.className = 'bank-viz__slot';
+          const slot = document.createElement("div");
+          slot.className = "bank-viz__slot";
           slot.textContent = b + s * 8;
           slot.dataset.bank = b;
           slot.dataset.addr = b + s * 8;
@@ -1225,77 +1730,92 @@ cp.async.bulk.tensor.2d.shared::cluster.global.tile
         bankViz.appendChild(bank);
       }
 
-      const bankSlots = bankViz.querySelectorAll('.bank-viz__slot');
+      const bankSlots = bankViz.querySelectorAll(".bank-viz__slot");
 
       function resetBankViz() {
-        bankSlots.forEach(s => {
-          s.classList.remove('accessed', 'conflict');
+        bankSlots.forEach((s) => {
+          s.classList.remove("accessed", "conflict");
         });
       }
 
-      document.getElementById('bank-no-conflict').addEventListener('click', () => {
-        resetBankViz();
-        // Each thread accesses different bank (addresses 0-7)
-        bankSlots.forEach((s, i) => {
-          if (parseInt(s.dataset.addr) < 8) {
-            setTimeout(() => s.classList.add('accessed'), i * 50);
-          }
+      document
+        .getElementById("bank-no-conflict")
+        .addEventListener("click", () => {
+          resetBankViz();
+          // Each thread accesses different bank (addresses 0-7)
+          bankSlots.forEach((s, i) => {
+            if (parseInt(s.dataset.addr) < 8) {
+              setTimeout(() => s.classList.add("accessed"), i * 50);
+            }
+          });
+          bankResult.innerHTML =
+            '<strong style="color: var(--accent-green)">No conflict</strong>   8 threads access 8 different banks (addresses 0-7). All accesses happen in parallel.';
         });
-        bankResult.innerHTML = '<strong style="color: var(--accent-green)">No conflict</strong> — 8 threads access 8 different banks (addresses 0-7). All accesses happen in parallel.';
-      });
 
-      document.getElementById('bank-2way').addEventListener('click', () => {
+      document.getElementById("bank-2way").addEventListener("click", () => {
         resetBankViz();
         // 2 threads hit bank 0 (addresses 0 and 8)
         bankSlots.forEach((s, i) => {
           const addr = parseInt(s.dataset.addr);
           if (addr === 0 || addr === 8) {
-            setTimeout(() => s.classList.add('conflict'), i * 50);
+            setTimeout(() => s.classList.add("conflict"), i * 50);
           } else if (addr < 8) {
-            setTimeout(() => s.classList.add('accessed'), i * 50);
+            setTimeout(() => s.classList.add("accessed"), i * 50);
           }
         });
-        bankResult.innerHTML = '<strong style="color: var(--accent-orange)">2-way conflict</strong> — Two threads access bank 0 (addresses 0 and 8). These serialize, taking 2 cycles instead of 1.';
+        bankResult.innerHTML =
+          '<strong style="color: var(--accent-orange)">2-way conflict</strong>   Two threads access bank 0 (addresses 0 and 8). These serialize, taking 2 cycles instead of 1.';
       });
 
-      document.getElementById('bank-broadcast').addEventListener('click', () => {
-        resetBankViz();
-        // All threads read same address (0)
-        bankSlots.forEach((s, i) => {
-          if (parseInt(s.dataset.addr) === 0) {
-            setTimeout(() => s.classList.add('accessed'), 100);
-          }
+      document
+        .getElementById("bank-broadcast")
+        .addEventListener("click", () => {
+          resetBankViz();
+          // All threads read same address (0)
+          bankSlots.forEach((s, i) => {
+            if (parseInt(s.dataset.addr) === 0) {
+              setTimeout(() => s.classList.add("accessed"), 100);
+            }
+          });
+          bankResult.innerHTML =
+            '<strong style="color: var(--accent-green)">Broadcast (no conflict)</strong>   All threads read the SAME address (0). Hardware broadcasts the value to all threads in one cycle.';
         });
-        bankResult.innerHTML = '<strong style="color: var(--accent-green)">Broadcast (no conflict)</strong> — All threads read the SAME address (0). Hardware broadcasts the value to all threads in one cycle.';
-      });
 
       // Bandwidth calculator
       function calculateBandwidth() {
-        const data = parseFloat(document.getElementById('bw-data').value);
-        const time = parseFloat(document.getElementById('bw-time').value);
+        const data = parseFloat(document.getElementById("bw-data").value);
+        const time = parseFloat(document.getElementById("bw-time").value);
         const peakBW = 8.0; // TB/s for B200
 
         const achieved = data / time; // GB / ms = TB/s
         const efficiency = (achieved / peakBW) * 100;
 
-        document.getElementById('bw-achieved').textContent = achieved.toFixed(1) + ' TB/s';
-        document.getElementById('bw-efficiency').textContent = efficiency.toFixed(1) + '%';
-        document.getElementById('bw-bar').style.width = Math.min(efficiency, 100) + '%';
-        document.getElementById('bw-bar').textContent = efficiency.toFixed(1) + '%';
+        document.getElementById("bw-achieved").textContent =
+          achieved.toFixed(1) + " TB/s";
+        document.getElementById("bw-efficiency").textContent =
+          efficiency.toFixed(1) + "%";
+        document.getElementById("bw-bar").style.width =
+          Math.min(efficiency, 100) + "%";
+        document.getElementById("bw-bar").textContent =
+          efficiency.toFixed(1) + "%";
 
         // Color based on efficiency
-        const effEl = document.getElementById('bw-efficiency');
+        const effEl = document.getElementById("bw-efficiency");
         if (efficiency >= 70) {
-          effEl.style.color = 'var(--accent-green)';
+          effEl.style.color = "var(--accent-green)";
         } else if (efficiency >= 40) {
-          effEl.style.color = 'var(--accent-orange)';
+          effEl.style.color = "var(--accent-orange)";
         } else {
-          effEl.style.color = 'var(--accent-red, #ff6b6b)';
+          effEl.style.color = "var(--accent-red, #ff6b6b)";
         }
       }
 
-      document.getElementById('bw-data').addEventListener('change', calculateBandwidth);
-      document.getElementById('bw-time').addEventListener('change', calculateBandwidth);
+      document
+        .getElementById("bw-data")
+        .addEventListener("change", calculateBandwidth);
+      document
+        .getElementById("bw-time")
+        .addEventListener("change", calculateBandwidth);
       calculateBandwidth();
     </script>
   </body>

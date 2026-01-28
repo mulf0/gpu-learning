@@ -10,9 +10,15 @@
     />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://gpu.mulf.net/course/01-gpu-fundamentals.html" />
+    <meta
+      property="og:url"
+      content="https://gpu.mulf.net/course/01-gpu-fundamentals.html"
+    />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Chapter 1: GPU Fundamentals - GPU Learning" />
+    <meta
+      property="og:title"
+      content="Chapter 1: GPU Fundamentals - GPU Learning"
+    />
     <meta
       property="og:description"
       content="Learn GPU programming from architecture to production systems. Learn GPU hardware execution from SMs to warps to threads and occupancy."
@@ -22,25 +28,37 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="gpu.mulf.net" />
-    <meta property="twitter:url" content="https://gpu.mulf.net/course/01-gpu-fundamentals.html" />
-    <meta name="twitter:title" content="Chapter 1: GPU Fundamentals - GPU Learning" />
+    <meta
+      property="twitter:url"
+      content="https://gpu.mulf.net/course/01-gpu-fundamentals.html"
+    />
+    <meta
+      name="twitter:title"
+      content="Chapter 1: GPU Fundamentals - GPU Learning"
+    />
     <meta
       name="twitter:description"
       content="Learn GPU programming from architecture to production systems. Learn GPU hardware execution from SMs to warps to threads and occupancy."
     />
     <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png" />
 
-        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../base.css" fetchpriority="high" />
     <style>
       /* Chapter page layout */
       body {
@@ -77,7 +95,7 @@
       }
 
       .hier-item::after {
-        content: '+';
+        content: "+";
         font-family: var(--font-mono);
         font-size: var(--text-lg);
         color: var(--text-muted);
@@ -86,7 +104,7 @@
       }
 
       .hier-item.active::after {
-        content: '−';
+        content: "−";
         color: var(--accent-blue);
       }
 
@@ -130,8 +148,14 @@
       }
 
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .spec-grid {
@@ -241,7 +265,11 @@
 
       .occupancy-bar__fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+        background: linear-gradient(
+          90deg,
+          var(--accent-green),
+          var(--accent-blue)
+        );
         transition: width var(--transition-normal);
         display: flex;
         align-items: center;
@@ -251,7 +279,6 @@
         font-size: var(--text-xs);
         color: white;
       }
-
     </style>
   </head>
   <body>
@@ -263,8 +290,8 @@
         <div class="chapter-header__label">Chapter 1</div>
         <h1 class="chapter-header__title">GPU Fundamentals</h1>
         <p class="chapter-header__desc">
-          Understanding the hardware execution model. From SMs to warps to threads—
-          learn how modern NVIDIA GPUs actually execute your code.
+          Understanding the hardware execution model. From SMs to warps to
+          threads learn how modern NVIDIA GPUs actually execute your code.
         </p>
       </header>
 
@@ -272,11 +299,21 @@
       <div class="learning-objectives">
         <div class="learning-objectives__title">What You'll Learn</div>
         <ol class="learning-objectives__list">
-          <li class="learning-objectives__item">Explain why GPUs optimize for throughput over latency</li>
-          <li class="learning-objectives__item">Describe the SM → Warp → Thread hierarchy</li>
-          <li class="learning-objectives__item">Calculate theoretical occupancy given resource constraints</li>
-          <li class="learning-objectives__item">Identify warp divergence in code and explain its performance impact</li>
-          <li class="learning-objectives__item">Interpret basic GPU specifications (SM count, memory bandwidth)</li>
+          <li class="learning-objectives__item">
+            Explain why GPUs optimize for throughput over latency
+          </li>
+          <li class="learning-objectives__item">
+            Describe the SM → Warp → Thread hierarchy
+          </li>
+          <li class="learning-objectives__item">
+            Calculate theoretical occupancy given resource constraints
+          </li>
+          <li class="learning-objectives__item">
+            Identify warp divergence in code and explain its performance impact
+          </li>
+          <li class="learning-objectives__item">
+            Interpret basic GPU specifications (SM count, memory bandwidth)
+          </li>
         </ol>
       </div>
 
@@ -286,49 +323,103 @@
         <h2 class="section__title">Throughput Over Latency</h2>
 
         <p>
-          CPUs optimize for <strong>latency</strong>—making single tasks fast.
-          GPUs optimize for <strong>throughput</strong>—completing many tasks in parallel,
-          even if each individual task takes longer.
+          CPUs optimize for <strong>latency</strong> making single tasks fast.
+          GPUs optimize for <strong>throughput</strong> completing many tasks in
+          parallel, even if each individual task takes longer.
         </p>
 
         <p>
-          A CPU might have <a href="https://en.wikipedia.org/wiki/Multi-core_processor" target="_blank" rel="noopener">8-16 cores running at 4+ GHz</a> with massive caches.
-          A GPU has <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#hardware-implementation" target="_blank" rel="noopener">thousands of smaller cores running at ~2 GHz</a> with limited cache per core.
-          The magic is in the parallelism.
+          A CPU might have
+          <a
+            href="https://en.wikipedia.org/wiki/Multi-core_processor"
+            target="_blank"
+            rel="noopener"
+            >8-16 cores running at 4+ GHz</a
+          >
+          with massive caches. A GPU has
+          <a
+            href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#hardware-implementation"
+            target="_blank"
+            rel="noopener"
+            >thousands of smaller cores running at ~2 GHz</a
+          >
+          with limited cache per core. The magic is in the parallelism.
         </p>
 
         <div class="spec-grid">
           <div class="spec-card">
             <div class="spec-card__value">~192</div>
-            <div class="spec-card__label"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">SMs (B200)*</a></div>
+            <div class="spec-card__label">
+              <a
+                href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                target="_blank"
+                rel="noopener"
+                >SMs (B200)*</a
+              >
+            </div>
           </div>
           <div class="spec-card">
             <div class="spec-card__value">192GB</div>
-            <div class="spec-card__label"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">HBM3e</a></div>
+            <div class="spec-card__label">
+              <a
+                href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                target="_blank"
+                rel="noopener"
+                >HBM3e</a
+              >
+            </div>
           </div>
           <div class="spec-card">
             <div class="spec-card__value">~8 TB/s</div>
-            <div class="spec-card__label"><a href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/" target="_blank" rel="noopener">Memory BW*</a></div>
+            <div class="spec-card__label">
+              <a
+                href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/"
+                target="_blank"
+                rel="noopener"
+                >Memory BW*</a
+              >
+            </div>
           </div>
           <div class="spec-card">
             <div class="spec-card__value">~2.5 GHz</div>
-            <div class="spec-card__label"><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Boost Clock*</a></div>
+            <div class="spec-card__label">
+              <a
+                href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                target="_blank"
+                rel="noopener"
+                >Boost Clock*</a
+              >
+            </div>
           </div>
         </div>
-        <p class="text-secondary text-small" style="margin-top: var(--space-sm);">
-          <span class="human-scale">192 SMs = 192 mini-processors running thousands of threads each</span><br>
-          <span class="human-scale">8 TB/s = every book ever written in under 2 seconds</span>
+        <p
+          class="text-secondary text-small"
+          style="margin-top: var(--space-sm)"
+        >
+          <span class="human-scale"
+            >192 SMs = 192 mini-processors running thousands of threads
+            each</span
+          ><br />
+          <span class="human-scale"
+            >8 TB/s = every book ever written in under 2 seconds</span
+          >
         </p>
         <p class="text-muted text-small">
-          *B200 specifications from <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">NVIDIA Blackwell Architecture</a>. Verify against official datasheets for production use.
+          *B200 specifications from
+          <a
+            href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+            target="_blank"
+            rel="noopener"
+            >NVIDIA Blackwell Architecture</a
+          >. Verify against official datasheets for production use.
         </p>
 
         <div class="callout info">
           <div class="callout-title">Key Insight</div>
           <p class="mb-0">
-            GPU programming is about keeping thousands of threads busy. When one thread
-            waits for memory, others execute. This <strong>latency hiding</strong> is
-            fundamental to GPU performance.
+            GPU programming is about keeping thousands of threads busy. When one
+            thread waits for memory, others execute. This
+            <strong>latency hiding</strong> is fundamental to GPU performance.
           </p>
         </div>
 
@@ -336,20 +427,88 @@
         <div class="callout historical">
           <div class="callout-title">NVIDIA Architecture Evolution</div>
           <ul>
-            <li><strong><a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi (2010)</a></strong>: First compute architecture. L1/L2 caches, ECC, concurrent kernels.</li>
-            <li><strong><a href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/NVIDIA-Kepler-GK110-GK210-Architecture-Whitepaper.pdf" target="_blank" rel="noopener">Kepler (2012)</a></strong>: Dynamic parallelism, shuffle instructions, GPUDirect.</li>
-            <li><strong><a href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf" target="_blank" rel="noopener">Pascal (2016)</a></strong>: Unified memory, NVLink, FP16, HBM2.</li>
-            <li><strong><a href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf" target="_blank" rel="noopener">Volta (2017)</a></strong>: First Tensor Cores, independent thread scheduling.</li>
-            <li><strong><a href="https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf" target="_blank" rel="noopener">Ampere (2020)</a></strong>: TF32, BF16, sparsity, 3rd-gen Tensor Cores.</li>
-            <li><strong><a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">Hopper (2022)</a></strong>: FP8, TMA, warpgroups, Transformer Engine.</li>
-            <li><strong><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell (2024)</a></strong>: FP4, 5th-gen Tensor Cores.</li>
+            <li>
+              <strong
+                ><a
+                  href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >Fermi (2010)</a
+                ></strong
+              >: First compute architecture. L1/L2 caches, ECC, concurrent
+              kernels.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/NVIDIA-Kepler-GK110-GK210-Architecture-Whitepaper.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >Kepler (2012)</a
+                ></strong
+              >: Dynamic parallelism, shuffle instructions, GPUDirect.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >Pascal (2016)</a
+                ></strong
+              >: Unified memory, NVLink, FP16, HBM2.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >Volta (2017)</a
+                ></strong
+              >: First Tensor Cores, independent thread scheduling.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >Ampere (2020)</a
+                ></strong
+              >: TF32, BF16, sparsity, 3rd-gen Tensor Cores.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://resources.nvidia.com/en-us-tensor-core"
+                  target="_blank"
+                  rel="noopener"
+                  >Hopper (2022)</a
+                ></strong
+              >: FP8, TMA, warpgroups, Transformer Engine.
+            </li>
+            <li>
+              <strong
+                ><a
+                  href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                  target="_blank"
+                  rel="noopener"
+                  >Blackwell (2024)</a
+                ></strong
+              >: FP4, 5th-gen Tensor Cores.
+            </li>
           </ul>
-          <p class="text-muted text-small mb-0">Each generation roughly doubled AI training performance.</p>
+          <p class="text-muted text-small mb-0">
+            Each generation roughly doubled AI training performance.
+          </p>
         </div>
 
         <!-- Micro-quiz: Throughput vs Latency -->
         <div class="quiz quiz--micro" id="quiz-throughput">
-          <div class="quiz-q">A GPU is faster than a CPU at parallel workloads because of:</div>
+          <div class="quiz-q">
+            A GPU is faster than a CPU at parallel workloads because of:
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -366,10 +525,9 @@
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 2: The Hierarchy -->
       <section class="section" id="section-1">
@@ -377,8 +535,8 @@
         <h2 class="section__title">GPU → SM → Warpgroup → Warp → Thread</h2>
 
         <p>
-          NVIDIA GPUs have a strict hierarchy. Understanding each level is essential
-          for writing efficient kernels.
+          NVIDIA GPUs have a strict hierarchy. Understanding each level is
+          essential for writing efficient kernels.
         </p>
 
         <div class="card">
@@ -391,13 +549,21 @@
               <div class="hier-icon bg-blue">GPU</div>
               <div class="hier-info">
                 <h5>GPU Device</h5>
-                <p><a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">Blackwell B200</a>: up to 192 SMs, 192GB HBM3e, ~8TB/s bandwidth*</p>
+                <p>
+                  <a
+                    href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                    target="_blank"
+                    rel="noopener"
+                    >Blackwell B200</a
+                  >: up to 192 SMs, 192GB HBM3e, ~8TB/s bandwidth*
+                </p>
               </div>
             </div>
             <div class="hier-detail" id="d-gpu">
-              The top-level device. What matters most: <strong>SM count</strong> (parallel execution units)
-              and <strong>memory bandwidth</strong> (data throughput). More SMs = more parallelism.
-              Higher bandwidth = faster data movement.
+              The top-level device. What matters most:
+              <strong>SM count</strong> (parallel execution units) and
+              <strong>memory bandwidth</strong> (data throughput). More SMs =
+              more parallelism. Higher bandwidth = faster data movement.
             </div>
 
             <div class="hier-item" data-detail="d-sm" tabindex="0">
@@ -408,36 +574,81 @@
               </div>
             </div>
             <div class="hier-detail" id="d-sm">
-              Each SM contains: <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#hardware-multithreading" target="_blank" rel="noopener">4 warp schedulers</a>, <a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">~256KB registers, 228KB shared memory</a>,
-              L1 cache, CUDA cores, and <strong>Tensor Cores</strong>. Multiple thread blocks
-              can run on one SM simultaneously (limited by resources).
+              Each SM contains:
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#hardware-multithreading"
+                target="_blank"
+                rel="noopener"
+                >4 warp schedulers</a
+              >,
+              <a
+                href="https://resources.nvidia.com/en-us-tensor-core"
+                target="_blank"
+                rel="noopener"
+                >~256KB registers, 228KB shared memory</a
+              >, L1 cache, CUDA cores, and <strong>Tensor Cores</strong>.
+              Multiple thread blocks can run on one SM simultaneously (limited
+              by resources).
             </div>
 
             <div class="hier-item" data-detail="d-wg" tabindex="0">
               <div class="hier-icon bg-orange">WG</div>
               <div class="hier-info">
-                <h5><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">Warpgroup (Hopper+)</a></h5>
+                <h5>
+                  <a
+                    href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html"
+                    target="_blank"
+                    rel="noopener"
+                    >Warpgroup (Hopper+)</a
+                  >
+                </h5>
                 <p>4 warps (128 threads) for Tensor Core operations</p>
               </div>
             </div>
             <div class="hier-detail" id="d-wg">
-              Modern Tensor Core operations work at <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html" target="_blank" rel="noopener">warpgroup granularity</a>. This enables
-              larger tiles (64x64+), asynchronous execution, and better hardware utilization.
-              <a href="https://github.com/NVIDIA/cutlass/blob/main/media/docs/cute/00_quickstart.md" target="_blank" rel="noopener">CuTe DSL</a> uses warpgroups for SM90+ architectures.
+              Modern Tensor Core operations work at
+              <a
+                href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html"
+                target="_blank"
+                rel="noopener"
+                >warpgroup granularity</a
+              >. This enables larger tiles (64x64+), asynchronous execution, and
+              better hardware utilization.
+              <a
+                href="https://github.com/NVIDIA/cutlass/blob/main/media/docs/cute/00_quickstart.md"
+                target="_blank"
+                rel="noopener"
+                >CuTe DSL</a
+              >
+              uses warpgroups for SM90+ architectures.
             </div>
 
             <div class="hier-item" data-detail="d-warp" tabindex="0">
               <div class="hier-icon bg-purple">W</div>
               <div class="hier-info">
-                <h5><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 Threads in Lockstep</a></h5>
+                <h5>
+                  <a
+                    href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture"
+                    target="_blank"
+                    rel="noopener"
+                    >32 Threads in Lockstep</a
+                  >
+                </h5>
                 <p>The atomic scheduling unit (SIMT)</p>
               </div>
             </div>
             <div class="hier-detail" id="d-warp">
-              <strong>This is the most important concept.</strong> Think of it like a marching band playing in unison—all 
-              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 threads in a warp</a>
-              execute the same instruction simultaneously. Divergent branches serialize execution.
-              Always think in warps, not individual threads.
+              <strong>This is the most important concept.</strong> Think of it
+              like a marching band playing in unison all
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture"
+                target="_blank"
+                rel="noopener"
+                >32 threads in a warp</a
+              >
+              execute the same instruction simultaneously. Divergent branches
+              serialize execution. Always think in warps, not individual
+              threads.
             </div>
 
             <div class="hier-item" data-detail="d-thread" tabindex="0">
@@ -448,29 +659,56 @@
               </div>
             </div>
             <div class="hier-detail" id="d-thread">
-              Each thread has its own registers and local memory. Threads within a warp
-              can communicate via shuffle instructions. Threads within a block can
-              communicate via shared memory and synchronize with __syncthreads().
+              Each thread has its own registers and local memory. Threads within
+              a warp can communicate via shuffle instructions. Threads within a
+              block can communicate via shared memory and synchronize with
+              __syncthreads().
             </div>
           </div>
 
           <!-- Historical sidebar: Why 32? -->
           <div class="callout historical">
             <div class="callout-title">Why Exactly 32 Threads per Warp?</div>
-            <p>Constant since <a href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf" target="_blank" rel="noopener">Fermi (2010)</a>:</p>
+            <p>
+              Constant since
+              <a
+                href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf"
+                target="_blank"
+                rel="noopener"
+                >Fermi (2010)</a
+              >:
+            </p>
             <ul>
-              <li><strong>Memory efficiency</strong>: 32 threads × 4 bytes = 128 bytes = one cache line</li>
-              <li><strong>Silicon area</strong>: Small enough to fit execution units efficiently</li>
-              <li><strong>Occupancy</strong>: Multiple warps per SM enables latency hiding</li>
-              <li><strong>Legacy</strong>: Changing it would break all existing CUDA software</li>
+              <li>
+                <strong>Memory efficiency</strong>: 32 threads × 4 bytes = 128
+                bytes = one cache line
+              </li>
+              <li>
+                <strong>Silicon area</strong>: Small enough to fit execution
+                units efficiently
+              </li>
+              <li>
+                <strong>Occupancy</strong>: Multiple warps per SM enables
+                latency hiding
+              </li>
+              <li>
+                <strong>Legacy</strong>: Changing it would break all existing
+                CUDA software
+              </li>
             </ul>
             <p class="text-muted text-small mb-0">
-              The 128-thread <strong>warpgroup</strong> on <a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/" target="_blank" rel="noopener">Hopper+</a> 
-              is a software abstraction over 4 hardware warps for Tensor Core tile sizes.
+              The 128-thread <strong>warpgroup</strong> on
+              <a
+                href="https://docs.nvidia.com/cuda/hopper-tuning-guide/"
+                target="_blank"
+                rel="noopener"
+                >Hopper+</a
+              >
+              is a software abstraction over 4 hardware warps for Tensor Core
+              tile sizes.
             </p>
           </div>
         </div>
-
       </section>
 
       <!-- Section 3: Warps Deep Dive -->
@@ -479,23 +717,34 @@
         <h2 class="section__title">The Warp: GPU's Atomic Unit</h2>
 
         <p>
-          A warp is <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">32 threads that execute in <strong>SIMT</strong></a> (Single Instruction,
-          Multiple Threads) fashion. Every thread in a warp executes the same instruction,
-          but on different data.
+          A warp is
+          <a
+            href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture"
+            target="_blank"
+            rel="noopener"
+            >32 threads that execute in <strong>SIMT</strong></a
+          >
+          (Single Instruction, Multiple Threads) fashion. Every thread in a warp
+          executes the same instruction, but on different data.
         </p>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--purple">Interactive: Warp Execution</div>
+            <div class="card__icon card__icon--purple">
+              Interactive: Warp Execution
+            </div>
           </div>
 
           <p class="text-secondary text-small">
-            Click buttons to see how warps execute. Green = active, Orange = diverged/waiting.
+            Click buttons to see how warps execute. Green = active, Orange =
+            diverged/waiting.
           </p>
 
           <div class="warp-demo">
             <div class="warp-demo__controls">
-              <button class="btn btn--primary" id="warp-unified">Unified Execution</button>
+              <button class="btn btn--primary" id="warp-unified">
+                Unified Execution
+              </button>
               <button class="btn" id="warp-diverge">Branch Divergence</button>
               <button class="btn" id="warp-reset">Reset</button>
             </div>
@@ -506,7 +755,11 @@
 
             <div class="result mt-md">
               <div class="result__label">Status</div>
-              <p class="text-secondary text-small" id="warp-status" style="margin: 0">
+              <p
+                class="text-secondary text-small"
+                id="warp-status"
+                style="margin: 0"
+              >
                 Click a button to simulate warp execution.
               </p>
             </div>
@@ -514,11 +767,19 @@
         </div>
 
         <div class="callout warn">
-          <div class="callout-title"><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture" target="_blank" rel="noopener">Warp Divergence</a></div>
+          <div class="callout-title">
+            <a
+              href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture"
+              target="_blank"
+              rel="noopener"
+              >Warp Divergence</a
+            >
+          </div>
           <p class="mb-0">
-            When threads in a warp take different branches (if/else), execution <strong>serializes</strong>.
-            Both paths run, with inactive threads masked. 16 threads per path = 50% throughput.
-            Minimize divergence within warps for maximum performance.
+            When threads in a warp take different branches (if/else), execution
+            <strong>serializes</strong>. Both paths run, with inactive threads
+            masked. 16 threads per path = 50% throughput. Minimize divergence
+            within warps for maximum performance.
           </p>
         </div>
 
@@ -547,7 +808,9 @@
 
         <!-- Micro-quiz: Calculate warps -->
         <div class="quiz quiz--micro" id="quiz-warps-calc">
-          <div class="quiz-q">If you launch 256 threads per block, how many warps is that?</div>
+          <div class="quiz-q">
+            If you launch 256 threads per block, how many warps is that?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -564,10 +827,9 @@
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 4: Blocks and Grids -->
       <section class="section" id="section-3">
@@ -575,18 +837,27 @@
         <h2 class="section__title">Organizing Your Parallelism</h2>
 
         <p>
-          <strong>Block</strong> (also called CTA - Cooperative Thread Array): A group of warps
-          that share resources and can synchronize. Blocks run on a single SM.
+          <strong>Block</strong> (also called CTA - Cooperative Thread Array): A
+          group of warps that share resources and can synchronize. Blocks run on
+          a single SM.
         </p>
 
         <p>
-          <strong>Grid</strong>: Your problem decomposition into blocks. The grid is how you
-          map your problem to the GPU's parallel execution model.
+          <strong>Grid</strong>: Your problem decomposition into blocks. The
+          grid is how you map your problem to the GPU's parallel execution
+          model.
         </p>
 
         <div class="diagram">
           <div class="diagram-title">Block Composition</div>
-          <pre style="margin: 0; padding: var(--space-md); background: var(--bg-tertiary); border-radius: var(--radius-sm);">
+          <pre
+            style="
+              margin: 0;
+              padding: var(--space-md);
+              background: var(--bg-tertiary);
+              border-radius: var(--radius-sm);
+            "
+          >
 Grid (your problem)
  └── Block 0 (256 threads = 8 warps)
  │    ├── Warp 0: threads 0-31
@@ -605,17 +876,30 @@ Grid (your problem)
           <h4>Block Size Selection</h4>
           <p>Common block sizes and their trade-offs:</p>
           <ul>
-            <li><strong>128 threads (4 warps)</strong>: 1 warpgroup, good for Tensor Core ops</li>
-            <li><strong>256 threads (8 warps)</strong>: Balanced, most common choice</li>
-            <li><strong>512 threads (16 warps)</strong>: More parallelism, higher register pressure</li>
+            <li>
+              <strong>128 threads (4 warps)</strong>: 1 warpgroup, good for
+              Tensor Core ops
+            </li>
+            <li>
+              <strong>256 threads (8 warps)</strong>: Balanced, most common
+              choice
+            </li>
+            <li>
+              <strong>512 threads (16 warps)</strong>: More parallelism, higher
+              register pressure
+            </li>
           </ul>
           <p class="mb-0 text-muted">
-            Block size affects: shared memory per thread, register availability, and occupancy.
+            Block size affects: shared memory per thread, register availability,
+            and occupancy.
           </p>
         </div>
 
         <div class="quiz" id="block-quiz">
-          <div class="quiz-q">What can threads within the same block do that threads in different blocks cannot?</div>
+          <div class="quiz-q">
+            What can threads within the same block do that threads in different
+            blocks cannot?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -636,10 +920,9 @@ Grid (your problem)
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 5: Occupancy -->
       <section class="section" id="section-4">
@@ -647,21 +930,29 @@ Grid (your problem)
         <h2 class="section__title">Keeping the GPU Busy</h2>
 
         <p>
-          <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy" target="_blank" rel="noopener"><strong>Occupancy</strong></a> is the ratio of active warps to the maximum warps an SM
-          can support. Higher occupancy generally means better latency hiding, but it's not
+          <a
+            href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy"
+            target="_blank"
+            rel="noopener"
+            ><strong>Occupancy</strong></a
+          >
+          is the ratio of active warps to the maximum warps an SM can support.
+          Higher occupancy generally means better latency hiding, but it's not
           the only factor in performance.
         </p>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--green">Interactive: Occupancy Calculator</div>
+            <div class="card__icon card__icon--green">
+              Interactive: Occupancy Calculator
+            </div>
           </div>
 
           <div class="occupancy-calc">
             <div class="occupancy-calc__row">
               <span class="occupancy-calc__label">Block Size</span>
               <span class="occupancy-calc__value">
-                <select id="occ-block-size" class="input" style="width: auto;">
+                <select id="occ-block-size" class="input" style="width: auto">
                   <option value="128">128 threads</option>
                   <option value="256" selected>256 threads</option>
                   <option value="512">512 threads</option>
@@ -671,7 +962,7 @@ Grid (your problem)
             <div class="occupancy-calc__row">
               <span class="occupancy-calc__label">Registers per Thread</span>
               <span class="occupancy-calc__value">
-                <select id="occ-regs" class="input" style="width: auto;">
+                <select id="occ-regs" class="input" style="width: auto">
                   <option value="32">32 regs</option>
                   <option value="64" selected>64 regs</option>
                   <option value="128">128 regs</option>
@@ -682,7 +973,7 @@ Grid (your problem)
             <div class="occupancy-calc__row">
               <span class="occupancy-calc__label">Shared Memory per Block</span>
               <span class="occupancy-calc__value">
-                <select id="occ-smem" class="input" style="width: auto;">
+                <select id="occ-smem" class="input" style="width: auto">
                   <option value="0">0 KB</option>
                   <option value="16" selected>16 KB</option>
                   <option value="48">48 KB</option>
@@ -696,30 +987,47 @@ Grid (your problem)
             </div>
             <div class="occupancy-calc__row">
               <span class="occupancy-calc__label">Active Warps</span>
-              <span class="occupancy-calc__value" id="occ-active-warps">32</span>
+              <span class="occupancy-calc__value" id="occ-active-warps"
+                >32</span
+              >
             </div>
             <div class="occupancy-calc__row">
               <span class="occupancy-calc__label">Occupancy</span>
-              <span class="occupancy-calc__value text-green" id="occ-result">50%</span>
+              <span class="occupancy-calc__value text-green" id="occ-result"
+                >50%</span
+              >
             </div>
           </div>
 
           <div class="occupancy-bar">
-            <div class="occupancy-bar__fill" id="occ-bar" style="width: 50%">50%</div>
+            <div class="occupancy-bar__fill" id="occ-bar" style="width: 50%">
+              50%
+            </div>
           </div>
 
           <p class="text-muted text-small mt-md mb-0">
-            Simplified model based on <a href="https://resources.nvidia.com/en-us-tensor-core" target="_blank" rel="noopener">Hopper SM</a> (64 max warps, 256KB registers, 228KB shared memory).
+            Simplified model based on
+            <a
+              href="https://resources.nvidia.com/en-us-tensor-core"
+              target="_blank"
+              rel="noopener"
+              >Hopper SM</a
+            >
+            (64 max warps, 256KB registers, 228KB shared memory).
           </p>
 
           <!-- Expert note on occupancy -->
           <details class="expert-note">
-            <summary class="expert-note__summary">When is low occupancy actually better?</summary>
+            <summary class="expert-note__summary">
+              When is low occupancy actually better?
+            </summary>
             <div class="expert-note__content">
-              Compute-bound kernels with high instruction-level parallelism (ILP) often perform 
-              better at 50% occupancy with more registers per thread. More registers = fewer spills 
-              to local memory, more values kept in fast storage. Use <code>--maxrregcount</code> in 
-              nvcc or occupancy calculators to experiment. Always profile with real workloads.
+              Compute-bound kernels with high instruction-level parallelism
+              (ILP) often perform better at 50% occupancy with more registers
+              per thread. More registers = fewer spills to local memory, more
+              values kept in fast storage. Use <code>--maxrregcount</code> in
+              nvcc or occupancy calculators to experiment. Always profile with
+              real workloads.
             </div>
           </details>
         </div>
@@ -727,15 +1035,17 @@ Grid (your problem)
         <div class="callout info">
           <div class="callout-title">Occupancy vs Performance</div>
           <p class="mb-0">
-            100% occupancy doesn't guarantee best performance. Sometimes using more registers
-            (lower occupancy) enables better instruction-level parallelism. Profile your actual
-            kernel to find the sweet spot.
+            100% occupancy doesn't guarantee best performance. Sometimes using
+            more registers (lower occupancy) enables better instruction-level
+            parallelism. Profile your actual kernel to find the sweet spot.
           </p>
         </div>
 
         <!-- Micro-quiz: Occupancy limiters -->
         <div class="quiz quiz--micro" id="quiz-occupancy">
-          <div class="quiz-q">Which resource does NOT directly limit occupancy?</div>
+          <div class="quiz-q">
+            Which resource does NOT directly limit occupancy?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -752,10 +1062,9 @@ Grid (your problem)
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Practice Notebooks -->
       <section class="section" id="practice">
@@ -766,7 +1075,9 @@ Grid (your problem)
           <div class="notebook-link__icon">📓</div>
           <div class="notebook-link__content">
             <div class="notebook-link__title">Part 1 Notebooks</div>
-            <div class="notebook-link__desc">8 labs: NumPy to CuPy to Triton matmul journey</div>
+            <div class="notebook-link__desc">
+              8 labs: NumPy to CuPy to Triton matmul journey
+            </div>
           </div>
         </a>
       </section>
@@ -779,124 +1090,207 @@ Grid (your problem)
         <!-- Video Resources -->
         <div class="card">
           <h4>Video Resources</h4>
-          <p class="text-secondary text-small" style="margin-bottom: var(--space-md);">
+          <p
+            class="text-secondary text-small"
+            style="margin-bottom: var(--space-md)"
+          >
             High-quality explanations of GPU architecture concepts.
           </p>
-          
-          <div style="margin-bottom: var(--space-lg);">
+
+          <div style="margin-bottom: var(--space-lg)">
             <strong>How do Graphics Cards Work? (Branch Education)</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Excellent visual explanation of GPU architecture fundamentals, parallelism, and memory hierarchy.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Excellent visual explanation of GPU architecture fundamentals,
+              parallelism, and memory hierarchy.
             </p>
-            <a href="https://www.youtube.com/watch?v=h9Z4oGN89MU" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+            <a
+              href="https://www.youtube.com/watch?v=h9Z4oGN89MU"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+            >
               Watch on YouTube
             </a>
           </div>
-          
-          <div style="margin-bottom: var(--space-md);">
+
+          <div style="margin-bottom: var(--space-md)">
             <strong>CUDA Programming Model (NVIDIA Developer)</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Official NVIDIA explanation of threads, blocks, grids, and the CUDA execution model.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Official NVIDIA explanation of threads, blocks, grids, and the
+              CUDA execution model.
             </p>
-            <a href="https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/" target="_blank" rel="noopener" style="color: var(--accent-blue);">
+            <a
+              href="https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+            >
               Read: CUDA Refresher Series - developer.nvidia.com
             </a>
           </div>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <h4>Primary Documentation</h4>
-          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA CUDA C++ Programming Guide</strong><br>
-              Chapters 4-5: Thread Hierarchy, SIMT Architecture, Memory Hierarchy<br>
-              <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#thread-hierarchy" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cuda-c-programming-guide</a>
+          <ol
+            style="
+              margin: 0;
+              padding-left: var(--space-lg);
+              color: var(--text-secondary);
+            "
+          >
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA CUDA C++ Programming Guide</strong><br />
+              Chapters 4-5: Thread Hierarchy, SIMT Architecture, Memory
+              Hierarchy<br />
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#thread-hierarchy"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >docs.nvidia.com/cuda/cuda-c-programming-guide</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA CUDA C++ Best Practices Guide</strong><br>
-              Performance optimization, occupancy, memory access patterns<br>
-              <a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/" target="_blank" rel="noopener" style="color: var(--accent-blue);">docs.nvidia.com/cuda/cuda-c-best-practices-guide</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA CUDA C++ Best Practices Guide</strong><br />
+              Performance optimization, occupancy, memory access patterns<br />
+              <a
+                href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >docs.nvidia.com/cuda/cuda-c-best-practices-guide</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA Hopper Architecture Whitepaper</strong><br>
-              SM specifications, warpgroup operations, Tensor Core details<br>
-              <a href="https://resources.nvidia.com/en-us-hopper-architecture" target="_blank" rel="noopener" style="color: var(--accent-blue);">resources.nvidia.com/en-us-hopper-architecture</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA Hopper Architecture Whitepaper</strong><br />
+              SM specifications, warpgroup operations, Tensor Core details<br />
+              <a
+                href="https://resources.nvidia.com/en-us-hopper-architecture"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >resources.nvidia.com/en-us-hopper-architecture</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA Blackwell Architecture</strong><br>
-              Fifth-gen Tensor Cores, NVLink 5, 208B transistors<br>
-              <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener" style="color: var(--accent-blue);">nvidia.com/blackwell-architecture</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA Blackwell Architecture</strong><br />
+              Fifth-gen Tensor Cores, NVLink 5, 208B transistors<br />
+              <a
+                href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >nvidia.com/blackwell-architecture</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA GB200 NVL72 Specifications</strong><br>
-              Official Blackwell product specifications and performance data<br>
-              <a href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/" target="_blank" rel="noopener" style="color: var(--accent-blue);">nvidia.com/data-center/gb200-nvl72</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA GB200 NVL72 Specifications</strong><br />
+              Official Blackwell product specifications and performance data<br />
+              <a
+                href="https://www.nvidia.com/en-us/data-center/gb200-nvl72/"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >nvidia.com/data-center/gb200-nvl72</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>NVIDIA H100 Tensor Core GPU Datasheet</strong><br>
-              Hardware specifications: 256KB registers/SM, 228KB SMEM, 64 max warps<br>
-              <a href="https://resources.nvidia.com/en-us-hopper-architecture/nvidia-tensor-core-gpu-datasheet" target="_blank" rel="noopener" style="color: var(--accent-blue);">H100 Datasheet (PDF)</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>NVIDIA H100 Tensor Core GPU Datasheet</strong><br />
+              Hardware specifications: 256KB registers/SM, 228KB SMEM, 64 max
+              warps<br />
+              <a
+                href="https://resources.nvidia.com/en-us-hopper-architecture/nvidia-tensor-core-gpu-datasheet"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >H100 Datasheet (PDF)</a
+              >
             </li>
           </ol>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <h4>Key Specifications with Sources</h4>
-          <table style="width: 100%; font-size: var(--text-sm); border-collapse: collapse;">
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <th style="text-align: left; padding: var(--space-sm);">Specification</th>
-              <th style="text-align: left; padding: var(--space-sm);">Value</th>
-              <th style="text-align: left; padding: var(--space-sm);">Source</th>
+          <table
+            style="
+              width: 100%;
+              font-size: var(--text-sm);
+              border-collapse: collapse;
+            "
+          >
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <th style="text-align: left; padding: var(--space-sm)">
+                Specification
+              </th>
+              <th style="text-align: left; padding: var(--space-sm)">Value</th>
+              <th style="text-align: left; padding: var(--space-sm)">Source</th>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Warp size</td>
-              <td style="padding: var(--space-sm);">32 threads</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">CUDA Programming Guide, Ch. 4</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Warp size</td>
+              <td style="padding: var(--space-sm)">32 threads</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                CUDA Programming Guide, Ch. 4
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Warpgroup (Hopper+)</td>
-              <td style="padding: var(--space-sm);">128 threads (4 warps)</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">Hopper Architecture Whitepaper</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Warpgroup (Hopper+)</td>
+              <td style="padding: var(--space-sm)">128 threads (4 warps)</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                Hopper Architecture Whitepaper
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">H100 registers/SM</td>
-              <td style="padding: var(--space-sm);">256KB (65,536 x 32-bit)</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">H100 Datasheet</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">H100 registers/SM</td>
+              <td style="padding: var(--space-sm)">256KB (65,536 x 32-bit)</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                H100 Datasheet
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">H100 shared memory/SM</td>
-              <td style="padding: var(--space-sm);">Up to 228KB configurable</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">H100 Datasheet</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">H100 shared memory/SM</td>
+              <td style="padding: var(--space-sm)">Up to 228KB configurable</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                H100 Datasheet
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Max warps per SM</td>
-              <td style="padding: var(--space-sm);">64 (Hopper)</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">Hopper Architecture Whitepaper</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Max warps per SM</td>
+              <td style="padding: var(--space-sm)">64 (Hopper)</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                Hopper Architecture Whitepaper
+              </td>
             </tr>
-            <tr style="border-bottom: 1px solid var(--border-subtle);">
-              <td style="padding: var(--space-sm);">Blackwell transistors</td>
-              <td style="padding: var(--space-sm);">208 billion</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">NVIDIA Blackwell Architecture</td>
+            <tr style="border-bottom: 1px solid var(--border-subtle)">
+              <td style="padding: var(--space-sm)">Blackwell transistors</td>
+              <td style="padding: var(--space-sm)">208 billion</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                NVIDIA Blackwell Architecture
+              </td>
             </tr>
             <tr>
-              <td style="padding: var(--space-sm);">B200 HBM bandwidth</td>
-              <td style="padding: var(--space-sm);">~8 TB/s</td>
-              <td style="padding: var(--space-sm); color: var(--text-muted);">GB200 NVL72 Specifications</td>
+              <td style="padding: var(--space-sm)">B200 HBM bandwidth</td>
+              <td style="padding: var(--space-sm)">~8 TB/s</td>
+              <td style="padding: var(--space-sm); color: var(--text-muted)">
+                GB200 NVL72 Specifications
+              </td>
             </tr>
           </table>
         </div>
 
-        <p class="text-muted text-small" style="margin-top: var(--space-lg);">
-          Note: GPU specifications vary by SKU and configuration. Always verify against 
-          official NVIDIA datasheets for production use. Memory latencies are approximate 
-          and vary by access pattern and workload.
+        <p class="text-muted text-small" style="margin-top: var(--space-lg)">
+          Note: GPU specifications vary by SKU and configuration. Always verify
+          against official NVIDIA datasheets for production use. Memory
+          latencies are approximate and vary by access pattern and workload.
         </p>
       </section>
 
       <!-- Chapter navigation -->
       <nav class="chapter-nav">
         <div class="chapter-nav__controls">
-          <a href="00-parallel-mindset.html" class="chapter-nav__link">&lt; Prev</a>
+          <a href="00-parallel-mindset.html" class="chapter-nav__link"
+            >&lt; Prev</a
+          >
           <span class="chapter-nav__sep">|</span>
           <a href="../index.html" class="chapter-nav__link">Home</a>
           <span class="chapter-nav__sep">|</span>
@@ -906,62 +1300,75 @@ Grid (your problem)
       </nav>
 
       <div class="site-license">
-        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        All material licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en"
+          target="_blank"
+          rel="noopener"
+          >CC BY-NC-SA 4.0</a
+        >
       </div>
     </main>
 
     <script src="../scripts/components.js"></script>
     <script>
       // Warp visualization
-      const warpViz = document.getElementById('warp-viz');
-      const warpStatus = document.getElementById('warp-status');
+      const warpViz = document.getElementById("warp-viz");
+      const warpStatus = document.getElementById("warp-status");
 
       // Create 32 thread elements
       for (let i = 0; i < 32; i++) {
-        const thread = document.createElement('div');
-        thread.className = 'thread-viz__thread';
+        const thread = document.createElement("div");
+        thread.className = "thread-viz__thread";
         thread.title = `Thread ${i}`;
         warpViz.appendChild(thread);
       }
 
-      const threads = warpViz.querySelectorAll('.thread-viz__thread');
+      const threads = warpViz.querySelectorAll(".thread-viz__thread");
 
-      document.getElementById('warp-unified').addEventListener('click', () => {
+      document.getElementById("warp-unified").addEventListener("click", () => {
         threads.forEach((t, i) => {
           setTimeout(() => {
-            t.classList.add('active');
-            t.classList.remove('diverged');
+            t.classList.add("active");
+            t.classList.remove("diverged");
           }, i * 20);
         });
-        warpStatus.textContent = 'All 32 threads executing the same instruction in parallel. Maximum throughput.';
+        warpStatus.textContent =
+          "All 32 threads executing the same instruction in parallel. Maximum throughput.";
       });
 
-      document.getElementById('warp-diverge').addEventListener('click', () => {
+      document.getElementById("warp-diverge").addEventListener("click", () => {
         threads.forEach((t, i) => {
           setTimeout(() => {
-            t.classList.add('active');
+            t.classList.add("active");
             if (i % 2 === 0) {
-              t.classList.add('diverged');
+              t.classList.add("diverged");
             } else {
-              t.classList.remove('diverged');
+              t.classList.remove("diverged");
             }
           }, i * 20);
         });
-        warpStatus.textContent = 'Branch divergence! Even threads take path A (orange), odd threads take path B (blue). Execution serializes—both paths run sequentially. 50% throughput.';
+        warpStatus.textContent =
+          "Branch divergence! Even threads take path A (orange), odd threads take path B (blue). Execution serializes both paths run sequentially. 50% throughput.";
       });
 
-      document.getElementById('warp-reset').addEventListener('click', () => {
-        threads.forEach(t => {
-          t.classList.remove('active', 'diverged');
+      document.getElementById("warp-reset").addEventListener("click", () => {
+        threads.forEach((t) => {
+          t.classList.remove("active", "diverged");
         });
-        warpStatus.textContent = 'Click a button to simulate warp execution.';
+        warpStatus.textContent = "Click a button to simulate warp execution.";
       });
 
       // Occupancy calculator
       function calculateOccupancy() {
-        const blockSize = parseInt(document.getElementById('occ-block-size').value);
-        const regsPerThread = parseInt(document.getElementById('occ-regs').value);
-        const smemPerBlock = parseInt(document.getElementById('occ-smem').value) * 1024;
+        const blockSize = parseInt(
+          document.getElementById("occ-block-size").value,
+        );
+        const regsPerThread = parseInt(
+          document.getElementById("occ-regs").value,
+        );
+        const smemPerBlock =
+          parseInt(document.getElementById("occ-smem").value) * 1024;
 
         // Hopper SM limits (simplified)
         const maxWarpsPerSM = 64;
@@ -975,22 +1382,36 @@ Grid (your problem)
         // Calculate limits
         const blocksByWarps = Math.floor(maxWarpsPerSM / warpsPerBlock);
         const blocksByRegs = Math.floor(maxRegsPerSM / regsPerBlock);
-        const blocksBySmem = smemPerBlock > 0 ? Math.floor(maxSmemPerSM / smemPerBlock) : maxBlocksPerSM;
+        const blocksBySmem =
+          smemPerBlock > 0
+            ? Math.floor(maxSmemPerSM / smemPerBlock)
+            : maxBlocksPerSM;
         const blocksByMax = maxBlocksPerSM;
 
-        const activeBlocks = Math.min(blocksByWarps, blocksByRegs, blocksBySmem, blocksByMax);
+        const activeBlocks = Math.min(
+          blocksByWarps,
+          blocksByRegs,
+          blocksBySmem,
+          blocksByMax,
+        );
         const activeWarps = activeBlocks * warpsPerBlock;
         const occupancy = Math.round((activeWarps / maxWarpsPerSM) * 100);
 
-        document.getElementById('occ-active-warps').textContent = activeWarps;
-        document.getElementById('occ-result').textContent = occupancy + '%';
-        document.getElementById('occ-bar').style.width = occupancy + '%';
-        document.getElementById('occ-bar').textContent = occupancy + '%';
+        document.getElementById("occ-active-warps").textContent = activeWarps;
+        document.getElementById("occ-result").textContent = occupancy + "%";
+        document.getElementById("occ-bar").style.width = occupancy + "%";
+        document.getElementById("occ-bar").textContent = occupancy + "%";
       }
 
-      document.getElementById('occ-block-size').addEventListener('change', calculateOccupancy);
-      document.getElementById('occ-regs').addEventListener('change', calculateOccupancy);
-      document.getElementById('occ-smem').addEventListener('change', calculateOccupancy);
+      document
+        .getElementById("occ-block-size")
+        .addEventListener("change", calculateOccupancy);
+      document
+        .getElementById("occ-regs")
+        .addEventListener("change", calculateOccupancy);
+      document
+        .getElementById("occ-smem")
+        .addEventListener("change", calculateOccupancy);
 
       calculateOccupancy();
     </script>

@@ -10,9 +10,15 @@
     />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://gpu.mulf.net/course/10-training.html" />
+    <meta
+      property="og:url"
+      content="https://gpu.mulf.net/course/10-training.html"
+    />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Chapter 10: Training Kernels - GPU Learning" />
+    <meta
+      property="og:title"
+      content="Chapter 10: Training Kernels - GPU Learning"
+    />
     <meta
       property="og:description"
       content="Learn GPU programming from architecture to production systems. Implement backward passes, mixed-precision training, and checkpointing."
@@ -22,27 +28,41 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="gpu.mulf.net" />
-    <meta property="twitter:url" content="https://gpu.mulf.net/course/10-training.html" />
-    <meta name="twitter:title" content="Chapter 10: Training Kernels - GPU Learning" />
+    <meta
+      property="twitter:url"
+      content="https://gpu.mulf.net/course/10-training.html"
+    />
+    <meta
+      name="twitter:title"
+      content="Chapter 10: Training Kernels - GPU Learning"
+    />
     <meta
       name="twitter:description"
       content="Learn GPU programming from architecture to production systems. Implement backward passes, mixed-precision training, and checkpointing."
     />
     <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png" />
 
-        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../base.css" fetchpriority="high" />
     <style>
-      body { display: block; }
+      body {
+        display: block;
+      }
 
       /* Memory diagram */
       .memory-diagram {
@@ -266,19 +286,30 @@
         <div class="chapter-header__label">Chapter 10</div>
         <h1 class="chapter-header__title">Training Kernels</h1>
         <p class="chapter-header__desc">
-          Understanding backward passes, mixed-precision training, and memory optimization techniques
-          that make training large models possible on limited GPU memory.
+          Understanding backward passes, mixed-precision training, and memory
+          optimization techniques that make training large models possible on
+          limited GPU memory.
         </p>
       </header>
 
       <div class="learning-objectives">
         <div class="learning-objectives__title">What You'll Learn</div>
         <ol class="learning-objectives__list">
-          <li class="learning-objectives__item">Implement backward passes for common operations</li>
-          <li class="learning-objectives__item">Apply mixed-precision training with loss scaling</li>
-          <li class="learning-objectives__item">Use activation checkpointing to trade compute for memory</li>
-          <li class="learning-objectives__item">Implement gradient accumulation for larger effective batch sizes</li>
-          <li class="learning-objectives__item">Debug training-specific numerical issues</li>
+          <li class="learning-objectives__item">
+            Implement backward passes for common operations
+          </li>
+          <li class="learning-objectives__item">
+            Apply mixed-precision training with loss scaling
+          </li>
+          <li class="learning-objectives__item">
+            Use activation checkpointing to trade compute for memory
+          </li>
+          <li class="learning-objectives__item">
+            Implement gradient accumulation for larger effective batch sizes
+          </li>
+          <li class="learning-objectives__item">
+            Debug training-specific numerical issues
+          </li>
         </ol>
       </div>
 
@@ -288,15 +319,21 @@
         <h2 class="section__title">The Computational Graph</h2>
 
         <p>
-          Training neural networks requires computing gradients via 
-          <a href="https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html" target="_blank" rel="noopener">automatic differentiation</a>.
-          For every forward operation, there's a corresponding backward operation that propagates gradients.
+          Training neural networks requires computing gradients via
+          <a
+            href="https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html"
+            target="_blank"
+            rel="noopener"
+            >automatic differentiation</a
+          >. For every forward operation, there's a corresponding backward
+          operation that propagates gradients.
         </p>
 
         <h3>Memory Requirements</h3>
 
         <p>
-          Training consumes far more memory than inference because you must store:
+          Training consumes far more memory than inference because you must
+          store:
         </p>
 
         <div class="memory-diagram">
@@ -319,7 +356,13 @@
         </div>
 
         <p>
-          For a 7B parameter model in FP32, the <a href="https://arxiv.org/abs/1910.02054" target="_blank" rel="noopener">ZeRO paper</a> 
+          For a 7B parameter model in FP32, the
+          <a
+            href="https://arxiv.org/abs/1910.02054"
+            target="_blank"
+            rel="noopener"
+            >ZeRO paper</a
+          >
           breaks down memory consumption:
         </p>
 
@@ -349,9 +392,15 @@
         <div class="callout info">
           <div class="callout-title">Why Activations Matter</div>
           <p class="mb-0">
-            Activations scale with batch size and sequence length. For transformers, 
-            attention activations grow as O(seq_len²) per layer unless using 
-            <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a> 
+            Activations scale with batch size and sequence length. For
+            transformers, attention activations grow as O(seq_len²) per layer
+            unless using
+            <a
+              href="https://arxiv.org/abs/2205.14135"
+              target="_blank"
+              rel="noopener"
+              >FlashAttention</a
+            >
             which doesn't materialize the full attention matrix.
           </p>
         </div>
@@ -359,26 +408,31 @@
         <h3>Forward vs Backward Compute</h3>
 
         <p>
-          A common rule of thumb: <strong>backward pass costs ~2x the forward pass</strong>.
-          This comes from computing both the gradient with respect to inputs and weights.
+          A common rule of thumb:
+          <strong>backward pass costs ~2x the forward pass</strong>. This comes
+          from computing both the gradient with respect to inputs and weights.
           For a linear layer Y = XW:
         </p>
 
         <div class="compare-panels">
           <div class="compare-panel">
-            <div class="compare-panel__header compare-panel__header--baseline">Forward Pass</div>
+            <div class="compare-panel__header compare-panel__header--baseline">
+              Forward Pass
+            </div>
             <div class="compare-panel__content">
               <div class="code-block">
-<pre><span class="comment"># Forward: 1 matmul</span>
+                <pre><span class="comment"># Forward: 1 matmul</span>
 Y = X @ W  <span class="comment"># (B, in) @ (in, out) = (B, out)</span></pre>
               </div>
             </div>
           </div>
           <div class="compare-panel">
-            <div class="compare-panel__header compare-panel__header--optimized">Backward Pass</div>
+            <div class="compare-panel__header compare-panel__header--optimized">
+              Backward Pass
+            </div>
             <div class="compare-panel__content">
               <div class="code-block">
-<pre><span class="comment"># Backward: 2 matmuls</span>
+                <pre><span class="comment"># Backward: 2 matmuls</span>
 dX = dY @ W.T  <span class="comment"># gradient w.r.t. input</span>
 dW = X.T @ dY  <span class="comment"># gradient w.r.t. weights</span></pre>
               </div>
@@ -387,7 +441,10 @@ dW = X.T @ dY  <span class="comment"># gradient w.r.t. weights</span></pre>
         </div>
 
         <div class="quiz quiz--micro" id="quiz-memory">
-          <div class="quiz-q">A 13B parameter model trained with Adam in FP32 needs at minimum how much memory for weights + optimizer states?</div>
+          <div class="quiz-q">
+            A 13B parameter model trained with Adam in FP32 needs at minimum how
+            much memory for weights + optimizer states?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -406,7 +463,7 @@ dW = X.T @ dY  <span class="comment"># gradient w.r.t. weights</span></pre>
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 2: Backward Pass Kernels -->
       <section class="section" id="section-1">
@@ -414,20 +471,27 @@ dW = X.T @ dY  <span class="comment"># gradient w.r.t. weights</span></pre>
         <h2 class="section__title">Writing Backward Passes</h2>
 
         <p>
-          Understanding backward kernels helps you write custom operations and debug gradient issues.
-          Each operation must define how gradients flow backwards.
+          Understanding backward kernels helps you write custom operations and
+          debug gradient issues. Each operation must define how gradients flow
+          backwards.
         </p>
 
         <h3>Linear Layer Backward</h3>
 
         <p>
-          The <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank" rel="noopener">linear layer</a>
+          The
+          <a
+            href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html"
+            target="_blank"
+            rel="noopener"
+            >linear layer</a
+          >
           backward pass requires saving the input tensor from the forward pass:
         </p>
 
         <div class="code-block">
           <div class="code-block__header">Triton Linear Backward</div>
-<pre><span class="decorator">@triton.jit</span>
+          <pre><span class="decorator">@triton.jit</span>
 <span class="keyword">def</span> <span class="function">linear_backward_dx</span>(
     dY_ptr, W_ptr, dX_ptr,
     M, N, K,  <span class="comment"># M=batch, N=in_features, K=out_features</span>
@@ -461,14 +525,20 @@ dW = X.T @ dY  <span class="comment"># gradient w.r.t. weights</span></pre>
         <h3>LayerNorm Backward</h3>
 
         <p>
-          <a href="https://arxiv.org/abs/1607.06450" target="_blank" rel="noopener">LayerNorm</a> 
-          backward is more complex because normalization creates dependencies between elements.
-          The gradients must account for the mean and variance computations:
+          <a
+            href="https://arxiv.org/abs/1607.06450"
+            target="_blank"
+            rel="noopener"
+            >LayerNorm</a
+          >
+          backward is more complex because normalization creates dependencies
+          between elements. The gradients must account for the mean and variance
+          computations:
         </p>
 
         <div class="code-block">
           <div class="code-block__header">LayerNorm Gradient Equations</div>
-<pre><span class="comment"># Forward: y = (x - mean) / std * gamma + beta</span>
+          <pre><span class="comment"># Forward: y = (x - mean) / std * gamma + beta</span>
 <span class="comment"># Where std = sqrt(var + eps)</span>
 
 <span class="comment"># Backward requires 3 passes:</span>
@@ -488,17 +558,23 @@ dbeta = sum(dY, dim=0)</pre>
         <div class="callout warning">
           <div class="callout-title">Numerical Stability in Backward</div>
           <p class="mb-0">
-            Division by std can cause issues when variance is very small.
-            Always use the same epsilon in backward as forward, and consider using 
-            <a href="https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html#batch-normalization" target="_blank" rel="noopener">numerically stable formulations</a>.
+            Division by std can cause issues when variance is very small. Always
+            use the same epsilon in backward as forward, and consider using
+            <a
+              href="https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html#batch-normalization"
+              target="_blank"
+              rel="noopener"
+              >numerically stable formulations</a
+            >.
           </p>
         </div>
 
         <h3>Attention Backward Memory</h3>
 
         <p>
-          Standard attention backward is memory-intensive because it requires the full attention matrix.
-          For sequence length L and batch B with H heads:
+          Standard attention backward is memory-intensive because it requires
+          the full attention matrix. For sequence length L and batch B with H
+          heads:
         </p>
 
         <table class="precision-table">
@@ -529,12 +605,22 @@ dbeta = sum(dY, dim=0)</pre>
         </table>
 
         <p>
-          This is why <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a>
-          recomputes attention during backward instead of storing it—trading compute for memory.
+          This is why
+          <a
+            href="https://arxiv.org/abs/2205.14135"
+            target="_blank"
+            rel="noopener"
+            >FlashAttention</a
+          >
+          recomputes attention during backward instead of storing it trading
+          compute for memory.
         </p>
 
         <div class="quiz quiz--micro" id="quiz-backward">
-          <div class="quiz-q">Why does FlashAttention recompute the attention matrix during backward pass?</div>
+          <div class="quiz-q">
+            Why does FlashAttention recompute the attention matrix during
+            backward pass?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -542,18 +628,23 @@ dbeta = sum(dY, dim=0)</pre>
             </div>
             <div class="quiz-opt" data-correct="true" tabindex="0">
               <div class="quiz-mark"></div>
-              <span>Storing O(L²) attention matrix is prohibitively expensive for long sequences</span>
+              <span
+                >Storing O(L²) attention matrix is prohibitively expensive for
+                long sequences</span
+              >
             </div>
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
-              <span>The attention matrix changes between forward and backward</span>
+              <span
+                >The attention matrix changes between forward and backward</span
+              >
             </div>
           </div>
           <div class="quiz-fb"></div>
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 3: Mixed Precision Training -->
       <section class="section" id="section-2">
@@ -561,9 +652,15 @@ dbeta = sum(dY, dim=0)</pre>
         <h2 class="section__title">FP16/BF16 Training with Loss Scaling</h2>
 
         <p>
-          <a href="https://arxiv.org/abs/1710.03740" target="_blank" rel="noopener">Mixed-precision training</a>
-          uses lower precision (FP16 or BF16) for forward/backward passes while maintaining
-          FP32 master weights. This reduces memory and leverages Tensor Cores for speed.
+          <a
+            href="https://arxiv.org/abs/1710.03740"
+            target="_blank"
+            rel="noopener"
+            >Mixed-precision training</a
+          >
+          uses lower precision (FP16 or BF16) for forward/backward passes while
+          maintaining FP32 master weights. This reduces memory and leverages
+          Tensor Cores for speed.
         </p>
 
         <h3>The Precision Hierarchy</h3>
@@ -608,15 +705,20 @@ dbeta = sum(dY, dim=0)</pre>
         <h3>Loss Scaling</h3>
 
         <p>
-          FP16 can't represent gradients smaller than ~6×10<sup>-8</sup>. Small gradients
-          underflow to zero, causing training to stall. 
-          <a href="https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/index.html#lossscaling" target="_blank" rel="noopener">Loss scaling</a>
+          FP16 can't represent gradients smaller than ~6×10<sup>-8</sup>. Small
+          gradients underflow to zero, causing training to stall.
+          <a
+            href="https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/index.html#lossscaling"
+            target="_blank"
+            rel="noopener"
+            >Loss scaling</a
+          >
           multiplies the loss by a large factor, scaling up all gradients:
         </p>
 
         <div class="code-block">
           <div class="code-block__header">PyTorch AMP with Loss Scaling</div>
-<pre><span class="keyword">from</span> torch.cuda.amp <span class="keyword">import</span> autocast, GradScaler
+          <pre><span class="keyword">from</span> torch.cuda.amp <span class="keyword">import</span> autocast, GradScaler
 
 scaler = GradScaler()
 
@@ -638,22 +740,31 @@ scaler = GradScaler()
 
         <h3>Dynamic Loss Scaling</h3>
 
-        <p>
-          The scale factor is adjusted dynamically:
-        </p>
+        <p>The scale factor is adjusted dynamically:</p>
 
         <ul>
-          <li><strong>No overflow for N steps</strong> → increase scale (typically 2x)</li>
-          <li><strong>Overflow detected</strong> → decrease scale (typically 0.5x), skip update</li>
+          <li>
+            <strong>No overflow for N steps</strong> → increase scale (typically
+            2x)
+          </li>
+          <li>
+            <strong>Overflow detected</strong> → decrease scale (typically
+            0.5x), skip update
+          </li>
         </ul>
 
         <div class="callout info">
           <div class="callout-title">BF16 Advantage</div>
           <p class="mb-0">
-            <a href="https://cloud.google.com/tpu/docs/bfloat16" target="_blank" rel="noopener">BF16</a> 
+            <a
+              href="https://cloud.google.com/tpu/docs/bfloat16"
+              target="_blank"
+              rel="noopener"
+              >BF16</a
+            >
             has the same exponent range as FP32, so gradients rarely underflow.
-            Most modern training uses BF16 without loss scaling when hardware supports it
-            (Ampere+ GPUs, TPUs).
+            Most modern training uses BF16 without loss scaling when hardware
+            supports it (Ampere+ GPUs, TPUs).
           </p>
         </div>
 
@@ -664,14 +775,24 @@ scaler = GradScaler()
         </p>
 
         <ul>
-          <li><strong>Softmax</strong> — accumulation over many elements</li>
-          <li><strong>LayerNorm variance</strong> — requires high precision for stability</li>
-          <li><strong>Loss computation</strong> — small loss values can underflow</li>
-          <li><strong>Optimizer states</strong> — momentum/variance accumulate over many steps</li>
+          <li><strong>Softmax</strong> accumulation over many elements</li>
+          <li>
+            <strong>LayerNorm variance</strong> requires high precision for
+            stability
+          </li>
+          <li>
+            <strong>Loss computation</strong> small loss values can underflow
+          </li>
+          <li>
+            <strong>Optimizer states</strong> momentum/variance accumulate over
+            many steps
+          </li>
         </ul>
 
         <div class="quiz quiz--micro" id="quiz-precision">
-          <div class="quiz-q">Why does BF16 training usually not require loss scaling?</div>
+          <div class="quiz-q">
+            Why does BF16 training usually not require loss scaling?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -679,7 +800,10 @@ scaler = GradScaler()
             </div>
             <div class="quiz-opt" data-correct="true" tabindex="0">
               <div class="quiz-mark"></div>
-              <span>BF16 has the same exponent range as FP32, so gradients don't underflow</span>
+              <span
+                >BF16 has the same exponent range as FP32, so gradients don't
+                underflow</span
+              >
             </div>
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -690,7 +814,7 @@ scaler = GradScaler()
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 4: Activation Checkpointing -->
       <section class="section" id="section-3">
@@ -698,57 +822,102 @@ scaler = GradScaler()
         <h2 class="section__title">Trading Compute for Memory</h2>
 
         <p>
-          <a href="https://arxiv.org/abs/1604.06174" target="_blank" rel="noopener">Activation checkpointing</a>
-          (gradient checkpointing) saves memory by not storing all intermediate activations.
-          Instead, it recomputes them during the backward pass.
+          <a
+            href="https://arxiv.org/abs/1604.06174"
+            target="_blank"
+            rel="noopener"
+            >Activation checkpointing</a
+          >
+          (gradient checkpointing) saves memory by not storing all intermediate
+          activations. Instead, it recomputes them during the backward pass.
         </p>
 
         <h3>How It Works</h3>
 
-        <p>
-          Without checkpointing, all activations are saved for backward:
-        </p>
+        <p>Without checkpointing, all activations are saved for backward:</p>
 
         <div class="checkpoint-viz">
           <div class="checkpoint-viz__row">
             <div class="checkpoint-viz__label">No checkpoint</div>
             <div class="checkpoint-viz__blocks">
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L1</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L2</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L3</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L4</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L5</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--saved">L6</div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L1
+              </div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L2
+              </div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L3
+              </div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L4
+              </div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L5
+              </div>
+              <div class="checkpoint-viz__block checkpoint-viz__block--saved">
+                L6
+              </div>
             </div>
           </div>
           <div class="checkpoint-viz__row">
             <div class="checkpoint-viz__label">Memory</div>
             <div class="checkpoint-viz__blocks">
-              <div style="font-size: var(--text-xs); color: var(--accent-orange);">O(n) activations stored</div>
+              <div
+                style="font-size: var(--text-xs); color: var(--accent-orange)"
+              >
+                O(n) activations stored
+              </div>
             </div>
           </div>
         </div>
 
-        <p>
-          With checkpointing every 2 layers:
-        </p>
+        <p>With checkpointing every 2 layers:</p>
 
         <div class="checkpoint-viz">
           <div class="checkpoint-viz__row">
             <div class="checkpoint-viz__label">Checkpointed</div>
             <div class="checkpoint-viz__blocks">
-              <div class="checkpoint-viz__block checkpoint-viz__block--checkpoint">L1</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--recompute">L2</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--checkpoint">L3</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--recompute">L4</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--checkpoint">L5</div>
-              <div class="checkpoint-viz__block checkpoint-viz__block--recompute">L6</div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--checkpoint"
+              >
+                L1
+              </div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--recompute"
+              >
+                L2
+              </div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--checkpoint"
+              >
+                L3
+              </div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--recompute"
+              >
+                L4
+              </div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--checkpoint"
+              >
+                L5
+              </div>
+              <div
+                class="checkpoint-viz__block checkpoint-viz__block--recompute"
+              >
+                L6
+              </div>
             </div>
           </div>
           <div class="checkpoint-viz__row">
             <div class="checkpoint-viz__label">Memory</div>
             <div class="checkpoint-viz__blocks">
-              <div style="font-size: var(--text-xs); color: var(--accent-green);">O(sqrt(n)) activations stored</div>
+              <div
+                style="font-size: var(--text-xs); color: var(--accent-green)"
+              >
+                O(sqrt(n)) activations stored
+              </div>
             </div>
           </div>
         </div>
@@ -757,7 +926,7 @@ scaler = GradScaler()
 
         <div class="code-block">
           <div class="code-block__header">PyTorch Checkpointing</div>
-<pre><span class="keyword">from</span> torch.utils.checkpoint <span class="keyword">import</span> checkpoint
+          <pre><span class="keyword">from</span> torch.utils.checkpoint <span class="keyword">import</span> checkpoint
 
 <span class="keyword">class</span> <span class="function">CheckpointedTransformer</span>(nn.Module):
     <span class="keyword">def</span> <span class="function">__init__</span>(self, n_layers):
@@ -816,19 +985,28 @@ scaler = GradScaler()
         <div class="callout info">
           <div class="callout-title">Selective Checkpointing</div>
           <p class="mb-0">
-            Not all operations benefit equally from checkpointing. Attention has O(L²) activations
-            but O(L²) recompute cost. FFN has O(L×d) activations but cheap recompute.
-            <a href="https://arxiv.org/abs/2205.05198" target="_blank" rel="noopener">Selective checkpointing</a>
+            Not all operations benefit equally from checkpointing. Attention has
+            O(L²) activations but O(L²) recompute cost. FFN has O(L×d)
+            activations but cheap recompute.
+            <a
+              href="https://arxiv.org/abs/2205.05198"
+              target="_blank"
+              rel="noopener"
+              >Selective checkpointing</a
+            >
             only checkpoints the most memory-intensive operations.
           </p>
         </div>
 
         <div class="quiz quiz--micro" id="quiz-checkpoint">
-          <div class="quiz-q">Checkpointing every layer reduces activation memory to O(1) per layer, but at what compute cost?</div>
+          <div class="quiz-q">
+            Checkpointing every layer reduces activation memory to O(1) per
+            layer, but at what compute cost?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
-              <span>No extra compute—just memory savings</span>
+              <span>No extra compute just memory savings</span>
             </div>
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -836,14 +1014,17 @@ scaler = GradScaler()
             </div>
             <div class="quiz-opt" data-correct="true" tabindex="0">
               <div class="quiz-mark"></div>
-              <span>~100% more forward compute (recompute entire forward during backward)</span>
+              <span
+                >~100% more forward compute (recompute entire forward during
+                backward)</span
+              >
             </div>
           </div>
           <div class="quiz-fb"></div>
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 5: Gradient Accumulation -->
       <section class="section" id="section-4">
@@ -851,9 +1032,15 @@ scaler = GradScaler()
         <h2 class="section__title">Simulating Larger Batch Sizes</h2>
 
         <p>
-          <a href="https://pytorch.org/docs/stable/notes/amp_examples.html#gradient-accumulation" target="_blank" rel="noopener">Gradient accumulation</a>
-          lets you train with effective batch sizes larger than what fits in memory
-          by accumulating gradients over multiple forward-backward passes before updating weights.
+          <a
+            href="https://pytorch.org/docs/stable/notes/amp_examples.html#gradient-accumulation"
+            target="_blank"
+            rel="noopener"
+            >Gradient accumulation</a
+          >
+          lets you train with effective batch sizes larger than what fits in
+          memory by accumulating gradients over multiple forward-backward passes
+          before updating weights.
         </p>
 
         <h3>The Pattern</h3>
@@ -870,35 +1057,42 @@ scaler = GradScaler()
             <div class="timeline__label">Micro-batch 2</div>
             <div class="timeline__steps">
               <div class="timeline__step timeline__step--forward">FWD</div>
-              <div class="timeline__step timeline__step--backward">BWD (accumulate)</div>
+              <div class="timeline__step timeline__step--backward">
+                BWD (accumulate)
+              </div>
             </div>
           </div>
           <div class="timeline__row">
             <div class="timeline__label">Micro-batch 3</div>
             <div class="timeline__steps">
               <div class="timeline__step timeline__step--forward">FWD</div>
-              <div class="timeline__step timeline__step--backward">BWD (accumulate)</div>
+              <div class="timeline__step timeline__step--backward">
+                BWD (accumulate)
+              </div>
             </div>
           </div>
           <div class="timeline__row">
             <div class="timeline__label">Micro-batch 4</div>
             <div class="timeline__steps">
               <div class="timeline__step timeline__step--forward">FWD</div>
-              <div class="timeline__step timeline__step--backward">BWD (accumulate)</div>
+              <div class="timeline__step timeline__step--backward">
+                BWD (accumulate)
+              </div>
               <div class="timeline__step timeline__step--update">UPDATE</div>
             </div>
           </div>
         </div>
 
         <p>
-          With 4 accumulation steps and micro-batch size 8, effective batch size = 32.
+          With 4 accumulation steps and micro-batch size 8, effective batch size
+          = 32.
         </p>
 
         <h3>Implementation</h3>
 
         <div class="code-block">
           <div class="code-block__header">Gradient Accumulation Loop</div>
-<pre>accumulation_steps = <span class="number">4</span>
+          <pre>accumulation_steps = <span class="number">4</span>
 optimizer.zero_grad()
 
 <span class="keyword">for</span> i, (inputs, targets) <span class="keyword">in</span> enumerate(dataloader):
@@ -920,29 +1114,45 @@ optimizer.zero_grad()
         <div class="callout warning">
           <div class="callout-title">Divide Loss by Accumulation Steps</div>
           <p class="mb-0">
-            Since gradients are summed (not averaged) across accumulation steps, you must divide
-            the loss by the number of accumulation steps to get correct gradient magnitudes.
-            Alternatively, ensure your loss is already a mean over the batch.
+            Since gradients are summed (not averaged) across accumulation steps,
+            you must divide the loss by the number of accumulation steps to get
+            correct gradient magnitudes. Alternatively, ensure your loss is
+            already a mean over the batch.
           </p>
         </div>
 
         <h3>BatchNorm Interaction</h3>
 
         <p>
-          <a href="https://arxiv.org/abs/1502.03167" target="_blank" rel="noopener">BatchNorm</a>
-          computes statistics over micro-batches, not the effective batch.
-          This can cause training instability with small micro-batches.
-          Solutions:
+          <a
+            href="https://arxiv.org/abs/1502.03167"
+            target="_blank"
+            rel="noopener"
+            >BatchNorm</a
+          >
+          computes statistics over micro-batches, not the effective batch. This
+          can cause training instability with small micro-batches. Solutions:
         </p>
 
         <ul>
-          <li><strong>SyncBatchNorm</strong> — synchronize statistics across GPUs</li>
-          <li><strong>GroupNorm/LayerNorm</strong> — statistics independent of batch size</li>
-          <li><strong>Ghost BatchNorm</strong> — compute stats over virtual sub-batches</li>
+          <li>
+            <strong>SyncBatchNorm</strong> synchronize statistics across GPUs
+          </li>
+          <li>
+            <strong>GroupNorm/LayerNorm</strong> statistics independent of batch
+            size
+          </li>
+          <li>
+            <strong>Ghost BatchNorm</strong> compute stats over virtual
+            sub-batches
+          </li>
         </ul>
 
         <div class="quiz quiz--micro" id="quiz-accumulation">
-          <div class="quiz-q">With gradient accumulation over 8 steps and micro-batch size 16, what is the effective batch size?</div>
+          <div class="quiz-q">
+            With gradient accumulation over 8 steps and micro-batch size 16,
+            what is the effective batch size?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -961,7 +1171,7 @@ optimizer.zero_grad()
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 6: Training Numerics -->
       <section class="section" id="section-5">
@@ -969,20 +1179,26 @@ optimizer.zero_grad()
         <h2 class="section__title">Stability and Debugging</h2>
 
         <p>
-          Training instability manifests as loss spikes, NaN losses, or gradients that explode/vanish.
-          Understanding the numerical causes helps you fix them.
+          Training instability manifests as loss spikes, NaN losses, or
+          gradients that explode/vanish. Understanding the numerical causes
+          helps you fix them.
         </p>
 
         <h3>Gradient Clipping</h3>
 
         <p>
-          <a href="https://arxiv.org/abs/1211.5063" target="_blank" rel="noopener">Gradient clipping</a>
+          <a
+            href="https://arxiv.org/abs/1211.5063"
+            target="_blank"
+            rel="noopener"
+            >Gradient clipping</a
+          >
           prevents exploding gradients by capping their magnitude:
         </p>
 
         <div class="code-block">
           <div class="code-block__header">Gradient Clipping in PyTorch</div>
-<pre><span class="comment"># After backward, before optimizer step</span>
+          <pre><span class="comment"># After backward, before optimizer step</span>
 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=<span class="number">1.0</span>)
 
 <span class="comment"># Or clip by value</span>
@@ -991,14 +1207,13 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
 
         <p>
           Common max_norm values: 1.0 for transformers, 0.1-0.5 for RNNs.
-          Monitor gradient norms—if clipping activates frequently, investigate the cause.
+          Monitor gradient norms if clipping activates frequently, investigate
+          the cause.
         </p>
 
         <h3>Loss Spikes</h3>
 
-        <p>
-          Sudden loss increases often indicate numerical issues:
-        </p>
+        <p>Sudden loss increases often indicate numerical issues:</p>
 
         <table class="precision-table">
           <thead>
@@ -1036,7 +1251,7 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
 
         <div class="code-block">
           <div class="code-block__header">NaN Detection Hook</div>
-<pre><span class="keyword">def</span> <span class="function">check_nan_hook</span>(module, grad_input, grad_output):
+          <pre><span class="keyword">def</span> <span class="function">check_nan_hook</span>(module, grad_input, grad_output):
     <span class="keyword">for</span> i, grad <span class="keyword">in</span> enumerate(grad_output):
         <span class="keyword">if</span> grad <span class="keyword">is not None</span> <span class="keyword">and</span> torch.isnan(grad).any():
             <span class="keyword">print</span>(f<span class="string">"NaN in {module.__class__.__name__} grad_output[{i}]"</span>)
@@ -1050,34 +1265,71 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
         <div class="callout info">
           <div class="callout-title">Anomaly Detection Mode</div>
           <p class="mb-0">
-            PyTorch's <a href="https://pytorch.org/docs/stable/autograd.html#anomaly-detection" target="_blank" rel="noopener">anomaly detection</a>
-            tracks which operation produced NaN: <code>torch.autograd.set_detect_anomaly(True)</code>.
-            Slows training significantly—use only for debugging.
+            PyTorch's
+            <a
+              href="https://pytorch.org/docs/stable/autograd.html#anomaly-detection"
+              target="_blank"
+              rel="noopener"
+              >anomaly detection</a
+            >
+            tracks which operation produced NaN:
+            <code>torch.autograd.set_detect_anomaly(True)</code>. Slows training
+            significantly use only for debugging.
           </p>
         </div>
 
         <h3>Weight Initialization</h3>
 
         <p>
-          Proper initialization prevents vanishing/exploding gradients at training start.
-          Common schemes:
+          Proper initialization prevents vanishing/exploding gradients at
+          training start. Common schemes:
         </p>
 
         <ul>
-          <li><strong><a href="https://arxiv.org/abs/1502.01852" target="_blank" rel="noopener">He/Kaiming</a></strong> — 
-            std = sqrt(2/fan_in), good for ReLU</li>
-          <li><strong><a href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf" target="_blank" rel="noopener">Xavier/Glorot</a></strong> — 
-            std = sqrt(2/(fan_in + fan_out)), good for tanh/sigmoid</li>
-          <li><strong>Small init for residuals</strong> — scale final layer of residual blocks by 1/sqrt(n_layers)</li>
+          <li>
+            <strong
+              ><a
+                href="https://arxiv.org/abs/1502.01852"
+                target="_blank"
+                rel="noopener"
+                >He/Kaiming</a
+              ></strong
+            >
+            std = sqrt(2/fan_in), good for ReLU
+          </li>
+          <li>
+            <strong
+              ><a
+                href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"
+                target="_blank"
+                rel="noopener"
+                >Xavier/Glorot</a
+              ></strong
+            >
+            std = sqrt(2/(fan_in + fan_out)), good for tanh/sigmoid
+          </li>
+          <li>
+            <strong>Small init for residuals</strong> scale final layer of
+            residual blocks by 1/sqrt(n_layers)
+          </li>
         </ul>
 
         <p>
-          GPT-style models often scale residual path weights by <code>1/sqrt(2 * n_layers)</code> 
-          as noted in the <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf" target="_blank" rel="noopener">GPT-2 paper</a>.
+          GPT-style models often scale residual path weights by
+          <code>1/sqrt(2 * n_layers)</code> as noted in the
+          <a
+            href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
+            target="_blank"
+            rel="noopener"
+            >GPT-2 paper</a
+          >.
         </p>
 
         <div class="quiz quiz--micro" id="quiz-numerics">
-          <div class="quiz-q">You see loss = NaN after a few hundred steps. Gradient norms were growing before the crash. Most likely fix?</div>
+          <div class="quiz-q">
+            You see loss = NaN after a few hundred steps. Gradient norms were
+            growing before the crash. Most likely fix?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -1096,7 +1348,7 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
         </div>
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Summary and Links -->
       <section class="section" id="section-6">
@@ -1105,33 +1357,55 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--blue">Training Memory Breakdown</div>
+            <div class="card__icon card__icon--blue">
+              Training Memory Breakdown
+            </div>
           </div>
           <ul>
-            <li>Training needs ~4x model weights for Adam (weights + gradients + 2x optimizer states)</li>
-            <li>Activations scale with batch size, sequence length, and model depth</li>
-            <li>Backward pass costs ~2x forward due to computing gradients for both inputs and weights</li>
+            <li>
+              Training needs ~4x model weights for Adam (weights + gradients +
+              2x optimizer states)
+            </li>
+            <li>
+              Activations scale with batch size, sequence length, and model
+              depth
+            </li>
+            <li>
+              Backward pass costs ~2x forward due to computing gradients for
+              both inputs and weights
+            </li>
           </ul>
         </div>
 
-        <div class="card" style="margin-top: var(--space-md);">
+        <div class="card" style="margin-top: var(--space-md)">
           <div class="card__header">
-            <div class="card__icon card__icon--green">Memory Optimization Techniques</div>
+            <div class="card__icon card__icon--green">
+              Memory Optimization Techniques
+            </div>
           </div>
           <ul>
-            <li><strong>Mixed precision</strong> — FP16/BF16 halves memory for activations and gradients</li>
-            <li><strong>Activation checkpointing</strong> — trade compute for memory by recomputing activations</li>
-            <li><strong>Gradient accumulation</strong> — simulate larger batches without more memory</li>
+            <li>
+              <strong>Mixed precision</strong> FP16/BF16 halves memory for
+              activations and gradients
+            </li>
+            <li>
+              <strong>Activation checkpointing</strong> trade compute for memory
+              by recomputing activations
+            </li>
+            <li>
+              <strong>Gradient accumulation</strong> simulate larger batches
+              without more memory
+            </li>
           </ul>
         </div>
 
-        <div class="card" style="margin-top: var(--space-md);">
+        <div class="card" style="margin-top: var(--space-md)">
           <div class="card__header">
             <div class="card__icon card__icon--orange">Numerical Stability</div>
           </div>
           <ul>
             <li>Use loss scaling with FP16 (not needed for BF16)</li>
-            <li>Gradient clipping prevents explosion—common max_norm = 1.0</li>
+            <li>Gradient clipping prevents explosion common max_norm = 1.0</li>
             <li>Proper initialization scales with network depth</li>
           </ul>
         </div>
@@ -1149,6 +1423,5 @@ torch.nn.utils.clip_grad_value_(model.parameters(), clip_value=<span class="numb
         <div class="chapter-nav__current">Chapter 10: Training Kernels</div>
       </nav>
     </main>
-
   </body>
 </html>

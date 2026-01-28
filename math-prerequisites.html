@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Math Prerequisites — GPU Learning</title>
+    <title>Math Prerequisites GPU Learning</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
@@ -11,10 +11,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="base.css" fetchpriority="high" />
     <style>
       /* Lesson page - no sidebar */
       body {
@@ -366,11 +372,11 @@
 
       <!-- Diagnostic Quiz -->
       <section class="section" id="diagnostic">
-        <div class="section__number">01 — SELF-ASSESSMENT</div>
+        <div class="section__number">01 SELF-ASSESSMENT</div>
         <h2 class="section__title">Diagnostic Quiz</h2>
         <p>
           Take this 5-question quiz to assess your current readiness. Be honest
-          with yourself—the goal is to identify what you need to learn, not to
+          with yourself the goal is to identify what you need to learn, not to
           pass a test.
         </p>
 
@@ -520,7 +526,7 @@
 
       <!-- Jump to Topics -->
       <section class="section" id="topics">
-        <div class="section__number">02 — TOPICS</div>
+        <div class="section__number">02 TOPICS</div>
         <h2 class="section__title">Jump to a Topic</h2>
         <div class="topic-nav">
           <a href="#linear-algebra" class="topic-nav__link">Linear Algebra</a>
@@ -537,11 +543,11 @@
 
       <!-- Linear Algebra Basics -->
       <section class="section" id="linear-algebra">
-        <div class="section__number">03 — LINEAR ALGEBRA</div>
+        <div class="section__number">03 LINEAR ALGEBRA</div>
         <h2 class="section__title">Linear Algebra Basics</h2>
         <p>
           Understanding vectors and matrices is fundamental. You don't need
-          proof-heavy linear algebra—focus on building visual and computational
+          proof-heavy linear algebra focus on building visual and computational
           intuition.
         </p>
 
@@ -627,7 +633,7 @@
 
       <!-- Matrix Operations -->
       <section class="section" id="matrix-ops">
-        <div class="section__number">04 — MATRIX OPERATIONS</div>
+        <div class="section__number">04 MATRIX OPERATIONS</div>
         <h2 class="section__title">Matrix Operations</h2>
         <p>
           Matrix multiplication is the core operation in GPU computing. You need
@@ -681,9 +687,10 @@
             </div>
           </div>
           <p class="resource-card__desc">
-            Clear explanation of matrix multiplication with step-by-step examples.
-            Shows how each output element is computed from rows and columns. Essential
-            for understanding tiled matrix multiplication in CUDA.
+            Clear explanation of matrix multiplication with step-by-step
+            examples. Shows how each output element is computed from rows and
+            columns. Essential for understanding tiled matrix multiplication in
+            CUDA.
           </p>
         </div>
 
@@ -716,7 +723,7 @@
 
       <!-- Floating Point Numbers -->
       <section class="section" id="floating-point">
-        <div class="section__number">05 — FLOATING POINT</div>
+        <div class="section__number">05 FLOATING POINT</div>
         <h2 class="section__title">Floating Point Numbers</h2>
         <p>
           GPUs use various floating point formats (FP32, FP16, FP8, FP4).
@@ -829,7 +836,7 @@
 
       <!-- Exponentials and Logarithms -->
       <section class="section" id="exponentials">
-        <div class="section__number">06 — EXPONENTIALS</div>
+        <div class="section__number">06 EXPONENTIALS</div>
         <h2 class="section__title">Exponentials and Logarithms</h2>
         <p>
           Softmax uses exp(), log-sum-exp tricks prevent overflow, and
@@ -918,7 +925,7 @@
 
       <!-- Programming Math -->
       <section class="section" id="index-arithmetic">
-        <div class="section__number">07 — INDEX ARITHMETIC</div>
+        <div class="section__number">07 INDEX ARITHMETIC</div>
         <h2 class="section__title">Programming Math (Index Arithmetic)</h2>
         <p>
           GPU kernels constantly convert between multi-dimensional indices and
@@ -1015,7 +1022,7 @@
 
       <!-- Learning Paths -->
       <section class="section" id="paths">
-        <div class="section__number">08 — LEARNING PATHS</div>
+        <div class="section__number">08 LEARNING PATHS</div>
         <h2 class="section__title">Recommended Learning Paths</h2>
         <p>
           Choose the path that matches your current level. Time estimates assume
@@ -1074,9 +1081,7 @@
             <li>Play with float.exposed, try edge cases (30 min)</li>
             <li>Review Better Explained exponentials article (20 min)</li>
             <li>Read memory layout article on row-major indexing (20 min)</li>
-            <li>
-              Practice: manually compute 5 matrix multiplications (1 hr)
-            </li>
+            <li>Practice: manually compute 5 matrix multiplications (1 hr)</li>
             <li>Practice: convert 10 2D indices to linear indices (30 min)</li>
             <li>Retake diagnostic quiz (15 min)</li>
           </ul>
@@ -1105,7 +1110,7 @@
 
       <!-- Self-Study Tips -->
       <section class="section" id="tips">
-        <div class="section__number">09 — STUDY TIPS</div>
+        <div class="section__number">09 STUDY TIPS</div>
         <h2 class="section__title">Self-Study Tips</h2>
         <p>How to get the most out of these resources.</p>
 
@@ -1138,9 +1143,9 @@
               <div class="tips-list__content">
                 <h4>Use interactive tools</h4>
                 <p>
-                  float.exposed and matrix visualizers let you experiment.
-                  "What happens if I flip this bit?" builds deeper understanding
-                  than reading about it.
+                  float.exposed and matrix visualizers let you experiment. "What
+                  happens if I flip this bit?" builds deeper understanding than
+                  reading about it.
                 </p>
               </div>
             </li>
@@ -1159,7 +1164,7 @@
               <div class="tips-list__content">
                 <h4>You're ready when it feels obvious</h4>
                 <p>
-                  The goal isn't memorization—it's internalization. When someone
+                  The goal isn't memorization it's internalization. When someone
                   says "3x4 times 4x2" and you instantly know the result is 3x2,
                   you're ready.
                 </p>
@@ -1189,7 +1194,13 @@
       </section>
 
       <div class="site-license">
-        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        All material licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en"
+          target="_blank"
+          rel="noopener"
+          >CC BY-NC-SA 4.0</a
+        >
       </div>
     </div>
 
@@ -1206,27 +1217,32 @@
         1: {
           correct:
             "Correct! The result takes the rows from A (3) and columns from B (2).",
-          wrong: "Remember: result dimensions are (rows of A) x (columns of B). The inner dimensions (4) must match and cancel out.",
+          wrong:
+            "Remember: result dimensions are (rows of A) x (columns of B). The inner dimensions (4) must match and cancel out.",
         },
         2: {
           correct:
             "Correct! linear_index = row * num_cols + col = 2 * 6 + 3 = 15",
-          wrong: "In row-major: linear_index = row * num_cols + col. Here: 2 * 6 + 3 = 15",
+          wrong:
+            "In row-major: linear_index = row * num_cols + col. Here: 2 * 6 + 3 = 15",
         },
         3: {
           correct:
             "Correct! FP32 has 23 mantissa bits, giving about 7 decimal digits of precision.",
-          wrong: "FP32 has 23 mantissa bits. log10(2^23) ≈ 6.9, so about 6-7 decimal digits.",
+          wrong:
+            "FP32 has 23 mantissa bits. log10(2^23) ≈ 6.9, so about 6-7 decimal digits.",
         },
         4: {
           correct:
             "Correct! Exponential functions eventually dominate any polynomial, no matter the degree.",
-          wrong: "Exponential growth (e^x) always eventually overtakes polynomial growth (x^n) for any n.",
+          wrong:
+            "Exponential growth (e^x) always eventually overtakes polynomial growth (x^n) for any n.",
         },
         5: {
           correct:
             "Correct! Dividing by the sum creates a probability distribution that sums to 1. This is the basis of softmax.",
-          wrong: "When you divide each element by the total sum, the results must sum to 1. (2/12 + 4/12 + 6/12 = 12/12 = 1)",
+          wrong:
+            "When you divide each element by the total sum, the results must sum to 1. (2/12 + 4/12 + 6/12 = 12/12 = 1)",
         },
       };
 
@@ -1259,7 +1275,7 @@
         1: {
           message: "Let's build your foundation.",
           recommendation:
-            "No worries—everyone starts somewhere. The 'Complete Beginner' path will get you ready in about 20 hours.",
+            "No worries everyone starts somewhere. The 'Complete Beginner' path will get you ready in about 20 hours.",
           class: "quiz-score__value--needs-work",
         },
         0: {
@@ -1342,7 +1358,14 @@
         document.querySelectorAll(".quiz").forEach((quiz) => {
           quiz.classList.remove("answered");
           quiz.querySelectorAll(".quiz-opt").forEach((opt) => {
-            opt.classList.remove("correct", "wrong", "picked", "quiz__option--selected", "quiz__option--correct", "quiz__option--incorrect");
+            opt.classList.remove(
+              "correct",
+              "wrong",
+              "picked",
+              "quiz__option--selected",
+              "quiz__option--correct",
+              "quiz__option--incorrect",
+            );
           });
           const fb = quiz.querySelector(".quiz-fb");
           fb.className = "quiz-fb";

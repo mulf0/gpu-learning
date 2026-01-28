@@ -43,10 +43,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="base.css" fetchpriority="high" />
     <style>
       body {
         display: block;
@@ -162,15 +168,15 @@
       }
 
       /* 4-color cycle: blue → green → purple → orange */
-      .toc__chapter:nth-child(4n+1) .toc__num {
+      .toc__chapter:nth-child(4n + 1) .toc__num {
         background: var(--glow-blue);
         color: var(--accent-blue);
       }
-      .toc__chapter:nth-child(4n+2) .toc__num {
+      .toc__chapter:nth-child(4n + 2) .toc__num {
         background: var(--glow-green);
         color: var(--accent-green);
       }
-      .toc__chapter:nth-child(4n+3) .toc__num {
+      .toc__chapter:nth-child(4n + 3) .toc__num {
         background: var(--glow-purple);
         color: var(--accent-purple);
       }
@@ -316,7 +322,7 @@
             <div class="toc__content">
               <div class="toc__title">Memory Hierarchy</div>
               <p class="toc__desc">
-                Registers, SMEM, L2, HBM—latency, bandwidth, coalescing
+                Registers, SMEM, L2, HBM latency, bandwidth, coalescing
               </p>
             </div>
           </a>
@@ -431,7 +437,7 @@
         <span class="callout__icon">&#128211;</span>
         <div class="callout__content">
           <p class="callout__text">
-            33 hands-on Jupyter notebooks with free GPU access.
+            Hands-on Jupyter notebooks with free GPU access.
             <a href="notebooks.html">View all notebooks</a>
           </p>
         </div>

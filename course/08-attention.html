@@ -10,7 +10,10 @@
     />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://gpu.mulf.net/course/08-attention.html" />
+    <meta
+      property="og:url"
+      content="https://gpu.mulf.net/course/08-attention.html"
+    />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Chapter 8: Attention - GPU Learning" />
     <meta
@@ -22,7 +25,10 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="gpu.mulf.net" />
-    <meta property="twitter:url" content="https://gpu.mulf.net/course/08-attention.html" />
+    <meta
+      property="twitter:url"
+      content="https://gpu.mulf.net/course/08-attention.html"
+    />
     <meta name="twitter:title" content="Chapter 8: Attention - GPU Learning" />
     <meta
       name="twitter:description"
@@ -30,19 +36,27 @@
     />
     <meta name="twitter:image" content="https://gpu.mulf.net/og-image.png" />
 
-        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      crossorigin
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../base.css" fetchpriority="high" />
     <style>
-      body { display: block; }
+      body {
+        display: block;
+      }
 
       /* Vector input rows */
       .vector-row {
@@ -112,7 +126,11 @@
       .bar-chart__bar {
         width: 100%;
         max-width: 60px;
-        background: linear-gradient(180deg, var(--accent-purple), var(--accent-blue));
+        background: linear-gradient(
+          180deg,
+          var(--accent-purple),
+          var(--accent-blue)
+        );
         border-radius: 6px 6px 0 0;
         min-height: 4px;
         transition: height var(--transition-normal);
@@ -164,12 +182,35 @@
       }
 
       /* FP format diagram */
-      .fp-formats { display: flex; flex-direction: column; gap: var(--space-md); }
-      .fp-row { display: flex; flex-direction: column; gap: var(--space-xs); }
-      .fp-head { display: flex; justify-content: space-between; align-items: baseline; }
-      .fp-name { font-weight: 600; font-size: var(--text-sm); color: var(--accent-blue); }
-      .fp-range { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
-      .fp-bits { display: flex; gap: 2px; }
+      .fp-formats {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+      .fp-row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+      }
+      .fp-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .fp-name {
+        font-weight: 600;
+        font-size: var(--text-sm);
+        color: var(--accent-blue);
+      }
+      .fp-range {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .fp-bits {
+        display: flex;
+        gap: 2px;
+      }
       .fp-bit {
         height: 24px;
         display: flex;
@@ -180,9 +221,19 @@
         font-size: var(--text-xs);
         font-weight: 600;
       }
-      .fp-s { flex: 1; background: var(--accent-red); color: white; }
-      .fp-e { background: var(--accent-blue); color: white; }
-      .fp-m { background: var(--accent-green); color: var(--bg-primary); }
+      .fp-s {
+        flex: 1;
+        background: var(--accent-red);
+        color: white;
+      }
+      .fp-e {
+        background: var(--accent-blue);
+        color: white;
+      }
+      .fp-m {
+        background: var(--accent-green);
+        color: var(--bg-primary);
+      }
 
       .diagram {
         background: var(--bg-tertiary);
@@ -210,7 +261,9 @@
         font-size: var(--text-body);
         color: var(--text-primary);
       }
-      .equation__highlight { color: var(--accent-blue); }
+      .equation__highlight {
+        color: var(--accent-blue);
+      }
 
       .canvas {
         width: 100%;
@@ -229,27 +282,39 @@
         <h1 class="chapter-header__title">Attention</h1>
         <p class="chapter-header__desc">
           The math behind attention kernels. From dot products to softmax to
-          FlashAttention—understand what every operation actually does.
+          FlashAttention understand what every operation actually does.
         </p>
       </header>
 
       <!-- Chapter Connection -->
       <div class="chapter-connection">
         <div class="chapter-connection__label">Building on Chapter 7</div>
-        Chapter 7's normalization kernels showed how fusing operations saves memory bandwidth.
-        Attention is where this pattern becomes <em>essential</em>. Without tiling, attention on long 
-        sequences would require terabytes of memory. With tiling (FlashAttention), it fits in shared memory.
+        Chapter 7's normalization kernels showed how fusing operations saves
+        memory bandwidth. Attention is where this pattern becomes
+        <em>essential</em>. Without tiling, attention on long sequences would
+        require terabytes of memory. With tiling (FlashAttention), it fits in
+        shared memory.
       </div>
 
       <!-- Learning Objectives -->
       <div class="learning-objectives">
         <div class="learning-objectives__title">What You'll Learn</div>
         <ol class="learning-objectives__list">
-          <li class="learning-objectives__item">Implement standard scaled dot-product attention</li>
-          <li class="learning-objectives__item">Explain why naive attention is O(n²) in memory</li>
-          <li class="learning-objectives__item">Describe how FlashAttention achieves O(n) memory</li>
-          <li class="learning-objectives__item">Implement online softmax for numerical stability</li>
-          <li class="learning-objectives__item">Apply tiling strategies to attention computation</li>
+          <li class="learning-objectives__item">
+            Implement standard scaled dot-product attention
+          </li>
+          <li class="learning-objectives__item">
+            Explain why naive attention is O(n²) in memory
+          </li>
+          <li class="learning-objectives__item">
+            Describe how FlashAttention achieves O(n) memory
+          </li>
+          <li class="learning-objectives__item">
+            Implement online softmax for numerical stability
+          </li>
+          <li class="learning-objectives__item">
+            Apply tiling strategies to attention computation
+          </li>
         </ol>
       </div>
 
@@ -260,7 +325,10 @@
           <div class="prereq-callout__title">Prerequisites</div>
           <p class="prereq-callout__text">
             This chapter uses linear algebra and exponentials.
-            <a href="../math-prerequisites.html#linear-algebra">Linear Algebra</a> |
+            <a href="../math-prerequisites.html#linear-algebra"
+              >Linear Algebra</a
+            >
+            |
             <a href="../math-prerequisites.html#exponentials">Exponentials</a>
           </p>
         </div>
@@ -273,7 +341,7 @@
 
         <p>
           Attention computes <strong>how relevant</strong> each cached token is
-          to your query. The dot product is the measuring stick—it tells you how
+          to your query. The dot product is the measuring stick it tells you how
           much two vectors "agree."
         </p>
         <p>
@@ -284,25 +352,83 @@
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--blue">Interactive: Compute Q*K</div>
+            <div class="card__icon card__icon--blue">
+              Interactive: Compute Q*K
+            </div>
           </div>
 
           <div class="vector-row">
             <span class="vector-row__label">Query (Q)</span>
             <div class="vector-row__inputs">
-              <input type="number" class="input" id="q0" value="1" step="0.1" style="border-color: var(--accent-blue)" />
-              <input type="number" class="input" id="q1" value="0" step="0.1" style="border-color: var(--accent-blue)" />
-              <input type="number" class="input" id="q2" value="0.5" step="0.1" style="border-color: var(--accent-blue)" />
-              <input type="number" class="input" id="q3" value="-0.5" step="0.1" style="border-color: var(--accent-blue)" />
+              <input
+                type="number"
+                class="input"
+                id="q0"
+                value="1"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q1"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q2"
+                value="0.5"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="q3"
+                value="-0.5"
+                step="0.1"
+                style="border-color: var(--accent-blue)"
+              />
             </div>
           </div>
           <div class="vector-row">
             <span class="vector-row__label">Key (K)</span>
             <div class="vector-row__inputs">
-              <input type="number" class="input" id="k0" value="0.5" step="0.1" style="border-color: var(--accent-orange)" />
-              <input type="number" class="input" id="k1" value="0" step="0.1" style="border-color: var(--accent-orange)" />
-              <input type="number" class="input" id="k2" value="1" step="0.1" style="border-color: var(--accent-orange)" />
-              <input type="number" class="input" id="k3" value="0" step="0.1" style="border-color: var(--accent-orange)" />
+              <input
+                type="number"
+                class="input"
+                id="k0"
+                value="0.5"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k1"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k2"
+                value="1"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
+              <input
+                type="number"
+                class="input"
+                id="k3"
+                value="0"
+                step="0.1"
+                style="border-color: var(--accent-orange)"
+              />
             </div>
           </div>
 
@@ -318,12 +444,20 @@
         <p>
           In attention, you compute Q*K for <strong>every cached token</strong>.
           With a 4096-token context, that's 4096 dot products just to process
-          one query. This is why <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">attention is the bottleneck</a>.
+          one query. This is why
+          <a
+            href="https://arxiv.org/abs/2205.14135"
+            target="_blank"
+            rel="noopener"
+            >attention is the bottleneck</a
+          >.
         </p>
 
         <!-- Micro-quiz: Attention shapes -->
         <div class="quiz quiz--micro" id="quiz-shapes">
-          <div class="quiz-q">Q and K have shape [seq_len, d]. Shape of QK^T?</div>
+          <div class="quiz-q">
+            Q and K have shape [seq_len, d]. Shape of QK^T?
+          </div>
           <div class="quiz-opts">
             <div class="quiz-opt" data-correct="false" tabindex="0">
               <div class="quiz-mark"></div>
@@ -340,10 +474,9 @@
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 2: Softmax -->
       <section class="section" id="section-1">
@@ -351,47 +484,88 @@
         <h2 class="section__title">Softmax: From Scores to Probabilities</h2>
 
         <p>
-          Raw dot products can be any value—positive, negative, huge, tiny.
+          Raw dot products can be any value positive, negative, huge, tiny.
           <strong>Softmax</strong> converts them to a probability distribution:
           all positive, sums to 1.
         </p>
 
         <div class="equation">
           softmax(x<sub>i</sub>) =
-          <span class="equation__highlight">exp(x<sub>i</sub>)</span> / Sum exp(x<sub>j</sub>)
+          <span class="equation__highlight">exp(x<sub>i</sub>)</span> / Sum
+          exp(x<sub>j</sub>)
         </div>
 
         <p>
           The exponential amplifies differences. A score of 10 vs 5 becomes
           e<sup>10</sup>/e<sup>5</sup> ~ 150x more weight, not 2x. This makes
-          attention "sharp"—it focuses on the most relevant tokens.
+          attention "sharp" it focuses on the most relevant tokens.
         </p>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--green">Interactive: Softmax Visualization</div>
+            <div class="card__icon card__icon--green">
+              Interactive: Softmax Visualization
+            </div>
           </div>
 
-          <div class="flex flex-wrap gap-md" style="margin-bottom: var(--space-lg)">
+          <div
+            class="flex flex-wrap gap-md"
+            style="margin-bottom: var(--space-lg)"
+          >
             <div style="text-align: center">
               <span class="text-muted text-small">Score 1</span>
-              <input type="number" class="input" id="s0" value="2" step="0.5" style="margin-top: var(--space-sm)" />
+              <input
+                type="number"
+                class="input"
+                id="s0"
+                value="2"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
             </div>
             <div style="text-align: center">
               <span class="text-muted text-small">Score 2</span>
-              <input type="number" class="input" id="s1" value="1" step="0.5" style="margin-top: var(--space-sm)" />
+              <input
+                type="number"
+                class="input"
+                id="s1"
+                value="1"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
             </div>
             <div style="text-align: center">
               <span class="text-muted text-small">Score 3</span>
-              <input type="number" class="input" id="s2" value="0.5" step="0.5" style="margin-top: var(--space-sm)" />
+              <input
+                type="number"
+                class="input"
+                id="s2"
+                value="0.5"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
             </div>
             <div style="text-align: center">
               <span class="text-muted text-small">Score 4</span>
-              <input type="number" class="input" id="s3" value="-1" step="0.5" style="margin-top: var(--space-sm)" />
+              <input
+                type="number"
+                class="input"
+                id="s3"
+                value="-1"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
             </div>
             <div style="text-align: center">
               <span class="text-muted text-small">Score 5</span>
-              <input type="number" class="input" id="s4" value="0" step="0.5" style="margin-top: var(--space-sm)" />
+              <input
+                type="number"
+                class="input"
+                id="s4"
+                value="0"
+                step="0.5"
+                style="margin-top: var(--space-sm)"
+              />
             </div>
           </div>
 
@@ -442,16 +616,23 @@
 
         <p>
           <strong>The problem:</strong> exp(100) = 2.7 x 10<sup>43</sup>. That
-          overflows <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener">FP16 (max ~ 65504)</a>. Your kernel crashes. This is why we need
-          the numerical stability trick.
+          overflows
+          <a
+            href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format"
+            target="_blank"
+            rel="noopener"
+            >FP16 (max ~ 65504)</a
+          >. Your kernel crashes. This is why we need the numerical stability
+          trick.
         </p>
-
       </section>
 
       <!-- Section 3: Online Softmax -->
       <section class="section" id="section-2">
         <div class="section__number">03 - THE TRICK</div>
-        <h2 class="section__title">Online Softmax: Streaming Without Overflow</h2>
+        <h2 class="section__title">
+          Online Softmax: Streaming Without Overflow
+        </h2>
 
         <p>Two problems with naive softmax:</p>
         <p>
@@ -461,32 +642,55 @@
         <p>
           <strong>2. Memory:</strong> You need to see ALL values to compute max.
           But in attention, you're processing in blocks to stay in fast SRAM.
-          <strong>Solution:</strong> Online algorithm that updates incrementally.
+          <strong>Solution:</strong> Online algorithm that updates
+          incrementally.
         </p>
 
         <div class="equation">
           softmax(x<sub>i</sub>) = exp(x<sub>i</sub> -
-          <span class="equation__highlight">max(x)</span>) / Sum exp(x<sub>j</sub>
+          <span class="equation__highlight">max(x)</span>) / Sum exp(x<sub
+            >j</sub
+          >
           - <span class="equation__highlight">max(x)</span>)
         </div>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--blue">Simulation: Online Softmax Streaming</div>
+            <div class="card__icon card__icon--blue">
+              Simulation: Online Softmax Streaming
+            </div>
           </div>
 
-          <p class="text-secondary text-small" style="margin-bottom: var(--space-lg)">
+          <p
+            class="text-secondary text-small"
+            style="margin-bottom: var(--space-lg)"
+          >
             Watch how the algorithm maintains running statistics as new values
-            stream in. This is how <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">FlashAttention</a> processes attention in blocks.
+            stream in. This is how
+            <a
+              href="https://arxiv.org/abs/2205.14135"
+              target="_blank"
+              rel="noopener"
+              >FlashAttention</a
+            >
+            processes attention in blocks.
           </p>
 
           <div class="flex gap-md" style="margin-bottom: var(--space-lg)">
-            <button class="btn btn--primary" id="add-block-btn">Add Random Block</button>
+            <button class="btn btn--primary" id="add-block-btn">
+              Add Random Block
+            </button>
             <button class="btn" id="reset-btn">Reset</button>
           </div>
 
-          <div class="stream" id="stream-display" style="margin-bottom: var(--space-lg)">
-            <span class="text-muted text-small">Values will appear here...</span>
+          <div
+            class="stream"
+            id="stream-display"
+            style="margin-bottom: var(--space-lg)"
+          >
+            <span class="text-muted text-small"
+              >Values will appear here...</span
+            >
           </div>
 
           <div class="state-grid">
@@ -506,7 +710,11 @@
 
           <div class="result mt-lg">
             <div class="result__label">Key Insight</div>
-            <p class="text-secondary text-small" id="online-insight" style="margin: 0">
+            <p
+              class="text-secondary text-small"
+              id="online-insight"
+              style="margin: 0"
+            >
               Click "Add Random Block" to start the simulation.
             </p>
           </div>
@@ -544,15 +752,16 @@
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
-      <hr class="chunk-divider">
+      <hr class="chunk-divider" />
 
       <!-- Section 4: Floating Point Formats -->
       <section class="section" id="section-3">
         <div class="section__number">04 - PRECISION</div>
-        <h2 class="section__title">Floating Point: What FP8 and NVFP4 Actually Are</h2>
+        <h2 class="section__title">
+          Floating Point: What FP8 and NVFP4 Actually Are
+        </h2>
 
         <p>
           Your KV cache is quantized. Understanding the bit layout tells you
@@ -564,7 +773,13 @@
           <div class="fp-formats">
             <div class="fp-row">
               <div class="fp-head">
-                <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format" target="_blank" rel="noopener" class="fp-name">FP16 (Half Precision)</a>
+                <a
+                  href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format"
+                  target="_blank"
+                  rel="noopener"
+                  class="fp-name"
+                  >FP16 (Half Precision)</a
+                >
                 <span class="fp-range">+/-65,504</span>
               </div>
               <div class="fp-bits">
@@ -575,7 +790,13 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <a href="https://arxiv.org/abs/2209.05433" target="_blank" rel="noopener" class="fp-name">FP8 E4M3 (KV cache)</a>
+                <a
+                  href="https://arxiv.org/abs/2209.05433"
+                  target="_blank"
+                  rel="noopener"
+                  class="fp-name"
+                  >FP8 E4M3 (KV cache)</a
+                >
                 <span class="fp-range">+/-448</span>
               </div>
               <div class="fp-bits">
@@ -586,7 +807,13 @@
             </div>
             <div class="fp-row">
               <div class="fp-head">
-                <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener" class="fp-name">NVFP4 E2M1 (Blackwell)</a>
+                <a
+                  href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+                  target="_blank"
+                  rel="noopener"
+                  class="fp-name"
+                  >NVFP4 E2M1 (Blackwell)</a
+                >
                 <span class="fp-range">+/-6</span>
               </div>
               <div class="fp-bits">
@@ -596,12 +823,42 @@
               </div>
             </div>
           </div>
-          <p class="text-muted text-small" style="margin-top: var(--space-md); margin-bottom: 0">
-            <span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-red); border-radius: 3px; margin-right: 4px;"></span>
+          <p
+            class="text-muted text-small"
+            style="margin-top: var(--space-md); margin-bottom: 0"
+          >
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-red);
+                border-radius: 3px;
+                margin-right: 4px;
+              "
+            ></span>
             Sign
-            <span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-blue); border-radius: 3px; margin: 0 4px 0 12px;"></span>
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-blue);
+                border-radius: 3px;
+                margin: 0 4px 0 12px;
+              "
+            ></span>
             Exponent
-            <span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-green); border-radius: 3px; margin: 0 4px 0 12px;"></span>
+            <span
+              style="
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-green);
+                border-radius: 3px;
+                margin: 0 4px 0 12px;
+              "
+            ></span>
             Mantissa
           </p>
         </div>
@@ -609,9 +866,15 @@
         <p>
           <strong>Why NVFP4 works:</strong> Neural network values cluster
           tightly. A per-block scaling factor (stored in FP8) shifts the
-          representable range to where your values actually are. You get 
-          <a href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/" target="_blank" rel="noopener">4x memory reduction vs FP16</a> 
-          with minimal accuracy loss when using per-block scaling (exact impact varies by model and calibration).
+          representable range to where your values actually are. You get
+          <a
+            href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/"
+            target="_blank"
+            rel="noopener"
+            >4x memory reduction vs FP16</a
+          >
+          with minimal accuracy loss when using per-block scaling (exact impact
+          varies by model and calibration).
         </p>
 
         <div class="quiz" id="fp-quiz">
@@ -639,7 +902,6 @@
           </div>
           <div class="quiz-fb"></div>
         </div>
-
       </section>
 
       <!-- Section 5: Full Attention -->
@@ -653,15 +915,31 @@
         </p>
 
         <div class="equation">
-          <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener" style="text-decoration: none; color: inherit;">Attention(Q, K, V) = softmax(<span class="equation__highlight">QK<sup>T</sup></span> / sqrt(d)) * V</a>
+          <a
+            href="https://arxiv.org/abs/1706.03762"
+            target="_blank"
+            rel="noopener"
+            style="text-decoration: none; color: inherit"
+            >Attention(Q, K, V) = softmax(<span class="equation__highlight"
+              >QK<sup>T</sup></span
+            >
+            / sqrt(d)) * V</a
+          >
         </div>
 
         <div class="card">
           <div class="card__header">
-            <div class="card__icon card__icon--blue">Visualization: Decode Attention Step-by-Step</div>
+            <div class="card__icon card__icon--blue">
+              Visualization: Decode Attention Step-by-Step
+            </div>
           </div>
 
-          <canvas id="attention-canvas" class="canvas" width="700" height="280"></canvas>
+          <canvas
+            id="attention-canvas"
+            class="canvas"
+            width="700"
+            height="280"
+          ></canvas>
 
           <div class="flex flex-wrap gap-sm mt-lg">
             <button class="btn" id="step-qk">1. Compute QK<sup>T</sup></button>
@@ -673,7 +951,11 @@
 
           <div class="result mt-lg">
             <div class="result__label">Current Step</div>
-            <p class="text-secondary text-small" id="attention-step-desc" style="margin: 0">
+            <p
+              class="text-secondary text-small"
+              id="attention-step-desc"
+              style="margin: 0"
+            >
               Click a step to see what happens at each stage of attention.
             </p>
           </div>
@@ -688,10 +970,16 @@
           5. Output final attention result
         </p>
         <p>
-          The bottleneck is <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener"><strong>memory bandwidth</strong></a>—loading all those
-          K and V vectors from HBM. FP8/NVFP4 quantization halves or quarters that traffic.
+          The bottleneck is
+          <a
+            href="https://arxiv.org/abs/2205.14135"
+            target="_blank"
+            rel="noopener"
+            ><strong>memory bandwidth</strong></a
+          >
+          loading all those K and V vectors from HBM. FP8/NVFP4 quantization
+          halves or quarters that traffic.
         </p>
-
       </section>
 
       <!-- Practice Notebooks -->
@@ -703,7 +991,9 @@
           <div class="notebook-link__icon">&#128211;</div>
           <div class="notebook-link__content">
             <div class="notebook-link__title">Part 3 Notebooks</div>
-            <div class="notebook-link__desc">7 labs: Dot products, softmax, online softmax, FlashAttention</div>
+            <div class="notebook-link__desc">
+              7 labs: Dot products, softmax, online softmax, FlashAttention
+            </div>
           </div>
         </a>
       </section>
@@ -715,36 +1005,75 @@
 
         <div class="card">
           <h4>Video Resources</h4>
-          <div style="margin-bottom: var(--space-lg);">
+          <div style="margin-bottom: var(--space-lg)">
             <strong>Attention in Transformers (3Blue1Brown)</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Outstanding visual explanation of attention, QKV, and the transformer architecture.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Outstanding visual explanation of attention, QKV, and the
+              transformer architecture.
             </p>
-            <a href="https://www.youtube.com/watch?v=eMlx5fFNoYc" target="_blank" rel="noopener" style="color: var(--accent-blue);">Watch on YouTube</a>
+            <a
+              href="https://www.youtube.com/watch?v=eMlx5fFNoYc"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+              >Watch on YouTube</a
+            >
           </div>
-          <div style="margin-bottom: var(--space-lg);">
+          <div style="margin-bottom: var(--space-lg)">
             <strong>Let's Build GPT: From Scratch (Andrej Karpathy)</strong>
-            <p class="text-muted text-small" style="margin: var(--space-xs) 0;">
-              Build a transformer from scratch with detailed attention implementation.
+            <p class="text-muted text-small" style="margin: var(--space-xs) 0">
+              Build a transformer from scratch with detailed attention
+              implementation.
             </p>
-            <a href="https://www.youtube.com/watch?v=kCc8FmEb1nY" target="_blank" rel="noopener" style="color: var(--accent-blue);">Watch on YouTube</a>
+            <a
+              href="https://www.youtube.com/watch?v=kCc8FmEb1nY"
+              target="_blank"
+              rel="noopener"
+              style="color: var(--accent-blue)"
+              >Watch on YouTube</a
+            >
           </div>
         </div>
 
-        <div class="card" style="margin-top: var(--space-lg);">
+        <div class="card" style="margin-top: var(--space-lg)">
           <h4>Foundational Papers</h4>
-          <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>Attention Is All You Need</strong> - Vaswani et al., NeurIPS 2017<br>
-              <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:1706.03762</a>
+          <ol
+            style="
+              margin: 0;
+              padding-left: var(--space-lg);
+              color: var(--text-secondary);
+            "
+          >
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>Attention Is All You Need</strong> - Vaswani et al.,
+              NeurIPS 2017<br />
+              <a
+                href="https://arxiv.org/abs/1706.03762"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >arXiv:1706.03762</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>FlashAttention</strong> - Dao et al., NeurIPS 2022<br>
-              <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2205.14135</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>FlashAttention</strong> - Dao et al., NeurIPS 2022<br />
+              <a
+                href="https://arxiv.org/abs/2205.14135"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >arXiv:2205.14135</a
+              >
             </li>
-            <li style="margin-bottom: var(--space-sm);">
-              <strong>FlashAttention-2</strong> - Dao, 2023<br>
-              <a href="https://arxiv.org/abs/2307.08691" target="_blank" rel="noopener" style="color: var(--accent-blue);">arXiv:2307.08691</a>
+            <li style="margin-bottom: var(--space-sm)">
+              <strong>FlashAttention-2</strong> - Dao, 2023<br />
+              <a
+                href="https://arxiv.org/abs/2307.08691"
+                target="_blank"
+                rel="noopener"
+                style="color: var(--accent-blue)"
+                >arXiv:2307.08691</a
+              >
             </li>
           </ol>
         </div>
@@ -753,7 +1082,9 @@
       <!-- Chapter navigation -->
       <nav class="chapter-nav">
         <div class="chapter-nav__controls">
-          <a href="07-common-kernels.html" class="chapter-nav__link">&lt; Prev</a>
+          <a href="07-common-kernels.html" class="chapter-nav__link"
+            >&lt; Prev</a
+          >
           <span class="chapter-nav__sep">|</span>
           <a href="../index.html" class="chapter-nav__link">Home</a>
           <span class="chapter-nav__sep">|</span>
@@ -763,7 +1094,13 @@
       </nav>
 
       <div class="site-license">
-        All material licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        All material licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en"
+          target="_blank"
+          rel="noopener"
+          >CC BY-NC-SA 4.0</a
+        >
       </div>
     </main>
 
@@ -882,7 +1219,7 @@
         ctx.fillText(step >= 3 ? "Weights" : "Scores", padding + 440, 25);
 
         let scores = vizData.K.map((k) =>
-          vizData.Q.reduce((sum, q, i) => sum + q * k[i], 0)
+          vizData.Q.reduce((sum, q, i) => sum + q * k[i], 0),
         );
 
         if (step >= 2) {
@@ -905,7 +1242,8 @@
           if (step >= 1) {
             ctx.fillStyle = colors.text;
             ctx.font = "9px IBM Plex Mono";
-            const val = step >= 3 ? weights[i].toFixed(3) : scores[i].toFixed(2);
+            const val =
+              step >= 3 ? weights[i].toFixed(3) : scores[i].toFixed(2);
             ctx.fillText(val, padding + 450, 53 + i * 32);
           }
         }
@@ -939,11 +1277,36 @@
         "Step 4: Compute weighted sum of V vectors. Each V contributes proportionally to its attention weight.",
       ];
 
-      document.getElementById("step-qk").onclick = () => { currentStep = 1; drawAttention(1); document.getElementById("attention-step-desc").textContent = stepDescs[1]; };
-      document.getElementById("step-scale").onclick = () => { currentStep = 2; drawAttention(2); document.getElementById("attention-step-desc").textContent = stepDescs[2]; };
-      document.getElementById("step-softmax").onclick = () => { currentStep = 3; drawAttention(3); document.getElementById("attention-step-desc").textContent = stepDescs[3]; };
-      document.getElementById("step-output").onclick = () => { currentStep = 4; drawAttention(4); document.getElementById("attention-step-desc").textContent = stepDescs[4]; };
-      document.getElementById("step-reset").onclick = () => { currentStep = 0; drawAttention(0); document.getElementById("attention-step-desc").textContent = stepDescs[0]; };
+      document.getElementById("step-qk").onclick = () => {
+        currentStep = 1;
+        drawAttention(1);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[1];
+      };
+      document.getElementById("step-scale").onclick = () => {
+        currentStep = 2;
+        drawAttention(2);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[2];
+      };
+      document.getElementById("step-softmax").onclick = () => {
+        currentStep = 3;
+        drawAttention(3);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[3];
+      };
+      document.getElementById("step-output").onclick = () => {
+        currentStep = 4;
+        drawAttention(4);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[4];
+      };
+      document.getElementById("step-reset").onclick = () => {
+        currentStep = 0;
+        drawAttention(0);
+        document.getElementById("attention-step-desc").textContent =
+          stepDescs[0];
+      };
 
       drawAttention(0);
     </script>
