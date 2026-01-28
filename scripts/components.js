@@ -100,22 +100,41 @@ function initQuiz() {
     
     opts.forEach(opt => {
       opt.addEventListener('click', () => {
+        // Prevent re-answering
+        if (quiz.classList.contains('answered')) return;
+        
+        quiz.classList.add('answered');
         const correct = opt.dataset.correct === 'true';
         
-        opts.forEach(o => o.classList.remove('picked', 'correct', 'wrong', 
-          'quiz__option--selected', 'quiz__option--correct', 'quiz__option--incorrect'));
-        
-        opt.classList.add('picked', correct ? 'correct' : 'wrong');
-        
-        // Also add scaffold-style classes
-        opt.classList.add('quiz__option--selected');
-        opt.classList.add(correct ? 'quiz__option--correct' : 'quiz__option--incorrect');
+        // Mark selected option
+        opt.classList.add('picked', 'quiz__option--selected');
+        if (correct) {
+          opt.classList.add('correct', 'quiz__option--correct');
+        } else {
+          opt.classList.add('wrong', 'quiz__option--incorrect');
+          // Show correct answer when wrong
+          const correctOpt = quiz.querySelector('[data-correct="true"]');
+          if (correctOpt) {
+            correctOpt.classList.add('correct', 'quiz__option--correct');
+          }
+        }
         
         if (fb) {
-          fb.className = fb.className.includes('quiz__feedback') 
-            ? 'quiz__feedback show ' + (correct ? 'quiz__feedback--correct' : 'quiz__feedback--incorrect')
-            : 'quiz-fb show ' + (correct ? 'ok' : 'no');
-          fb.textContent = correct ? '✓ Correct!' : '✗ Not quite. Review the section above.';
+          if (correct) {
+            fb.className = 'quiz-fb quiz-fb--correct show ok';
+            fb.textContent = 'Correct!';
+          } else {
+            fb.className = 'quiz-fb quiz-fb--incorrect show no';
+            fb.textContent = 'Not quite. The correct answer is highlighted.';
+          }
+        }
+      });
+      
+      // Keyboard support
+      opt.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          opt.click();
         }
       });
     });

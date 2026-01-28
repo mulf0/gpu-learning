@@ -1338,8 +1338,9 @@
         quizState.correct = 0;
 
         document.querySelectorAll(".quiz").forEach((quiz) => {
+          quiz.classList.remove("answered");
           quiz.querySelectorAll(".quiz-opt").forEach((opt) => {
-            opt.classList.remove("correct", "wrong", "picked");
+            opt.classList.remove("correct", "wrong", "picked", "quiz__option--selected", "quiz__option--correct", "quiz__option--incorrect");
           });
           const fb = quiz.querySelector(".quiz-fb");
           fb.className = "quiz-fb";
